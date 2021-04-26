@@ -1,11 +1,23 @@
 {
-    "configurations": [
+    "configurations": 
+    [
         {
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**", 
                 "/usr/include/",
                 "/usr/local/include/"               
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        },
+        {
+            "name": "Windows x86",
+            "includePath": [
+                "${workspaceFolder}/**",             
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
