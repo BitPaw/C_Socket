@@ -1,5 +1,8 @@
 #include "Command.h"
 
+#ifndef CommandTokenInclude
+#define CommandTokenInclude
+
 typedef struct CommandToken_
 {
     Command CommandType;
@@ -9,3 +12,5 @@ typedef struct CommandToken_
 
 extern void CommandTokenInitialize(CommandToken* commandToken);
 extern void CommandTokenParse(CommandToken* commandToken, char* dataString);
+
+#endif
