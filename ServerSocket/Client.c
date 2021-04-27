@@ -13,17 +13,17 @@ void ClientInitialize(Client* client)
 
 void ClientConnect(Client* client, char* ip, unsigned short port)
 {
-	const int length = sizeof(struct sockaddr_in);
-	int connectResult;
-
-	client->SocketAddress.sin_addr.S_un.S_addr = inet_addr(ip);
+	int length = sizeof(client->SocketAddress);
+	const struct sockaddr* socketAdressPointer = &(client->SocketAddress);
+	
 	client->SocketAddress.sin_family = AF_INET;
+	client->SocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 	client->SocketAddress.sin_port = htons(port);
 
-	connectResult = connect(client->SocketID, &client->SocketAddress, length);
+	client->ID = connect(client->SocketID, socketAdressPointer, length);
 
 	//Connect to remote server
-	if (connectResult == -1)
+	if (client->ID == -1)
 	{
 		client->State = ConnectionFailure;
 		return;
@@ -39,5 +39,5 @@ void ClientSendCommand(Client* client)
 
 void ClientDisconnect(Client* client)
 {
-	client->State = Disconnected;
+		client->State = Disconnected;
 }

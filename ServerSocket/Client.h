@@ -7,18 +7,18 @@
 typedef struct Client_
 {
     ConnectionState State;
-    unsigned int ID;
+    int ID;
     char* IP;
-    unsigned int Port;
+    unsigned short Port;
 
     // Internal
-    unsigned int SocketID;
+    int SocketID;
     struct sockaddr_in SocketAddress;
 }Client;
 
-extern void ClientInitialize(Client* client);
-extern void ClientConnect(Client* client, char* ip, unsigned short port);
-extern void ClientSendCommand(Client* client);
-extern void ClientDisconnect(Client* client);
+void ClientInitialize(Client* client);
+void ClientConnect(Client* client, char* ip, unsigned short port);
+void ClientSendCommand(Client* client);
+void ClientDisconnect(Client* client);
 
 #endif

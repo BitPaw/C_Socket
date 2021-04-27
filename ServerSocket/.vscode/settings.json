@@ -1,3 +1,9 @@
 {
-    "C_Cpp.errorSquiggles": "Enabled"
+    "C_Cpp.errorSquiggles": "Enabled",
+    "files.associations": {
+        "server.h": "c",
+        "config.h": "c",
+        "unistd.h": "c",
+        "client.h": "c"
+    },
 }
