@@ -10,8 +10,11 @@ void ServerInitialize(Server* server)
 void ServerStart(Server* server, unsigned short port)
 {
     // Create a socket (IPv4) as a stream.
-    // Returns -1 on failure. ID if succesful. 
-    unsigned int socketCreationResult = socket(AF_INET, SOCK_STREAM, 0u);  
+    // Returns -1 on failure. ID if succesful.     
+    int sock;
+    size_t size;
+
+    unsigned int socketCreationResult = socket(AF_INET, SOCK_STREAM, 0);
     //                                   /\--- this fails... why?? Might be some OS problem "No sockets left"
 
     // Set up data? IP & Port
