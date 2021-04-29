@@ -1,15 +1,15 @@
 #include "ConnectionState.h"
 #include "Config.h"
 #include "Client.h"
+#include "IOSocket.h"
 
 #ifndef ServerIncluded
 #define ServerIncluded
 
 typedef struct Server_
-{
-    unsigned int SocketID;
-    ConnectionState State;
-    struct sockaddr_in Internal;    
+{ 
+    ConnectionState State; 
+    IOSocket Socket;
 
     Client* ClientList;
     unsigned int NumberOfConnectedClients;
@@ -21,5 +21,6 @@ void ServerStart(Server* server, unsigned short port);
 void ServerStop(Server* server);
 void ServerWaitForClient(Server* server);
 void ServerPrint(Server* server);
+void ServerRegisterClient(Server* server, Client* client);
 
 #endif

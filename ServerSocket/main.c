@@ -1,6 +1,6 @@
 #include "Config.h"
-#include "Server.c"
-#include "Client.c"
+#include "Server.h"
+#include "Client.h"
 #include <stdio.h>
 
 int main()
@@ -10,8 +10,6 @@ int main()
     char command = '-';
     char ipInputBuffer[40];
     unsigned short port;
-
-    printf("[Socket: Client Mode]");
     
     Client client;
     ClientInitialize(&client);
@@ -62,15 +60,13 @@ ClientDisconnect(&client);
 #endif
 
 #ifdef ServerMode
-    printf("[Socket: Server Mode]\n");
-
     Server server;
     ServerInitialize(&server);
     ServerStart(&server, DelaultPort);
 
     ServerPrint(&server);
 
-    while(1)
+    while(server.State == Online)
     {
         ServerWaitForClient(&server);        
     }

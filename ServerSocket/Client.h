@@ -1,5 +1,6 @@
 #include "Config.h"
 #include "ConnectionState.h"
+#include "IOSocket.h"
 
 #ifndef ClientIncluded
 #define ClientIncluded
@@ -9,11 +10,7 @@ typedef struct Client_
     ConnectionState State;
     int ID;
     char* IP;
-    unsigned short Port;
-
-    // Internal
-    int SocketID;
-    struct sockaddr_in SocketAddress;
+    IOSocket Socket;
 }Client;
 
 void ClientInitialize(Client* client);

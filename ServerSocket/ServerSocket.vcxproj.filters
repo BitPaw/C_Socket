@@ -30,6 +30,12 @@
     <ClCompile Include="Config.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="ConnectionState.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="IOSocket.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Command.h">
@@ -48,6 +54,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Config.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketErrorCode.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="IOSocket.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
