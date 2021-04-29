@@ -65,11 +65,12 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
     ioSocket->Adress.sin_port = htons(port);
 
     int opval = 1;
-    char* options = SO_REUSEADDR;
 
 #if linux
-    options |= SO_REUSEPORT;
-#endif // linux
+    char* options = SO_REUSEADDR | SO_REUSEPORT;
+#elif _WIN32
+    char* options = SO_REUSEADDR;
+#endif  
 
     int optionsocketResult = setsockopt(ioSocket->ID, SOL_SOCKET, options, &opval, sizeof(opval));
 

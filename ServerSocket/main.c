@@ -1,7 +1,20 @@
 #include "Config.h"
-#include "Server.h"
-#include "Client.h"
 #include <stdio.h>
+
+#ifdef linux
+// This is stupid... but visual studio code makes me do it.. help!
+#include "Server.c" 
+#include "IOSocket.c"
+#include "ConnectionState.c"
+#include "Client.c"
+#elif _WIN32
+
+// Normal Include
+#include "Server.h"
+#include "IOSocket.h"
+#include "Client.h"
+
+#endif
 
 int main()
 {
