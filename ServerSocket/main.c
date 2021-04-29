@@ -6,9 +6,59 @@
 int main()
 {
 #ifdef ClientMode
-    printf("[Socket: Client Mode]");
+    char quitFlag = 0;
+    char command = '-';
+    char ipInputBuffer[40];
+    unsigned short port;
 
-    // Do Client Stuff
+    printf("[Socket: Client Mode]");
+    
+    Client client;
+    ClientInitialize(&client);
+
+    do
+    {
+        printf("Select option\n");
+        printf("");
+        printf("");
+
+        scanf("%c", &command);
+
+       switch (command)
+       {
+            case 'c':
+            {
+                printf("+------------------+\n");
+                printf("[ Connect To Server ]\n")
+                printf("| IP : ");
+                scanf("%s", &ipInputBuffer);
+                printf("| Port : %i", DelaultPort);
+                //scanf("%i", &port);
+                printf("+------------------+\n");
+
+                ClientConnect(&client, ipInputBuffer, DelaultPort);
+
+                break;
+            }
+
+       case 'q':
+       {
+            ClientDisconnect(&client);
+               break;
+       }         
+       
+       default:
+       {
+           printf("Invalid Command\n");
+            break;
+       }
+      
+       }
+    } 
+    while (!quitFlag); 
+
+ClientDisconnect(&client);
+
 #endif
 
 #ifdef ServerMode
@@ -16,7 +66,7 @@ int main()
 
     Server server;
     ServerInitialize(&server);
-    ServerStart(&server, 8125);
+    ServerStart(&server, DelaultPort);
 
     ServerPrint(&server);
 
@@ -26,25 +76,6 @@ int main()
     }
 
     ServerStop(&server);
-
 #endif       
-
-
-    //-----[ T E S T ]-------------------------
-    #if 0
-    Server server;
-    ServerInitialize(&server);
-    ServerStart(&server, DelaultPort);
-
-
-    Client client;
-    ClientInitialize(&client);
-    ClientConnect(&client, "127.0.0.1", DelaultPort);
-
-    ClientDisconnect(&client);
-    ServerStop(&server);
-    #endif
-    //-----------------------------------------
-
     return 0;
 }
