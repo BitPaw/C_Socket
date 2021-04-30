@@ -99,8 +99,9 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
 void SocketClose(IOSocket* socket)
 {
 #ifdef _WIN32
-    //WSACleanup();
+    shutdown(socket->ID, SD_SEND);
     closesocket(socket->ID);
+    //WSACleanup();
 #endif // _WIN32  
 
 #ifdef linux
@@ -115,6 +116,7 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
     // &clientSocket->Adress, sizeof(clientSocket->Adress)
 
     clientSocket->ID = accept(serverSocket->ID, 0, 0);
+  
 }
 
 void SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
@@ -131,60 +133,31 @@ void SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdres
 
 void SocketRead(IOSocket* socket)
 {
-    const unsigned int inputBufferSize = SocketBufferSize;
-    char inputBuffer[SocketBufferSize];
-    char readError = 0;
-    unsigned int byteReadCurrent;
-    unsigned int byteReadPrivoly = 0;
-    char didChange = 0;     
+    unsigned int byteRead = 0;
+    char endOfFile = 0;
+    char readError = 0;   
+
+    memset(socket->Message, 0, SocketBufferSize);
 
 #ifdef linux
-    while (1)
+    byteRead = read(socket->ID, &inputBuffer[0], inputBufferSize - 1);
+#elif _WIN32
+    byteRead = recv(socket->ID, &socket->Message[0], SocketBufferSize - 1, 0);
+#endif
+
+    endOfFile = byteRead == 0;
+    readError = byteRead == -1;
+
+    if (readError || endOfFile)
     {
-        memset(inputBuffer, 0, inputBufferSize);
-
-        unsigned int size = read(socket->ID, &inputBuffer[0], inputBufferSize - 1);
-        char endOfFile = size == 0;
-        readError = size == -1;
-
-        if (readError)
-        {
-            break;
-        }
-
-        if ((memcmp(&inputBuffer[size - 1], "\n\0", 2) == 0) || endOfFile)
-        {
-            break;
-        }
-    }     
-#endif // linux
-
-
-#if _WIN320
-    memset(inputBuffer, 0, inputBufferSize);
-
-    do
-    {
-        byteReadCurrent = recv(socket->ID, &inputBuffer[0], inputBufferSize - 1, 0);
-
-        if (byteReadCurrent == 0)
-        {
-            break;
-        }
-
-        //memset(inputBuffer, 0, inputBufferSize);
-
-        //byteReadCurrent = recv(socket->ID, &inputBuffer[0], byteReadCurrent, 0);
-
-        for (size_t i = 0; i < byteReadCurrent; i++)
-        {
-            printf("%c", inputBuffer[i]);
-        }
-
-
+        memset(socket->Message, 0, SocketBufferSize);
     }
-    while (didChange);
-#endif // _WIN32    
+    else
+    {
+        // Remove this! Thread corrupting stuff.
+        printf("[Client %i] %s\n", socket->ID, &socket->Message[0]);
+        memset(socket->Message, 0, SocketBufferSize);
+    }
 }
 
 void SocketWrite(IOSocket* socket, char* message)
@@ -197,6 +170,9 @@ void SocketWrite(IOSocket* socket, char* message)
 #if linux
     writtenBytes = write(socket->ID, message, messageLengh);
 #elif _WIN32
-    writtenBytes = send(socket->ID, message, messageLengh, MSG_OOB);
+    writtenBytes = send(socket->ID, message, messageLengh, 0);
 #endif  
+
+    // Remove this! Thread corrupting stuff.
+    printf("[Server] %i Bytes to Client %i : %s\n", writtenBytes, socket->ID, message);
 }

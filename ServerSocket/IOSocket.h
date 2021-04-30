@@ -26,7 +26,7 @@ typedef struct IOSocket_
 
 	unsigned short Port;
 
-	char* Message;
+	char Message[SocketBufferSize];
 
 #ifdef _WIN32
 	WSADATA WindowsSocketAgentData;

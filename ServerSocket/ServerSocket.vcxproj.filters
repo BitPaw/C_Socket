@@ -36,6 +36,9 @@
     <ClCompile Include="IOSocket.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Thread.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Command.h">
@@ -60,6 +63,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="IOSocket.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

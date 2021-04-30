@@ -13,6 +13,7 @@ typedef struct Server_
 
     Client* ClientList;
     unsigned int NumberOfConnectedClients;
+    unsigned int NumberOfMaximalClients;
 
 }Server;
 
@@ -22,5 +23,8 @@ void ServerStop(Server* server);
 void ServerWaitForClient(Server* server);
 void ServerPrint(Server* server);
 void ServerRegisterClient(Server* server, Client* client);
+void ServerUnRegisterClient(Server* server, Client* client);
+unsigned long ThreadServerHandleClientIO(Server* client);
+Client* GetNextClient(Server* server);
 
 #endif

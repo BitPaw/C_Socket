@@ -26,6 +26,7 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="Server.c" />
     <ClCompile Include="IOSocket.c" />
+    <ClCompile Include="Thread.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="Server.h" />
     <ClInclude Include="IOSocket.h" />
     <ClInclude Include="SocketErrorCode.h" />
+    <ClInclude Include="Thread.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

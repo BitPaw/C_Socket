@@ -77,11 +77,14 @@ ClientDisconnect(&client);
     ServerInitialize(&server);
     ServerStart(&server, DelaultPort);
 
+  
     ServerPrint(&server);
 
     while(server.State == Online)
-    {
-        ServerWaitForClient(&server);        
+    {              
+        ServerWaitForClient(&server);      
+        //system("@cls||clear");
+        ServerPrint(&server);
     }
 
     ServerStop(&server);

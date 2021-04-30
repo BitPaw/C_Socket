@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "ConnectionState.h"
 #include "IOSocket.h"
+#include "Thread.h"
 
 #ifndef ClientIncluded
 #define ClientIncluded
@@ -11,6 +12,8 @@ typedef struct Client_
     int ID;
     char* IP;
     IOSocket Socket;
+
+    Thread CommunicationThread;
 }Client;
 
 void ClientInitialize(Client* client);
