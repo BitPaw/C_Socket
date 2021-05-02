@@ -13,6 +13,9 @@ typedef struct Client_
     char* IP;
     IOSocket Socket;
 
+    int ConnectedServerID;
+    IOSocket ConnectedServerData;
+
     Thread CommunicationThread;
 }Client;
 

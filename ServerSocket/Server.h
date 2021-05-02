@@ -14,7 +14,6 @@ typedef struct Server_
     Client* ClientList;
     unsigned int NumberOfConnectedClients;
     unsigned int NumberOfMaximalClients;
-
 }Server;
 
 void ServerInitialize(Server* server);

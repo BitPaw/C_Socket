@@ -1,5 +1,6 @@
 #include "Config.h"
 #include <stdio.h>
+#include <string.h>
 
 #ifdef linux
 // This is stupid... but visual studio code makes me do it.. help!
@@ -16,12 +17,19 @@
 
 #endif
 
+void ClearBuffer()
+{
+    char c;
+
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 int main()
 {
 #ifdef ClientMode
     char quitFlag = 0;
     char command = '-';
-    char ipInputBuffer[40];
+    char inputDataBuffer[40] = "127.0.0.1";
     unsigned short port;
     
     Client client;
@@ -29,38 +37,90 @@ int main()
 
     do
     {
-        printf("Select option\n");
-        printf("");
-        printf("");
-
-        scanf("%c", &command);
+        printf
+        (
+            "+---------------+\n"
+            "| Select option |\n"
+            "| C - Connect   |\n"
+            "| Q - Quit      |\n"
+            "| R - Read Data |\n"
+            "| S - Send Data |\n"
+            "+---------------+\n\n"
+        );
+     
+        ClearBuffer();
+        printf("  > ");
+        scanf(" %c", &command);
 
        switch (command)
        {
+           case 'C' :
             case 'c':
             {
-                printf("+------------------+\n");
-                printf("[ Connect To Server ]\n")
-                printf("| IP : ");
-                scanf("%s", &ipInputBuffer);
+                printf("+-------------------+\n");
+                printf("| Connect To Server |\n");
+                printf("| IP   : %s\n", &inputDataBuffer[0]);           
+                //scanf("%s", &inputDataBuffer);
                 printf("| Port : %i", DelaultPort);
+                printf("\n");
                 //scanf("%i", &port);
-                printf("+------------------+\n");
+                printf("+-------------------+\n");
 
-                ClientConnect(&client, ipInputBuffer, DelaultPort);
+                ClientConnect(&client, &inputDataBuffer[0], DelaultPort);
+
+                if (client.State == Online)
+                {
+                    printf("[OK] Connection sucessful!\n");
+                }
+                else
+                {
+                    printf("[Error] Connection Failed!\n");
+                    // Read ErrorCode
+                }
 
                 break;
             }
 
+            case 'r':
+            case 'R':
+            {
+                SocketErrorCode errorCode = SocketRead(&client.Socket);
+
+                if (errorCode == NoError)
+                {
+                    printf("[Client] %s\n", &client.Socket.Message[0]);
+                }
+                else
+                {
+                    printf("[Error] Failed to read message\n");
+                }
+
+                break;
+            }
+
+            case 's':
+            case 'S':
+            {
+                printf("| Message : ");      
+                ClearBuffer();
+                fgets(&inputDataBuffer[0], 40, stdin);                
+
+                SocketErrorCode errorCode = SocketWrite(&client.Socket, &inputDataBuffer[0]);
+
+                break;
+            }
+
+
        case 'q':
        {
             ClientDisconnect(&client);
+            quitFlag = 1;
                break;
        }         
        
        default:
        {
-           printf("Invalid Command\n");
+           printf("[Error] Invalid Command\n");
             break;
        }
       

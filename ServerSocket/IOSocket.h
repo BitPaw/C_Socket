@@ -38,8 +38,12 @@ void SocketInitialize(IOSocket* socket);
 SocketErrorCode SocketOpen(IOSocket* socket, unsigned short port);
 void SocketClose(IOSocket* socket);
 void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket);
-void SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
-void SocketRead(IOSocket* socket);
-void SocketWrite(IOSocket* socket, char* message);
+SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
+SocketErrorCode SocketRead(IOSocket* socket);
+SocketErrorCode SocketWrite(IOSocket* socket, char* message);
+
+#ifdef _WIN32
+SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket);
+#endif
 
 #endif

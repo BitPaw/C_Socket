@@ -13,13 +13,11 @@ void ClientInitialize(Client* client)
 
 void ClientConnect(Client* client, char* ip, unsigned short port)
 {
-	Server server;
+	//ServerInitialize(&client->ConnectedServer);
 
-	ServerInitialize(&server);
+	SocketErrorCode errorCode = SocketConnect(&client->Socket, &client->ConnectedServerData, ip, port);
 
-	SocketConnect(&client->Socket, &server.Socket, ip, port);
-
-	if (client->Socket.ID == -1)
+	if (errorCode != NoError)
 	{
 		client->State = Offline;
 		return;

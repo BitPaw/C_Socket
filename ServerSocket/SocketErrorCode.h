@@ -9,6 +9,13 @@ typedef enum SocketErrorCode_
 	SocketBindingFailure,
 	SocketListeningFailure,
 
+	SocketSendFailure,
+	SocketRecieveFailure,
+
+	// Client
+	SocketConnectionFailure,
+
+
 
 	//---[ Windows Only (WindowsSocketAgent) ]-------
 

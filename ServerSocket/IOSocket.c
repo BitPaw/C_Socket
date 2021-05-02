@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+
 void SocketInitialize(IOSocket* socket)
 {
     socket->ID = -1;
@@ -25,29 +26,11 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
     ioSocket->Port = port;
 
 #ifdef _WIN32
-    WORD wVersionRequested = MAKEWORD(2, 2);
-    int result = WSAStartup(wVersionRequested, &ioSocket->WindowsSocketAgentData);
+    SocketErrorCode errorCode = WindowsSocketAgentStartup(&ioSocket);
 
-    switch (result)
+    if (errorCode != NoError)
     {
-        case WSASYSNOTREADY:
-            return SubSystemNotReady;
-
-        case WSAVERNOTSUPPORTED:
-            return VersionNotSupported;
-
-        case WSAEINPROGRESS:
-            return BlockedByOtherOperation;
-
-        case WSAEPROCLIM:
-            return LimitReached;
-
-        case WSAEFAULT:
-            return InvalidParameter;
-
-        case 0:
-            // Do nothing
-            break;
+        return errorCode;
     }
 #endif // _WIN32
 
@@ -119,23 +102,49 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
   
 }
 
-void SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
+SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
 {
+    SocketErrorCode errorCode;
+    const int adressFamily = AF_INET;
+    const int streamType = SOCK_STREAM;
+    const int protocol = 0;
     int length = sizeof(clientSocket->Adress);
     const struct sockaddr* socketAdressPointer = &(clientSocket->Adress);
+   
+#ifdef _WIN32
+    errorCode = WindowsSocketAgentStartup(&clientSocket);
 
-    clientSocket->Adress.sin_family = AF_INET;
-    clientSocket->Adress.sin_addr.s_addr = htonl(ipAdress);
+    if (errorCode != NoError)
+    {
+        return errorCode;
+    }
+#endif // _WIN32
+
+    clientSocket->Adress.sin_family = adressFamily;
+    clientSocket->Adress.sin_addr.s_addr = inet_addr(ipAdress);
     clientSocket->Adress.sin_port = htons(port);
 
+    clientSocket->ID = socket(adressFamily, streamType, protocol);
+
+    if (clientSocket->ID == 1)
+    {
+        return SocketCreationFailure;
+    }
+
     serverSocket->ID = connect(clientSocket->ID, socketAdressPointer, length);
+
+    if (serverSocket->ID == -1)
+    {
+        return SocketConnectionFailure;
+    }
+
+    return NoError;
 }
 
-void SocketRead(IOSocket* socket)
+SocketErrorCode SocketRead(IOSocket* socket)
 {
     unsigned int byteRead = 0;
     char endOfFile = 0;
-    char readError = 0;   
 
     memset(socket->Message, 0, SocketBufferSize);
 
@@ -146,9 +155,13 @@ void SocketRead(IOSocket* socket)
 #endif
 
     endOfFile = byteRead == 0;
-    readError = byteRead == -1;
 
-    if (readError || endOfFile)
+    if (byteRead == -1)
+    {
+        return SocketRecieveFailure;
+    }
+
+    if (endOfFile)
     {
         memset(socket->Message, 0, SocketBufferSize);
     }
@@ -158,9 +171,11 @@ void SocketRead(IOSocket* socket)
         printf("[Client %i] %s\n", socket->ID, &socket->Message[0]);
         memset(socket->Message, 0, SocketBufferSize);
     }
+
+    return NoError;
 }
 
-void SocketWrite(IOSocket* socket, char* message)
+SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 {
     int messageLengh = 0;
     unsigned int writtenBytes = 0;
@@ -173,6 +188,47 @@ void SocketWrite(IOSocket* socket, char* message)
     writtenBytes = send(socket->ID, message, messageLengh, 0);
 #endif  
 
+    if (writtenBytes == -1)
+    {
+        printf("[Error] Failed to send data to %i!\n", socket->ID);
+        
+        return SocketSendFailure;
+    }
+
     // Remove this! Thread corrupting stuff.
-    printf("[Server] %i Bytes to Client %i : %s\n", writtenBytes, socket->ID, message);
+    printf("[OK] %i Bytes to Client %i : %s\n", writtenBytes, socket->ID, message);
+
+    return NoError;
 }
+
+
+
+#ifdef _WIN32
+SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
+{
+    WORD wVersionRequested = MAKEWORD(2, 2);
+    int result = WSAStartup(wVersionRequested, &socket->WindowsSocketAgentData);
+
+    switch (result)
+    {
+        case WSASYSNOTREADY:
+            return SubSystemNotReady;
+
+        case WSAVERNOTSUPPORTED:
+            return VersionNotSupported;
+
+        case WSAEINPROGRESS:
+            return BlockedByOtherOperation;
+
+        case WSAEPROCLIM:
+            return LimitReached;
+
+        case WSAEFAULT:
+            return InvalidParameter;
+
+        case 0:
+        default:
+            return NoError;
+    }
+}
+#endif // !_WIN32
