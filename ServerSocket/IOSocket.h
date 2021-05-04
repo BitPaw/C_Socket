@@ -41,6 +41,7 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket);
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
 SocketErrorCode SocketRead(IOSocket* socket);
 SocketErrorCode SocketWrite(IOSocket* socket, char* message);
+char IsValidIP(char* ipAdress);
 
 #ifdef _WIN32
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket);

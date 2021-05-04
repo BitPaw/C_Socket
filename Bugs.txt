@@ -1,0 +1,11 @@
+Generell:
+1) Threads ausbauen und auf linux erstellen.
+
+Client:
+1) Man kann keine narichten mit leerzeichen schicken. scanf() bekommt das nicht hin. gets() probiert aber das greift manchmal nicht. Pass auf, stdin buffer und \n!
+2) Man kann leere narichten erhalten
+
+Server:
+1) Wenn nichts vom client gesendet wird passiert nichts.
+2) Noch keine Send/Recieve machanik. Nur ein einzelnes lesen/schreiben. 
+3) Kein handling mit meherern Clients.

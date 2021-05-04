@@ -27,9 +27,6 @@
     <ClCompile Include="Client.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Config.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="ConnectionState.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Client.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Config.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="SocketErrorCode.h">

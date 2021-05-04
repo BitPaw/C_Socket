@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="Client.c" />
     <ClCompile Include="CommandToken.c" />
-    <ClCompile Include="Config.c" />
     <ClCompile Include="ConnectionState.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="Server.c" />
@@ -32,7 +31,6 @@
     <ClInclude Include="Client.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
-    <ClInclude Include="Config.h" />
     <ClInclude Include="ConnectionState.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="IOSocket.h" />

@@ -1,5 +1,4 @@
 #include "Client.h"
-#include "Config.h"
 #include "Server.h"
 
 void ClientInitialize(Client* client)

@@ -1,4 +1,5 @@
-#include "Config.h"
+#define _CRT_SECURE_NO_WARNINGS 1
+
 #include <stdio.h>
 #include <string.h>
 
@@ -9,13 +10,13 @@
 #include "ConnectionState.c"
 #include "Client.c"
 #elif _WIN32
-
 // Normal Include
 #include "Server.h"
 #include "IOSocket.h"
 #include "Client.h"
-
 #endif
+
+// system("@cls||clear");
 
 void ClearBuffer()
 {
@@ -24,130 +25,201 @@ void ClearBuffer()
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
+unsigned long ReadAsync(void* data)
+{
+    unsigned char readErrorCounter = 0;
+    unsigned char readErrorCounterThreshold = 5;
+
+    while (1)
+    {
+        IOSocket* socket = (IOSocket*)data;
+        SocketErrorCode errorCode = SocketRead(socket);
+
+        if (errorCode == NoError)
+        {
+            readErrorCounter = 0;
+            printf("[Server] %s\n", &socket->Message[0]);
+        }
+        else
+        {       
+            printf("[Error] Failed to read message\n");
+
+            if (readErrorCounter++ > readErrorCounterThreshold)
+            {
+                printf("[Error] Too many read errors in a row. Terminating connection.\n");
+                SocketClose(socket);
+                break;
+            }
+        }
+    }
+}
+
+void PrintLine()
+{
+    printf("------------------------\n");
+}
+
 int main()
 {
-#ifdef ClientMode
-    char quitFlag = 0;
-    char command = '-';
-    char inputDataBuffer[40] = "127.0.0.1";
-    unsigned short port;
-    
-    Client client;
-    ClientInitialize(&client);
+    char mode = -1;
+    const short defaultPort = 5678u;
 
-    do
+    //---[Get operating mode]--------------------------------------------------
+    printf
+    (
+        "+-----------------------+\n"
+        "| Select operation mode |\n"
+        "+-----------------------+\n"
+        "| 0 : Client Mode       |\n"
+        "| 1 : Server Mode       |\n"
+        "+-----------------------+\n"
+    );
+
+    while (1)
     {
-        printf
-        (
-            "+---------------+\n"
-            "| Select option |\n"
-            "| C - Connect   |\n"
-            "| Q - Quit      |\n"
-            "| R - Read Data |\n"
-            "| S - Send Data |\n"
-            "+---------------+\n\n"
-        );
-     
+        printf("[Input] Mode : ");
+        mode = getc(stdin);
         ClearBuffer();
-        printf("  > ");
-        scanf(" %c", &command);
 
-       switch (command)
-       {
-           case 'C' :
-            case 'c':
+        if (mode == '0' || mode == '1')
+        {
+            break;
+        }
+
+        printf("[Error] Invalid Mode! Please select a valid option.\n");
+    }
+    //-------------------------------------------------------------------------
+
+    printf("+-----------------------+\n\n");
+
+    switch (mode)
+    {
+        case '0':
+        {
+            char quitFlag = 0;
+            char command = '-';
+            char inputDataBuffer[40] = "127.0.0.1";
+            unsigned short port = defaultPort;
+
+            Thread thread;
+            Client client;
+            ClientInitialize(&client);
+
+            printf("+----------------------------+\n");
+            printf("| Connect To Server          |\n");
+            printf("+----------------------------+\n");
+
+            while (1)
             {
-                printf("+-------------------+\n");
-                printf("| Connect To Server |\n");
-                printf("| IP   : %s\n", &inputDataBuffer[0]);           
-                //scanf("%s", &inputDataBuffer);
-                printf("| Port : %i", DelaultPort);
-                printf("\n");
-                //scanf("%i", &port);
-                printf("+-------------------+\n");
+                printf("[Input] IP  : ");
+                scanf("%s", &inputDataBuffer);
 
-                ClientConnect(&client, &inputDataBuffer[0], DelaultPort);
-
-                if (client.State == Online)
+                if (IsValidIP(inputDataBuffer))
                 {
-                    printf("[OK] Connection sucessful!\n");
+                    break;
                 }
                 else
                 {
-                    printf("[Error] Connection Failed!\n");
-                    // Read ErrorCode
+                    printf("[Error] Invalid IP! Please check your input.\n");
                 }
+            }
 
+            printf("[Info] Port : %i\n", port);
+            printf("+----------------------------+\n\n");
+
+            printf
+            (
+                "+-----------------------------+\n"
+                "| Connecting...               |\n"
+                "+-----------------------------+\n"
+            );
+
+            ClientConnect(&client, &inputDataBuffer[0], port);
+
+            if (client.State == Online)
+            {
+                printf
+                (
+                    "[OK] Connection successful!\n"
+                    "+-----------------------------+\n\n"
+                );
+            }
+            else
+            {
+                printf
+                (
+                    "[Error] Connection Failed!\n"
+                    "+-----------------------------+\n\n"
+                );
+   
                 break;
             }
 
-            case 'r':
-            case 'R':
+            ThreadCreate(&thread, ReadAsync, &client.Socket);
+
+            printf
+            (
+                "+----------------+\n"
+                "| Send & Recieve |\n"
+                "+----------------+\n"
+            );
+
+            while (client.Socket.ID != -1)
             {
-                SocketErrorCode errorCode = SocketRead(&client.Socket);
-
-                if (errorCode == NoError)
-                {
-                    printf("[Client] %s\n", &client.Socket.Message[0]);
-                }
-                else
-                {
-                    printf("[Error] Failed to read message\n");
-                }
-
-                break;
-            }
-
-            case 's':
-            case 'S':
-            {
-                printf("| Message : ");      
                 ClearBuffer();
-                fgets(&inputDataBuffer[0], 40, stdin);                
+                //fgets(&inputDataBuffer[0], 40, stdin);
+                scanf("%s", &inputDataBuffer[0]);
+
+                if (memcmp("q", &inputDataBuffer[0], 1) == 0)
+                {
+                    printf("[System] Quitting...\n");
+                    break;
+                }
 
                 SocketErrorCode errorCode = SocketWrite(&client.Socket, &inputDataBuffer[0]);
 
-                break;
+                switch (errorCode)
+                {
+                    case NoError:
+                    {
+                        printf("[You] %s\n", inputDataBuffer);
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
             }
 
-
-       case 'q':
-       {
             ClientDisconnect(&client);
-            quitFlag = 1;
-               break;
-       }         
-       
-       default:
-       {
-           printf("[Error] Invalid Command\n");
+
             break;
-       }
-      
-       }
-    } 
-    while (!quitFlag); 
+        }
+        case '1':
+        {
+            Server server;
+            ServerInitialize(&server);
+            ServerStart(&server, defaultPort);
 
-ClientDisconnect(&client);
+            ServerPrint(&server);
 
-#endif
+            if (server.State != Online)
+            {
+                printf("[Error] Port seems to be blocked. Server can't be started.\n");
+            }
 
-#ifdef ServerMode
-    Server server;
-    ServerInitialize(&server);
-    ServerStart(&server, DelaultPort);
+            while (server.State == Online)
+            {
+                ServerWaitForClient(&server);
+                ServerPrint(&server);
+            }
 
-  
-    ServerPrint(&server);
-
-    while(server.State == Online)
-    {              
-        ServerWaitForClient(&server);      
-        //system("@cls||clear");
-        ServerPrint(&server);
+            ServerStop(&server);
+            break;
+        }
     }
 
-    ServerStop(&server);
-#endif       
+    system("pause");
+
     return 0;
 }

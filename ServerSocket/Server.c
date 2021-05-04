@@ -1,8 +1,6 @@
-#include "Server.h"
-#include "Config.h"
-
 #include <string.h>
 #include <stdio.h>
+#include "Server.h"
 #include "Thread.h"
 
 void ServerInitialize(Server* server)

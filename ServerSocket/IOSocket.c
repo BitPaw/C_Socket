@@ -91,7 +91,7 @@ void SocketClose(IOSocket* socket)
     close(socket->ID);
 #endif // linux    
 
-   // SocketInitialize(socket);
+    SocketInitialize(socket);
 }
 
 void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
@@ -165,12 +165,6 @@ SocketErrorCode SocketRead(IOSocket* socket)
     {
         memset(socket->Message, 0, SocketBufferSize);
     }
-    else
-    {
-        // Remove this! Thread corrupting stuff.
-        printf("[Client %i] %s\n", socket->ID, &socket->Message[0]);
-        memset(socket->Message, 0, SocketBufferSize);
-    }
 
     return NoError;
 }
@@ -182,6 +176,10 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 
     while (message[messageLengh++] != '\0') { }
 
+   // memcpy(&message[messageLengh - 1], "\r\n\0", 3 * sizeof(char)); // Add line ending.
+
+    //essageLengh += 2; // add cause of new length.
+
 #if linux
     writtenBytes = write(socket->ID, message, messageLengh);
 #elif _WIN32
@@ -189,16 +187,79 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 #endif  
 
     if (writtenBytes == -1)
-    {
-        printf("[Error] Failed to send data to %i!\n", socket->ID);
-        
+    {        
         return SocketSendFailure;
     }
 
-    // Remove this! Thread corrupting stuff.
-    printf("[OK] %i Bytes to Client %i : %s\n", writtenBytes, socket->ID, message);
-
     return NoError;
+}
+
+char IsValidIP(char* ipAdress)
+{
+    const unsigned int expectedDots = 3;
+    const unsigned int minimalSize = 7; // 0.0.0.0
+    const unsigned int maximalSize = 15; //255.255.255.255
+    unsigned int index = 0;
+    unsigned int length = 0;
+    unsigned int countedDots = 0;
+    unsigned char hasValidLength = 0;
+    unsigned char hasEnigthDots = 0;
+
+    unsigned short octetValue = 0;
+    unsigned short exponent = 100;
+
+    if (ipAdress == 0)
+    {
+        return 0;
+    }
+
+    for ( ; ipAdress[index] != '\0'; index++)
+    {
+        char character = ipAdress[index] ;
+        char isDot = character == '.';
+        char isInRange = (character >= '0' && character <= '9') || character;
+
+        if (!isInRange)
+        {
+            return 0;
+        }
+
+        if (isDot)
+        {  
+            countedDots++;
+            octetValue = 0;
+            exponent = 100;
+        }
+        else
+        {       
+            octetValue += (character - '0') * exponent;
+
+            if (octetValue > 255)
+            {
+                return 0;
+            }
+
+            exponent /= 10;
+        }
+
+        length++;
+    }
+
+    hasValidLength = length >= minimalSize && length <= maximalSize;
+    hasEnigthDots = countedDots == expectedDots;
+
+    if (!hasValidLength)
+    {
+        return 0;
+    }
+
+    if (!hasEnigthDots)
+    {
+        return 0;
+    }
+
+
+    return 1;
 }
 
 

@@ -1,4 +1,3 @@
-#include "Config.h"
 #include "ConnectionState.h"
 #include "IOSocket.h"
 #include "Thread.h"
