@@ -23,4 +23,6 @@ void ClientConnect(Client* client, char* ip, unsigned short port);
 void ClientSendCommand(Client* client);
 void ClientDisconnect(Client* client);
 
+unsigned long ThreadClientHandleRead(void* clientRaw);
+
 #endif

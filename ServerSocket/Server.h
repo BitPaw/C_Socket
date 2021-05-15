@@ -22,7 +22,7 @@ void ServerWaitForClient(Server* server);
 void ServerPrint(Server* server);
 void ServerRegisterClient(Server* server, Client* client);
 void ServerUnRegisterClient(Server* server, Client* client);
-unsigned long ThreadServerHandleClientIO(Server* client);
+unsigned long ThreadServerHandleClientIO(void* clientRaw);
 Client* GetNextClient(Server* server);
 
 #endif

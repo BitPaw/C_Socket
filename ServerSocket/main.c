@@ -25,35 +25,6 @@ void ClearBuffer()
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-unsigned long ReadAsync(void* data)
-{
-    unsigned char readErrorCounter = 0;
-    unsigned char readErrorCounterThreshold = 5;
-
-    while (1)
-    {
-        IOSocket* socket = (IOSocket*)data;
-        SocketErrorCode errorCode = SocketRead(socket);
-
-        if (errorCode == NoError)
-        {
-            readErrorCounter = 0;
-            printf("[Server] %s\n", &socket->Message[0]);
-        }
-        else
-        {       
-            printf("[Error] Failed to read message\n");
-
-            if (readErrorCounter++ > readErrorCounterThreshold)
-            {
-                printf("[Error] Too many read errors in a row. Terminating connection.\n");
-                SocketClose(socket);
-                break;
-            }
-        }
-    }
-}
-
 void PrintLine()
 {
     printf("------------------------\n");
@@ -155,7 +126,7 @@ int main()
                 break;
             }
 
-            ThreadCreate(&thread, ReadAsync, &client.Socket);
+            ThreadCreate(&thread, ThreadClientHandleRead, &client);
 
             printf
             (
@@ -212,8 +183,13 @@ int main()
             {
                 ServerWaitForClient(&server);
                 ServerPrint(&server);
+
+
+            	
             }
 
+
+        		
             ServerStop(&server);
             break;
         }

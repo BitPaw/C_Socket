@@ -56,10 +56,10 @@ void ServerStop(Server* server)
     }
 }
 
-unsigned long ThreadServerHandleClientIO(Client* client)
+unsigned long ThreadServerHandleClientIO(void* clientRaw)
 {
-    SocketRead(&client->Socket);
-
+    Client* client = (Client*)clientRaw;
+	
     SocketWrite
     (
         &client->Socket,
@@ -76,13 +76,26 @@ unsigned long ThreadServerHandleClientIO(Client* client)
         "</HTML>"
     );
 
-    
+    char* message;
+	
+    do
+    {
+        SocketRead(&client->Socket);
+        message = &client->Socket.Message[0];
+    	
+        printf("[Client][%i] %s\n", client->Socket.ID,  message);
+    } while (memcmp("QUIT", message, 4) != 0);
+	
+    SocketWrite(&client->Socket, "ACK_QUIT");
 
+	
     SocketClose(&client->Socket);
-
     client->State = Offline;    
-
-    //ServerUnRegisterClient(server, &client);
+    printf("[System] Client disconnected %i\n", client->Socket.ID);
+	
+    //ServerUnRegisterClient(this, &client);
+	
+    return 0;
 }
 
 void ServerWaitForClient(Server* server)
@@ -93,7 +106,7 @@ void ServerWaitForClient(Server* server)
 
     SocketAwaitConnection(&server->Socket, &client->Socket);
       
-    if(client->Socket.ID == -1)
+    if(-1 == client->Socket.ID)
     {
         client->State = Invalid;
         return;

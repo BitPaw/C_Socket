@@ -21,7 +21,7 @@
 
 typedef struct IOSocket_
 {
-	unsigned int ID;
+	int ID;
 	struct sockaddr_in Adress;
 
 	unsigned short Port;
