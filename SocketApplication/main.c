@@ -196,7 +196,15 @@ int main()
         }
     }
 
+
+
+
+#ifdef _WIN32
     system("pause");
+#else
+    printf("Terminated\n");
+#endif
+
 
     return 0;
 }
