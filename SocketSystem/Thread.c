@@ -1,6 +1,7 @@
 #include "Thread.h"
-
+#ifdef linux
 #include <pthread.h>
+#endif
 
 #ifdef linux
 void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter)
