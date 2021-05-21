@@ -2,18 +2,26 @@
 #include <stdio.h>
 #include "Server.h"
 #include "Thread.h"
+#include <stdlib.h>
+
+void OnMessageRecieved(Server* server, CommandToken* commandToken)
+{
+   printf("[Client][%i] %s\n", commandToken->ClientSocketID, commandToken->CommandRaw);
+}
 
 void ServerInitialize(Server* server)
 {
-    server->State = Invalid;
+    server->State = ConnectionInvalid;
     server->ClientList = 0;
     server->NumberOfConnectedClients = 0;
     server->NumberOfMaximalClients = 10;
-    server->ClientList = calloc(server->NumberOfMaximalClients, sizeof(Client));
+    server->ClientList = malloc(server->NumberOfMaximalClients * sizeof(Client));
 
     for (size_t i = 0; i < server->NumberOfMaximalClients; i++)
     {
-        ClientInitialize(&server->ClientList[i]);
+        Client* client = &server->ClientList[i];
+
+        ClientInitialize(client);
     }
 
     SocketInitialize(&server->Socket);
@@ -25,7 +33,7 @@ Client* GetNextClient(Server* server)
     {
         Client* client = &server->ClientList[i];
 
-        if (client->State == Invalid || client->State == Offline)
+        if (client->State == ConnectionInvalid || client->State == ConnectionOffline)
         {
             return client;
         }
@@ -40,41 +48,44 @@ void ServerStart(Server* server, unsigned short port)
     
     if (errorCode == NoError)
     {
-        server->State = Online;
+        server->State = ConnectionOnline;
     }
 }
 
 void ServerStop(Server* server)
 {
-    char isRunning = server->State = Online;
+    char isRunning = server->State = ConnectionOnline;
 
     if (isRunning)
     {
-        server->State = Offline;
+        server->State = ConnectionOffline;
         
         SocketClose(&server->Socket);
     }
 }
 
-unsigned long ThreadServerHandleClientIO(void* clientRaw)
+
+
+unsigned long ThreadServerHandleClientIO(Client* client)
 {
-    Client* client = (Client*)clientRaw;
-	
-    SocketWrite
+    char bzffer[60];
+
+    sprintf
     (
-        &client->Socket,
-        "HTTP/1.0 200 OK\r\n\r\n\n"
-        "<HTML>"
-        "<h1> Hello from the Socket</h1>"
+        bzffer,         
+        "Connected to a "
 #ifdef linux
-        "<h2>Linux</h2>"
+        "Linux"
 #endif    
 
 #ifdef _WIN32
-        "<h2>Windows</h2>"
-#endif     
-        "</HTML>"
+        "Windows"
+#endif    
+        " as (%i)",
+        client->Socket.ID
     );
+
+    SocketWrite(&client->Socket, bzffer);
 
     char* message;
 	
@@ -82,15 +93,23 @@ unsigned long ThreadServerHandleClientIO(void* clientRaw)
     {
         SocketRead(&client->Socket);
         message = &client->Socket.Message[0];
+
+       CommandToken commandToken;
+
+       CommandTokenParse(&commandToken, message);
+       commandToken.ClientSocketID = client->Socket.ID;
     	
-        printf("[Client][%i] %s\n", client->Socket.ID,  message);
+      
+        // To main Thread
+
+       
     } while (memcmp("QUIT", message, 4) != 0);
 	
     SocketWrite(&client->Socket, "ACK_QUIT");
 
 	
     SocketClose(&client->Socket);
-    client->State = Offline;    
+    client->State = ConnectionOffline;
     printf("[System] Client disconnected %i\n", client->Socket.ID);
 	
     //ServerUnRegisterClient(this, &client);
@@ -108,11 +127,11 @@ void ServerWaitForClient(Server* server)
       
     if(-1 == client->Socket.ID)
     {
-        client->State = Invalid;
+        client->State = ConnectionInvalid;
         return;
     }
 
-    client->State = Online;
+    client->State = ConnectionOnline;
 
     ServerRegisterClient(server, client);
     
@@ -142,20 +161,19 @@ void ServerUnRegisterClient(Server* server, Client* client)
 {
     server->NumberOfConnectedClients--;
 
-    printf("[Server] Client(%i) unregistered: %i\n", client->ID, client->Socket.ID);
+    printf("[Server] Client (%i) unregistered.\n", client->Socket.ID);
 
-    client->ID = -1;
 }
 
 void ServerRegisterClient(Server* server, Client* client)
 {
-    client->ID = server->NumberOfConnectedClients++;
+    server->NumberOfConnectedClients++;
 
    // server->ClientList = realloc(server->ClientList, ++server->NumberOfConnectedClients);
 
     //server->ClientList[server->NumberOfConnectedClients - 1] = *client;  
 
-    printf("[Server] New client(%i) registered: %i\n", client->ID, client->Socket.ID);
+    printf("[Server] New client (%i) registered.\n",client->Socket.ID);
 
 
 }

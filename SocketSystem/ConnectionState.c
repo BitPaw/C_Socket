@@ -5,13 +5,13 @@ const char* ConnectionStateToString(ConnectionState state)
     switch (state)
     {
         default:
-        case Invalid:
+        case ConnectionInvalid:
             return "Invalid";
 
-        case Online:
+        case ConnectionOnline:
             return "Online";
 
-        case Offline:
+        case ConnectionOffline:
             return "Offline";
     }
 }

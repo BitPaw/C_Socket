@@ -18,9 +18,6 @@
     <ClCompile Include="CommandToken.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="Server.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>

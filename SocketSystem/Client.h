@@ -8,7 +8,6 @@
 typedef struct Client_
 {
     ConnectionState State;
-    int ID;
     char* IP;
     IOSocket Socket;
 

@@ -3,10 +3,10 @@
 
 typedef enum ConnectionState_
 {
-    Invalid,
+    ConnectionInvalid,
 
-    Offline,
-    Online,
+    ConnectionOffline,
+    ConnectionOnline,
 
 }ConnectionState;
 

@@ -1,13 +1,13 @@
 #include "IOSocket.h"
-
 #include <stdio.h>
-
 
 void SocketInitialize(IOSocket* socket)
 {
     socket->ID = -1;
-    //socket->Adress = 0; 
     socket->Port = -1;
+    memset(socket->Message, 0, SocketBufferSize);
+
+    //socket->Adress = 0; 
 
 #ifdef _WIN32
     //socket->WindowsSocketAgentData;
@@ -69,7 +69,8 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
         return SocketBindingFailure;
     }
 
-    int listeningResult = listen(ioSocket->ID, 10);
+    int maximalClientsWaitingInQueue = 10;
+    int listeningResult = listen(ioSocket->ID, maximalClientsWaitingInQueue);
 
     if (listeningResult == -1)
     {
@@ -96,10 +97,9 @@ void SocketClose(IOSocket* socket)
 
 void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
 {
-    // &clientSocket->Adress, sizeof(clientSocket->Adress)
+    const int adressDataLength = sizeof(clientSocket->Adress);
 
-    clientSocket->ID = accept(serverSocket->ID, 0, 0);
-  
+    clientSocket->ID = accept(serverSocket->ID, &clientSocket->Adress, &adressDataLength);
 }
 
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
@@ -194,34 +194,53 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
     return NoError;
 }
 
-char IsValidIP(char* ipAdress)
+/*
+  Check if the given IPv4 is Valid
+
+  Returns the following:
+  0 - Valid IPv4
+  1 - Nullpointer as Parameter
+  2 - Invalid Character (only 0-9 or .)
+  3 - Octet too large (>255)
+  4 - Too long (>15)
+  5 - Too many Octets (more that 4)
+*/
+char IsValidIPv4(char* ipAdress)
 {
-    const unsigned int expectedDots = 3;
-    const unsigned int minimalSize = 7; // 0.0.0.0
-    const unsigned int maximalSize = 15; //255.255.255.255
+    const unsigned char resultIPv4OK = 0;
+    const unsigned char resultIPv4NullPointer = 1;
+    const unsigned char resultIPv4InvalidCharacter = 2;
+    const unsigned char resultIPv4OctetTooLarge = 3;
+    const unsigned char resultIPv4InvalidLength = 4;
+    const unsigned char resultIPv4InvalidOctetAmount = 5;
+
+    const unsigned char expectedDots = 3;
+    const unsigned char minimalSize = 7; // 0.0.0.0
+    const unsigned char maximalSize = 15; //255.255.255.255
+
     unsigned int index = 0;
     unsigned int length = 0;
     unsigned int countedDots = 0;
     unsigned char hasValidLength = 0;
-    unsigned char hasEnigthDots = 0;
+    unsigned char hasEnoghDots = 0;
 
     unsigned short octetValue = 0;
     unsigned short exponent = 100;
 
     if (ipAdress == 0)
     {
-        return 0;
+        return resultIPv4NullPointer;
     }
 
-    for ( ; ipAdress[index] != '\0'; index++)
+    for ( ; ipAdress[index] != '\0' && index < maximalSize; index++)
     {
-        char character = ipAdress[index] ;
+        char character = ipAdress[index];
         char isDot = character == '.';
         char isInRange = (character >= '0' && character <= '9') || character;
 
         if (!isInRange)
         {
-            return 0;
+            return resultIPv4InvalidCharacter;
         }
 
         if (isDot)
@@ -236,7 +255,7 @@ char IsValidIP(char* ipAdress)
 
             if (octetValue > 255)
             {
-                return 0;
+                return resultIPv4OctetTooLarge;
             }
 
             exponent /= 10;
@@ -246,20 +265,19 @@ char IsValidIP(char* ipAdress)
     }
 
     hasValidLength = length >= minimalSize && length <= maximalSize;
-    hasEnigthDots = countedDots == expectedDots;
+    hasEnoghDots = countedDots == expectedDots;
 
     if (!hasValidLength)
     {
-        return 0;
+        return resultIPv4InvalidLength;
     }
 
-    if (!hasEnigthDots)
+    if (!hasEnoghDots)
     {
-        return 0;
+        return resultIPv4InvalidOctetAmount;
     }
 
-
-    return 1;
+    return resultIPv4OK;
 }
 
 

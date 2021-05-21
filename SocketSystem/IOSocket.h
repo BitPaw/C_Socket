@@ -21,12 +21,11 @@
 
 typedef struct IOSocket_
 {
-	int ID;
-	struct sockaddr_in Adress;
-
+	unsigned int ID;
 	unsigned short Port;
-
 	char Message[SocketBufferSize];
+
+	struct sockaddr_in Adress;
 
 #ifdef _WIN32
 	WSADATA WindowsSocketAgentData;
@@ -41,7 +40,7 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket);
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
 SocketErrorCode SocketRead(IOSocket* socket);
 SocketErrorCode SocketWrite(IOSocket* socket, char* message);
-char IsValidIP(char* ipAdress);
+char IsValidIPv4(char* ipAdress);
 
 #ifdef _WIN32
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket);

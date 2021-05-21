@@ -6,11 +6,13 @@
 
 void ClientInitialize(Client* client)
 {
-	client->State = Invalid;
-	client->ID = -1;
+	client->State = ConnectionInvalid;
 	client->IP = 0;
 
+	client->ConnectedServerID = -1;
+
 	SocketInitialize(&client->Socket);
+	SocketInitialize(&client->ConnectedServerData);
 }
 
 void ClientConnect(Client* client, char* ip, unsigned short port)
@@ -21,11 +23,11 @@ void ClientConnect(Client* client, char* ip, unsigned short port)
 
 	if (errorCode != NoError)
 	{
-		client->State = Offline;
+		client->State = ConnectionOffline;
 		return;
 	}
 
-	client->State = Online;
+	client->State = ConnectionOnline;
 }
 
 void ClientSendCommand(Client* client)
@@ -35,7 +37,7 @@ void ClientSendCommand(Client* client)
 
 void ClientDisconnect(Client* client)
 {
-		client->State = Offline;
+		client->State = ConnectionOffline;
 }
 
 unsigned long ThreadClientHandleRead(void* clientRaw)
@@ -77,6 +79,6 @@ unsigned long ThreadClientHandleRead(void* clientRaw)
 
     printf("[System] Closing connection.\n");
     SocketClose(&client->Socket);
-    client->State = Offline;
+    client->State = ConnectionOffline;
     return 0;
 }
