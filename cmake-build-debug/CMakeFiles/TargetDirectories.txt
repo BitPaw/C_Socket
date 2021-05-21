@@ -1,0 +1,3 @@
+/home/test/Desktop/BS1_Praktikum/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/test/Desktop/BS1_Praktikum/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/test/Desktop/BS1_Praktikum/cmake-build-debug/CMakeFiles/BS1_Praktikum.dir

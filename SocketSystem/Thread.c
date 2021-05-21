@@ -1,10 +1,13 @@
 #include "Thread.h"
+
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void* parameter)
 {
 #ifdef linux
-    thread->ID = pthread_create(&thread_id, NULL, myThreadFun, NULL);
+    //thread->ID = pthread_create(&thread_id, NULL, myThreadFun, NULL);
 #endif
 
 #ifdef _WIN32
@@ -22,7 +25,7 @@ void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void*
 void ThreadWaitForFinish(Thread* thread)
 {
 #ifdef linux
-    pthread_join(thread->ID, NULL);
+    //pthread_join(thread->ID, NULL);
 #endif 
 
 #ifdef _WIN32

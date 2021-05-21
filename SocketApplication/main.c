@@ -1,18 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-#ifdef linux
-// This is stupid... but visual studio code makes me do it.. help!
-#include "Server.c" 
-#include "IOSocket.c"
-#include "ConnectionState.c"
-#include "Client.c"
-#elif _WIN32
-// Normal Include
 #include "../SocketSystem/Server.h"
 #include "../SocketSystem/IOSocket.h"
 #include "../SocketSystem/Client.h"
-#endif
+
 
 #define ScanfInputTag "%30[^\n]"
 

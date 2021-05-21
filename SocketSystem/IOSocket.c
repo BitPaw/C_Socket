@@ -149,7 +149,7 @@ SocketErrorCode SocketRead(IOSocket* socket)
     memset(socket->Message, 0, SocketBufferSize);
 
 #ifdef linux
-    byteRead = read(socket->ID, &inputBuffer[0], inputBufferSize - 1);
+    byteRead = read(socket->ID, &socket->Message[0], SocketBufferSize - 1);
 #elif _WIN32
     byteRead = recv(socket->ID, &socket->Message[0], SocketBufferSize - 1, 0);
 #endif
