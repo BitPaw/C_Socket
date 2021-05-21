@@ -1,16 +1,17 @@
 #include "Thread.h"
 
-#ifdef _WIN32
-#include <windows.h>
+#include <pthread.h>
+
+#ifdef linux
+void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter)
+{
+    thread->ID = pthread_create(&thread->ID, 0, threadTask, parameter);
+}
 #endif
 
+#ifdef _WIN32
 void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void* parameter)
 {
-#ifdef linux
-    //thread->ID = pthread_create(&thread_id, NULL, myThreadFun, NULL);
-#endif
-
-#ifdef _WIN32
 	const LPSECURITY_ATTRIBUTES lpThreadAttributes = NULL;
 	const SIZE_T dwStackSize = NULL;
 	const LPTHREAD_START_ROUTINE lpStartAddress = (LPTHREAD_START_ROUTINE)threadTask;
@@ -19,8 +20,9 @@ void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void*
 	const LPDWORD lpThreadId = NULL;
 
     thread->Handle = CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
-#endif
 }
+#endif
+
 
 void ThreadWaitForFinish(Thread* thread)
 {
@@ -32,9 +34,9 @@ void ThreadWaitForFinish(Thread* thread)
 	
 #endif 
 
-
-   
 }
+
+
 /*
 void forkstuff()
 {

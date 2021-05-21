@@ -1,5 +1,6 @@
 #include "CommandToken.h"
 #include <stdlib.h>
+#include <string.h>
 
 void CommandTokenInitialize(CommandToken* commandToken)
 {
@@ -15,9 +16,9 @@ void CommandTokenParse(CommandToken* commandToken, char* dataString)
 
     for (; dataString[lengh] != '\0' ; lengh++)
     {
-      
+
     }
 
-    memset(commandToken->CommandRaw, 0, lengh+1);
+    commandToken->CommandRaw = calloc(lengh+1 , sizeof(char));
     memcpy(commandToken->CommandRaw, dataString, lengh);     
 }

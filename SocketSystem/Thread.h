@@ -21,7 +21,14 @@ typedef struct Thread_
 
 }Thread;
 
+#ifdef linux
+void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter);
+#endif
+
+#ifdef _WIN32
 void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void* parameter);
+#endif
+
 void ThreadWaitForFinish(Thread* thread);
 
 #endif

@@ -101,6 +101,7 @@ int main()
 
                 if (hasUserEnteredIP)
                 {
+                    //TODO: buggy with "192.168.178.42" please fix
                     char result = IsValidIPv4(inputDataBuffer);
 
                     if (result == 0)
@@ -125,7 +126,7 @@ int main()
             printf(BannerFooter);
             printf(BannerConnecting);
 
-            ClientConnect(&client, &inputDataBuffer[0], port);
+            ClientConnect(&client,&inputDataBuffer[0], port);
 
             if (client.State == ConnectionOnline)
             {

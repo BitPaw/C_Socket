@@ -94,15 +94,15 @@ unsigned long ThreadServerHandleClientIO(Client* client)
         SocketRead(&client->Socket);
         message = &client->Socket.Message[0];
 
-       CommandToken commandToken;
+        CommandToken commandToken;
+        CommandTokenParse(&commandToken, message);
+        commandToken.ClientSocketID = client->Socket.ID;
 
-       CommandTokenParse(&commandToken, message);
-       commandToken.ClientSocketID = client->Socket.ID;
-    	
-      
-        // To main Thread
+        //TODO: ENTF: Debug show raw Message
+        printf("[Client][%i] %s\n", client->Socket.ID, commandToken.CommandRaw);
 
-       
+        //TODO: To main Thread [commandToken]
+
     } while (memcmp("QUIT", message, 4) != 0);
 	
     SocketWrite(&client->Socket, "ACK_QUIT");

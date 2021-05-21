@@ -4,8 +4,6 @@ project(BS1_Praktikum C)
 set(CMAKE_C_STANDARD 11)
 
 include_directories(SocketApplication)
-#include_directories(SocketFileManager)
-#include_directories(SocketSystem)
 
 add_executable(BS1_Praktikum
         SocketApplication/main.c
@@ -24,3 +22,6 @@ add_executable(BS1_Praktikum
         SocketSystem/SocketErrorCode.h
         SocketSystem/Thread.c
         SocketSystem/Thread.h)
+
+find_package(Threads REQUIRED)
+target_link_libraries(${PROJECT_NAME} Threads::Threads)
