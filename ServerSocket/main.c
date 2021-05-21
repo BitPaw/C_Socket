@@ -139,7 +139,7 @@ int main()
             {
                 ClearBuffer();
                 //fgets(&inputDataBuffer[0], 40, stdin);
-                scanf("%10[0-9a-zA-Z ]", &inputDataBuffer[0]);
+                scanf("%30[^\n]", &inputDataBuffer[0]);
 
                 if (memcmp("q", &inputDataBuffer[0], 1) == 0)
                 {
