@@ -2,6 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
+#endif
+
+#if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
+
 void SocketInitialize(IOSocket* socket)
 {
     socket->ID = -1;
@@ -10,7 +19,7 @@ void SocketInitialize(IOSocket* socket)
 
     //socket->Adress = 0; 
 
-#ifdef _WIN32
+#ifdef OSWindows
     //socket->WindowsSocketAgentData;
 #endif
 }
@@ -26,7 +35,7 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
     ioSocket->ID = -1;
     ioSocket->Port = port;
 
-#ifdef _WIN32
+#ifdef OSWindows
     SocketErrorCode errorCode = WindowsSocketAgentStartup(&ioSocket);
 
     if (errorCode != NoError)
@@ -50,9 +59,9 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
 
     int opval = 1;
 
-#if defined(linux) || defined(__APPLE__)
+#ifdef OSUnix
     char* options = SO_REUSEADDR | SO_REUSEPORT;
-#elif _WIN32
+#elif defined(OSWindows)
     char* options = SO_REUSEADDR;
 #endif  
 
@@ -83,15 +92,13 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
 
 void SocketClose(IOSocket* socket)
 {
-#ifdef _WIN32
+#ifdef OSWindows
     shutdown(socket->ID, SD_SEND);
     closesocket(socket->ID);
     //WSACleanup();
-#endif // _WIN32  
-
-#ifdef linux
+#elif defined(OSUnix)
     close(socket->ID);
-#endif // linux    
+#endif  
 
     SocketInitialize(socket);
 }
@@ -112,14 +119,14 @@ SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, ch
     int length = sizeof(clientSocket->Adress);
     const struct sockaddr* socketAdressPointer = &(clientSocket->Adress);
    
-#ifdef _WIN32
+#ifdef OSWindows
     errorCode = WindowsSocketAgentStartup(&clientSocket);
 
     if (errorCode != NoError)
     {
         return errorCode;
     }
-#endif // _WIN32
+#endif
 
     clientSocket->Adress.sin_family = adressFamily;
     clientSocket->Adress.sin_addr.s_addr = inet_addr(ipAdress);
@@ -149,9 +156,9 @@ SocketErrorCode SocketRead(IOSocket* socket)
 
     memset(socket->Message, 0, SocketBufferSize);
 
-#if defined(linux) || defined(__APPLE__)
+#if OSUnix
     byteRead = read(socket->ID, &socket->Message[0], SocketBufferSize - 1);
-#elif defined(_WIN32)
+#elif defined(OSWindows)
     byteRead = recv(socket->ID, &socket->Message[0], SocketBufferSize - 1, 0);
 #endif
 
@@ -181,9 +188,9 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 
     //essageLengh += 2; // add cause of new length.
 
-#if defined(linux) || defined(__APPLE__)
+#if OSUnix
     writtenBytes = write(socket->ID, message, messageLengh);
-#elif defined(_WIN32)
+#elif defined(OSWindows)
     writtenBytes = send(socket->ID, message, messageLengh, 0);
 #endif  
 
@@ -283,7 +290,7 @@ char IsValidIPv4(char* ipAdress)
 
 
 
-#ifdef _WIN32
+#ifdef OSWindows
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
 {
     WORD wVersionRequested = MAKEWORD(2, 2);
@@ -311,4 +318,4 @@ SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
             return NoError;
     }
 }
-#endif // !_WIN32
+#endif

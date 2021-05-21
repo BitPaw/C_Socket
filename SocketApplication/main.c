@@ -6,6 +6,14 @@
 #include "../SocketSystem/IOSocket.h"
 #include "../SocketSystem/Client.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
+#endif
+
+#if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
 
 #define ScanfInputTag "%30[^\n]"
 
@@ -199,7 +207,7 @@ int main()
 
 
 
-#ifdef _WIN32
+#ifdef OSWindows
     system("pause");
 #else
     printf("Terminated\n");

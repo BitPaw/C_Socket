@@ -1,14 +1,21 @@
 #pragma once
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
+#endif
+
 #if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
+
+#if OSUnix
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#endif
-
-#ifdef _WIN32
+#elif defined(OSWindows)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
 #endif
@@ -27,7 +34,7 @@ typedef struct IOSocket_
 
 	struct sockaddr_in Adress;
 
-#ifdef _WIN32
+#ifdef OSWindows
 	WSADATA WindowsSocketAgentData;
 #endif
 }IOSocket;
@@ -42,7 +49,7 @@ SocketErrorCode SocketRead(IOSocket* socket);
 SocketErrorCode SocketWrite(IOSocket* socket, char* message);
 char IsValidIPv4(char* ipAdress);
 
-#ifdef _WIN32
+#ifdef OSWindows
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket);
 #endif
 

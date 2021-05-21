@@ -1,16 +1,22 @@
 #include "Thread.h"
-#if defined(linux) || defined(__APPLE__)
-#include <pthread.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
 #endif
 
 #if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
+
+#ifdef OSUnix
 void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter)
 {
     thread->ID = pthread_create(&thread->ID, 0, threadTask, parameter);
 }
 #endif
 
-#ifdef _WIN32
+#ifdef OSWindows
 void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void* parameter)
 {
 	const LPSECURITY_ATTRIBUTES lpThreadAttributes = NULL;
@@ -27,12 +33,8 @@ void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void*
 
 void ThreadWaitForFinish(Thread* thread)
 {
-#if defined(linux) || defined(__APPLE__)
+#ifdef OSUnix
     //pthread_join(thread->ID, NULL);
-#endif 
-
-#ifdef _WIN32
-	
 #endif 
 
 }

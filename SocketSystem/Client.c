@@ -4,6 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
+#endif
+
+#if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
+
 void ClientInitialize(Client* client)
 {
 	client->State = ConnectionInvalid;
@@ -43,11 +52,11 @@ void ClientDisconnect(Client* client)
 
 
 
-#if defined(linux) || defined(__APPLE__)
+#ifdef OSUnix
 void* ThreadClientHandleRead(Client* client)
 #endif
 
-#ifdef _WIN32
+#ifdef OSWindows
 unsigned long ThreadClientHandleRead(Client* client)
 #endif
 

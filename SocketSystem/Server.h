@@ -3,6 +3,15 @@
 #include "IOSocket.h"
 #include "CommandToken.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
+#endif
+
+#if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
+
 #ifndef ServerIncluded
 #define ServerIncluded
 
@@ -26,11 +35,9 @@ void ServerPrint(Server* server);
 void ServerRegisterClient(Server* server, Client* client);
 void ServerUnRegisterClient(Server* server, Client* client);
 
-#if defined(linux) || defined(__APPLE__)
+#if OSUnix
 void* ThreadServerHandleClientIO(Client* client);
-#endif
-
-#ifdef _WIN32
+#elif defined(OSWindows)
 unsigned long ThreadServerHandleClientIO(Client* client);
 #endif
 

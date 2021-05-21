@@ -4,6 +4,16 @@
 #include "Thread.h"
 #include <stdlib.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OSWindows
+#endif
+
+#if defined(linux) || defined(__APPLE__)
+#define OSUnix
+#endif
+
+
+
 void OnMessageRecieved(Server* server, CommandToken* commandToken)
 {
    printf("[Client][%i] %s\n", commandToken->ClientSocketID, commandToken->CommandRaw);
@@ -66,11 +76,9 @@ void ServerStop(Server* server)
 
 
 
-#if defined(linux) || defined(__APPLE__)
+#ifdef OSUnix
 void* ThreadServerHandleClientIO(Client* client)
-#endif
-
-#ifdef _WIN32
+#elif defined(OSWindows)
 unsigned long ThreadServerHandleClientIO(Client* client)
 #endif
 {
@@ -88,7 +96,7 @@ unsigned long ThreadServerHandleClientIO(Client* client)
         "MAC_OS"
 #endif
 
-#ifdef _WIN32
+#ifdef OSWindows
         "Windows"
 #endif    
         " as (%i)",
