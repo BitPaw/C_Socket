@@ -1,4 +1,4 @@
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 #include <pthread.h>
 #endif
 
@@ -11,7 +11,7 @@
 
 typedef struct Thread_
 {
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 	pthread_t ID;
 #endif
 
@@ -21,7 +21,7 @@ typedef struct Thread_
 
 }Thread;
 
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter);
 #endif
 

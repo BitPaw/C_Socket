@@ -1,9 +1,9 @@
 #include "Thread.h"
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 #include <pthread.h>
 #endif
 
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter)
 {
     thread->ID = pthread_create(&thread->ID, 0, threadTask, parameter);
@@ -27,7 +27,7 @@ void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void*
 
 void ThreadWaitForFinish(Thread* thread)
 {
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
     //pthread_join(thread->ID, NULL);
 #endif 
 

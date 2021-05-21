@@ -1,5 +1,6 @@
 #include "IOSocket.h"
 #include <stdio.h>
+#include <string.h>
 
 void SocketInitialize(IOSocket* socket)
 {
@@ -49,7 +50,7 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
 
     int opval = 1;
 
-#if linux
+#if defined(linux) || defined(__APPLE__)
     char* options = SO_REUSEADDR | SO_REUSEPORT;
 #elif _WIN32
     char* options = SO_REUSEADDR;
@@ -148,9 +149,9 @@ SocketErrorCode SocketRead(IOSocket* socket)
 
     memset(socket->Message, 0, SocketBufferSize);
 
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
     byteRead = read(socket->ID, &socket->Message[0], SocketBufferSize - 1);
-#elif _WIN32
+#elif defined(_WIN32)
     byteRead = recv(socket->ID, &socket->Message[0], SocketBufferSize - 1, 0);
 #endif
 
@@ -180,9 +181,9 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 
     //essageLengh += 2; // add cause of new length.
 
-#if linux
+#if defined(linux) || defined(__APPLE__)
     writtenBytes = write(socket->ID, message, messageLengh);
-#elif _WIN32
+#elif defined(_WIN32)
     writtenBytes = send(socket->ID, message, messageLengh, 0);
 #endif  
 

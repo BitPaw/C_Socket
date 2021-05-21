@@ -25,7 +25,15 @@ void ServerWaitForClient(Server* server);
 void ServerPrint(Server* server);
 void ServerRegisterClient(Server* server, Client* client);
 void ServerUnRegisterClient(Server* server, Client* client);
+
+#if defined(linux) || defined(__APPLE__)
+void* ThreadServerHandleClientIO(Client* client);
+#endif
+
+#ifdef _WIN32
 unsigned long ThreadServerHandleClientIO(Client* client);
+#endif
+
 Client* GetNextClient(Server* server);
 
 #endif

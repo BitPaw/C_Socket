@@ -66,7 +66,13 @@ void ServerStop(Server* server)
 
 
 
+#if defined(linux) || defined(__APPLE__)
+void* ThreadServerHandleClientIO(Client* client)
+#endif
+
+#ifdef _WIN32
 unsigned long ThreadServerHandleClientIO(Client* client)
+#endif
 {
     char bzffer[60];
 
@@ -76,7 +82,11 @@ unsigned long ThreadServerHandleClientIO(Client* client)
         "Connected to a "
 #ifdef linux
         "Linux"
-#endif    
+#endif
+
+#ifdef __APPLE__
+        "MAC_OS"
+#endif
 
 #ifdef _WIN32
         "Windows"

@@ -1,8 +1,8 @@
 #include "Client.h"
+#include "Server.h"
 
 #include <stdio.h>
-
-#include "Server.h"
+#include <string.h>
 
 void ClientInitialize(Client* client)
 {
@@ -40,10 +40,18 @@ void ClientDisconnect(Client* client)
 		client->State = ConnectionOffline;
 }
 
-unsigned long ThreadClientHandleRead(void* clientRaw)
-{
-    Client* client = (Client*)clientRaw;
 
+
+
+#if defined(linux) || defined(__APPLE__)
+void* ThreadClientHandleRead(Client* client)
+#endif
+
+#ifdef _WIN32
+unsigned long ThreadClientHandleRead(Client* client)
+#endif
+
+{
     unsigned char readErrorCounter = 0;
     const unsigned char readErrorCounterThreshold = 5;
 

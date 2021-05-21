@@ -22,6 +22,13 @@ void ClientConnect(Client* client, char* ip, unsigned short port);
 void ClientSendCommand(Client* client);
 void ClientDisconnect(Client* client);
 
-unsigned long ThreadClientHandleRead(void* clientRaw);
+#if defined(linux) || defined(__APPLE__)
+void* ThreadClientHandleRead(Client* client);
+#endif
+
+#ifdef _WIN32
+unsigned long ThreadClientHandleRead(Client* client);
+#endif
+
 
 #endif
