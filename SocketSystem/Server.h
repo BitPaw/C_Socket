@@ -35,7 +35,7 @@ void ServerPrint(Server* server);
 void ServerRegisterClient(Server* server, Client* client);
 void ServerUnRegisterClient(Server* server, Client* client);
 
-#if OSUnix
+#ifdef OSUnix
 void* ThreadServerHandleClientIO(Client* client);
 #elif defined(OSWindows)
 unsigned long ThreadServerHandleClientIO(Client* client);

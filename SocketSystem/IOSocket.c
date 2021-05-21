@@ -156,7 +156,7 @@ SocketErrorCode SocketRead(IOSocket* socket)
 
     memset(socket->Message, 0, SocketBufferSize);
 
-#if OSUnix
+#ifdef OSUnix
     byteRead = read(socket->ID, &socket->Message[0], SocketBufferSize - 1);
 #elif defined(OSWindows)
     byteRead = recv(socket->ID, &socket->Message[0], SocketBufferSize - 1, 0);
@@ -188,7 +188,7 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 
     //essageLengh += 2; // add cause of new length.
 
-#if OSUnix
+#ifdef OSUnix
     writtenBytes = write(socket->ID, message, messageLengh);
 #elif defined(OSWindows)
     writtenBytes = send(socket->ID, message, messageLengh, 0);
