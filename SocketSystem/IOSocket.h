@@ -18,9 +18,12 @@
 #elif defined(OSWindows)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
+#include <WS2tcpip.h>
 #endif
 
 #include "SocketErrorCode.h"
+#include "IPVersion.h"
+
 #define SocketBufferSize 1024u
 
 #ifndef IOSocketInclude
@@ -32,22 +35,29 @@ typedef struct IOSocket_
 	unsigned short Port;
 	char Message[SocketBufferSize];
 
-	struct sockaddr_in Adress;
+	IPVersion IPMode;
+
+	struct sockaddr_in AdressIPv4; // Used only in IPv4
+
 
 #ifdef OSWindows
+	ADDRINFO* AdressIPv6;
 	WSADATA WindowsSocketAgentData;
 #endif
 }IOSocket;
 
 
 void SocketInitialize(IOSocket* socket);
-SocketErrorCode SocketOpen(IOSocket* socket, unsigned short port);
+SocketErrorCode SocketOpen(IOSocket* socket, IPVersion ipVersion, unsigned short port);
 void SocketClose(IOSocket* socket);
 void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket);
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
 SocketErrorCode SocketRead(IOSocket* socket);
 SocketErrorCode SocketWrite(IOSocket* socket, char* message);
-char IsValidIPv4(char* ipAdress);
+
+// Private
+static int SocketGetAdressFamily(IPVersion ipVersion);
+static char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip, unsigned short port);
 
 #ifdef OSWindows
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket);

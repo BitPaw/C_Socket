@@ -28,7 +28,7 @@ typedef struct Server_
 void OnCommandRecieved(Server* server, CommandToken* commandToken);
 
 void ServerInitialize(Server* server);
-void ServerStart(Server* server, unsigned short port);
+void ServerStart(Server* server, IPVersion ipVersion, unsigned short port);
 void ServerStop(Server* server);
 void ServerWaitForClient(Server* server);
 void ServerPrint(Server* server);

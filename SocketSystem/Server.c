@@ -52,13 +52,17 @@ Client* GetNextClient(Server* server)
     return 0;
 }
 
-void ServerStart(Server* server, unsigned short port)
+void ServerStart(Server* server, IPVersion ipVersion, unsigned short port)
 {
-    SocketErrorCode errorCode = SocketOpen(&server->Socket, port);
+    SocketErrorCode errorCode = SocketOpen(&server->Socket, ipVersion, port);
     
     if (errorCode == NoError)
     {
         server->State = ConnectionOnline;
+    }
+    else
+    {
+
     }
 }
 
@@ -106,29 +110,70 @@ unsigned long ThreadServerHandleClientIO(Client* client)
     SocketWrite(&client->Socket, bzffer);
 
     char* message;
+    char quitConnection = 0;
+    char lostConnection = 0;
+    char readingFailureCounter = 0;
+    char readingFailureMaximal = 3;
 	
     do
     {
-        SocketRead(&client->Socket);
+        SocketErrorCode errorCode = SocketRead(&client->Socket);
         message = &client->Socket.Message[0];
 
-        CommandToken commandToken;
-        CommandTokenParse(&commandToken, message);
-        commandToken.ClientSocketID = client->Socket.ID;
+        switch (errorCode)
+        {
+            case NoError:
+            {             
+                CommandToken commandToken;
+                CommandTokenParse(&commandToken, message);
+                commandToken.ClientSocketID = client->Socket.ID;
 
-        //TODO: ENTF: Debug show raw Message
-        printf("[Client][%i] %s\n", client->Socket.ID, commandToken.CommandRaw);
+                readingFailureCounter = 0;
+
+                //TODO: ENTF: Debug show raw Message
+                printf("[Client][%i] %s\n", client->Socket.ID, commandToken.CommandRaw);
+                break;
+            }
+            case SocketRecieveFailure:
+            {       
+                printf("[System] Client (%i) reading failure (%i/%i).\n", client->Socket.ID, readingFailureCounter+1, readingFailureMaximal);
+
+                if (++readingFailureCounter >= readingFailureMaximal)                
+                {                    
+                    lostConnection = 1;
+                }         
+                break;
+            }
+
+            case SocketRecieveConnectionClosed:
+            {               
+                lostConnection = 1;
+                break;
+            }
+        }       
 
         //TODO: To main Thread [commandToken]
 
-    } while (memcmp("QUIT", message, 4) != 0);
-	
-    SocketWrite(&client->Socket, "ACK_QUIT");
 
+        quitConnection = memcmp("QUIT", message, 4) == 0 || lostConnection;
+
+    } while (!quitConnection);
 	
-    SocketClose(&client->Socket);
-    client->State = ConnectionOffline;
-    printf("[System] Client disconnected %i\n", client->Socket.ID);
+
+    if (!lostConnection)
+    {
+        SocketWrite(&client->Socket, "ACK_QUIT");
+
+        SocketClose(&client->Socket);
+        client->State = ConnectionOffline;
+        printf("[System] Client disconnected %i\n", client->Socket.ID);
+    }
+    else
+    {
+        printf("[System] Client (%i) disconnected or lost connection.\n", client->Socket.ID);
+    }
+
+    
 	
     //ServerUnRegisterClient(this, &client);
 	
@@ -164,11 +209,13 @@ void ServerPrint(Server* server)
         "| Socket (Server)    |\n"
         "+--------------------+\n"
         "| ID      : %8i |\n" 
+        "| Mode    : %8s |\n"
         "| Port    : %8i |\n"
         "| State   : %8s |\n"
         "| Clients : %8i |\n"
         "+--------------------+\n",
         server->Socket.ID,
+        server->Socket.IPMode == IPVersion4 ? "IPv4" : "IPv6",
         server->Socket.Port,
         ConnectionStateToString(server->State),
         server->NumberOfConnectedClients

@@ -61,34 +61,48 @@ unsigned long ThreadClientHandleRead(Client* client)
 #endif
 
 {
+    char quitFlag = 0;
     unsigned char readErrorCounter = 0;
-    const unsigned char readErrorCounterThreshold = 5;
+    const unsigned char readErrorCounterThreshold = 3;
 
-    while (1)
+    while (!quitFlag)
     {
         const SocketErrorCode errorCode = SocketRead(&client->Socket);
 
-        if (errorCode == NoError)
+        switch (errorCode)
         {
-            readErrorCounter = 0;
-
-            char* message = &client->Socket.Message[0];
-
-            if (memcmp("ACK_QUIT", message, 8) == 0)
+            case NoError:
             {
-                printf("[Server] Accepted quit request\n");
+                readErrorCounter = 0;
+
+                char* message = &client->Socket.Message[0];
+
+                if (memcmp("ACK_QUIT", message, 8) == 0)
+                {
+                    printf("[Server] Accepted quit request\n");
+                    break;
+                }
+
+                printf("[Server] %s\n", &client->Socket.Message[0]);
                 break;
             }
 
-            printf("[Server] %s\n", &client->Socket.Message[0]);
-        }
-        else
-        {
-            printf("[Error] Failed to read message\n");
-
-            if (readErrorCounter++ > readErrorCounterThreshold)
+            case SocketRecieveFailure:
             {
-                printf("[Error] Too many read errors in a row. Terminating connection.\n");
+                printf("[System] Server reading failure (%i/%i).\n", readErrorCounter + 1, readErrorCounterThreshold);
+
+                if (++readErrorCounter >= readErrorCounterThreshold)
+                {
+                    printf("[Error] Too many read errors in a row. Terminating connection.\n");
+                    quitFlag = 1;
+                }
+                break;
+            }
+
+            case SocketRecieveConnectionClosed:
+            {
+                printf("[Server] Closed/Lost connection.\n");
+                quitFlag = 1;
                 break;
             }
         }

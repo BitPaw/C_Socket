@@ -15,7 +15,7 @@
 #endif
 
 
-#define ScanfInputTag "%30[^\n]"
+#define ScanfInputTag " %50[^\n]"
 
 // system("@cls||clear");
 
@@ -48,6 +48,10 @@ const char BannerSendAndRecieve[] =
 "+---------------------------------------------------------+\n"
 "| Send & Recieve                                          |\n"
 "+---------------------------------------------------------+\n";
+const char ServerUnreachable[] =
+"[Info]  It seems that the server is unreachable\n"
+"        or even offline. Use another IP or try later.\n";
+
 
 void ClearBuffer()
 {
@@ -86,7 +90,8 @@ int main()
         {
             char quitFlag = 0;
             char command = '-';
-            char inputDataBuffer[40];
+            const int bufferLength = 50;
+            char inputDataBuffer[50];
             unsigned short port = DefaultPort;
 
             Thread thread;
@@ -96,55 +101,59 @@ int main()
             printf(BannerConnectToServer);
             printf("[Info]  Port : %i\n", port);
 
-            while (1)
-            {
-                memset(inputDataBuffer, 0, 40);
-                memcpy(inputDataBuffer, TagNotSet, 6);
-
-                printf("[Input] IP   : ");
-                //ClearBuffer();
-                scanf(ScanfInputTag, &inputDataBuffer);
-
-                char hasUserEnteredIP = memcmp(TagNotSet, &inputDataBuffer, 6) != 0;
-
-                if (hasUserEnteredIP)
+            while (1) // Repeat until connected succesfully.
+            {    
+                while (1) // Repeat until the entered IP was valid.
                 {
-                    //TODO: buggy with "192.168.178.42" please fix
-                    char result = IsValidIPv4(inputDataBuffer);
+                    memset(inputDataBuffer, 0, bufferLength);
+                    memcpy(inputDataBuffer, TagNotSet, 6);
 
-                    if (result == 0)
+                    printf("[Input] IP   : ");
+                    fflush(stdout);
+                    fflush(stdin);
+                    int scanResult = scanf(ScanfInputTag, &inputDataBuffer);
+
+                    char hasUserEnteredIP = memcmp(TagNotSet, &inputDataBuffer, 6) != 0;
+
+                    if (hasUserEnteredIP)
                     {
-                        // IP OK     
-                        break;
+                        char result = IsValidIP(inputDataBuffer);
+
+                        if (result == 0)
+                        {                        
+                            break; // IP OK, quit loop.     
+                        }
+                        else
+                        {
+                            printf(InvalidIPInput);
+                        }
                     }
                     else
                     {
-                        printf(InvalidIPInput);
-                    }
+                        printf(NoIPSelected);
+                        memcpy(inputDataBuffer, "127.0.0.1", 10);
+                        break;
+                    }                
+                }     
+
+                printf(BannerFooter);
+                printf(BannerConnecting);
+
+                ClientConnect(&client, &inputDataBuffer[0], port);
+
+                if (client.State == ConnectionOnline)
+                {
+                    printf(ConnectionSuccesful);
+                    break;
                 }
                 else
                 {
-                    printf(NoIPSelected);
-                    memcpy(inputDataBuffer, "127.0.0.1", 10);
-                    break;
+                    printf(ConnectionFailed);
+                    printf(BannerFooter);
                 }
-            }
 
-
-            printf(BannerFooter);
-            printf(BannerConnecting);
-
-            ClientConnect(&client,&inputDataBuffer[0], port);
-
-            if (client.State == ConnectionOnline)
-            {
-                printf(ConnectionSuccesful);
-            }
-            else
-            {
-                printf(ConnectionFailed);
-                printf(BannerFooter);
-                break;
+                printf(BannerConnectToServer);
+                printf(ServerUnreachable);
             }
 
             printf(BannerFooter);
@@ -184,8 +193,32 @@ int main()
         case '1':
         {
             Server server;
+            IPVersion ipVersion;
             ServerInitialize(&server);
-            ServerStart(&server, DefaultPort);
+
+            while (1)
+            {
+                char ipInput = -1; 
+
+                printf("Which IP Version shall be used?\nSelect 4 or 6 : ");
+                scanf(ScanfInputTag, &ipInput);
+
+                if (ipInput == '4')
+                {
+                    ipVersion = IPVersion4;
+                    break;
+                }
+
+                if (ipInput == '6')
+                {
+                    ipVersion = IPVersion6;
+                    break;
+                }
+
+                printf("Invalid IP Version! Check your input.\n");
+            }
+
+            ServerStart(&server, ipVersion, DefaultPort);
 
             ServerPrint(&server);
 

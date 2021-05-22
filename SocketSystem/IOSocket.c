@@ -15,6 +15,9 @@ void SocketInitialize(IOSocket* socket)
 {
     socket->ID = -1;
     socket->Port = -1;
+    socket->IPMode = IPVersionInvalid;
+    socket->AdressIPv6 = 0;
+
     memset(socket->Message, 0, SocketBufferSize);
 
     //socket->Adress = 0; 
@@ -24,67 +27,132 @@ void SocketInitialize(IOSocket* socket)
 #endif
 }
 
-SocketErrorCode SocketOpen(IOSocket* ioSocket, unsigned short port)
-{
-    const int adressFamily = AF_INET;
-    const int streamType = SOCK_STREAM;
-    const int protocol = 0;
-    const int objectSize = sizeof(ioSocket->Adress);
-    const struct sockaddr* socketAdressPointer = &(ioSocket->Adress);
+char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip, unsigned short port)
+{  
+    int adressFamily = SocketGetAdressFamily(ipVersion);
 
+    switch (ipVersion)
+    {
+        case IPVersion4:
+        {
+            memset(&connectionSocket->AdressIPv4, 0, sizeof(connectionSocket->AdressIPv4));
+            connectionSocket->AdressIPv4.sin_family = adressFamily;
+            connectionSocket->AdressIPv4.sin_addr.s_addr = ip == 0 ? htonl(ip) : inet_addr(ip);
+            connectionSocket->AdressIPv4.sin_port = htons(port);
+            break;
+        }
+
+        case IPVersion6:
+        {
+            const int streamType = SOCK_STREAM;
+            ADDRINFO adressIPv6Hint;
+
+            memset(&adressIPv6Hint, 0, sizeof(adressIPv6Hint));
+            adressIPv6Hint.ai_family = adressFamily;
+            adressIPv6Hint.ai_socktype = streamType;
+            adressIPv6Hint.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
+
+            char portString[10];
+            sprintf(portString, "%i", port);
+
+            int result = getaddrinfo(ip, portString, &adressIPv6Hint, &connectionSocket->AdressIPv6);
+
+            if (result != 0)
+            {
+                return -1;
+            }
+
+            break;
+        }
+    }
+
+    return 0;
+}
+
+SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned short port)
+{
+    int adressFamily = SocketGetAdressFamily(ipVersion);
+    const int streamType = SOCK_STREAM;
+    const int protocol = IPPROTO_TCP;
+
+    ioSocket->IPMode = ipVersion;
     ioSocket->ID = -1;
     ioSocket->Port = port;
 
+    // Create Socket
+    {
 #ifdef OSWindows
-    SocketErrorCode errorCode = WindowsSocketAgentStartup(&ioSocket);
+        SocketErrorCode errorCode = WindowsSocketAgentStartup(&ioSocket);
 
-    if (errorCode != NoError)
-    {
-        return errorCode;
+        if (errorCode != NoError)
+        {
+            return errorCode;
+        }
+#endif 
+
+        // Create a socket (IPv4) as a stream.
+        // Returns -1 on failure. ID if succesful. 
+        ioSocket->ID = socket(adressFamily, streamType, protocol);
+
+        if (ioSocket->ID == -1)
+        {
+            return SocketCreationFailure;
+        }
     }
-#endif // _WIN32
 
-    // Create a socket (IPv4) as a stream.
-    // Returns -1 on failure. ID if succesful. 
-    ioSocket->ID = socket(adressFamily, streamType, protocol);
-
-    if (ioSocket->ID == -1)
+    // Set Socket Options
     {
-        return SocketCreationFailure;
-    }
-
-    ioSocket->Adress.sin_family = AF_INET;
-    ioSocket->Adress.sin_addr.s_addr = htonl(INADDR_ANY);
-    ioSocket->Adress.sin_port = htons(port);
-
-    int opval = 1;
-
 #ifdef OSUnix
-    char* options = SO_REUSEADDR | SO_REUSEPORT;
+        char* options = SO_REUSEADDR | SO_REUSEPORT;
 #elif defined(OSWindows)
-    char* options = SO_REUSEADDR;
+        char* options = SO_REUSEADDR;
 #endif  
+        int opval = 1;
+        int optionsocketResult = setsockopt(ioSocket->ID, SOL_SOCKET, options, &opval, sizeof(opval));
 
-    int optionsocketResult = setsockopt(ioSocket->ID, SOL_SOCKET, options, &opval, sizeof(opval));
-
-    if (optionsocketResult == 1)
+        if (optionsocketResult == 1)
+        {
+            return SocketOptionFailure;
+        }
+    }
+       
+    // Bind Socket
     {
-        return SocketOptionFailure;
+        int result;
+        int bindingResult = -1;
+
+        SocketSetupAdress(ioSocket, ipVersion, 0, port);
+
+        switch (ipVersion)
+        {
+            case IPVersion4:
+            {
+                bindingResult = bind(ioSocket->ID, &ioSocket->AdressIPv4, sizeof(ioSocket->AdressIPv4));
+                break;
+            }
+
+            case IPVersion6:
+            {
+                bindingResult = bind(ioSocket->ID, ioSocket->AdressIPv6->ai_addr, ioSocket->AdressIPv6->ai_addrlen);
+                break;
+            }
+        }
+
+        if (bindingResult == -1)
+        {
+            return SocketBindingFailure;
+        }
     }
 
-    int bindingResult = bind(ioSocket->ID, socketAdressPointer, objectSize);
-
-    if (bindingResult == -1)
+    // Listen
     {
-        return SocketBindingFailure;
-    }
+        int maximalClientsWaitingInQueue = 10;
+        int listeningResult = listen(ioSocket->ID, maximalClientsWaitingInQueue);
 
-    int maximalClientsWaitingInQueue = 10;
-    int listeningResult = listen(ioSocket->ID, maximalClientsWaitingInQueue);
-
-    if (listeningResult == -1)
-    {
-        return SocketListeningFailure;
+        if (listeningResult == -1)
+        {
+            return SocketListeningFailure;
+        }
     }
 
     return NoError;
@@ -105,45 +173,75 @@ void SocketClose(IOSocket* socket)
 
 void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
 {
-    const int adressDataLength = sizeof(clientSocket->Adress);
+    switch (serverSocket->IPMode)
+    {
+        case IPVersion4:
+        {
+            const int adressDataLength = sizeof(clientSocket->AdressIPv4);
+            clientSocket->ID = accept(serverSocket->ID, &clientSocket->AdressIPv4, &adressDataLength);
+            break;
+        }
 
-    clientSocket->ID = accept(serverSocket->ID, &clientSocket->Adress, &adressDataLength);
+        case IPVersion6:
+        {
+            clientSocket->AdressIPv6 = calloc(1, sizeof(ADDRINFO));
+            clientSocket->ID = accept(serverSocket->ID, clientSocket->AdressIPv6->ai_addr, clientSocket->AdressIPv6->ai_addrlen);
+            break;
+        }
+    } 
 }
 
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
 {
-    SocketErrorCode errorCode;
-    const int adressFamily = AF_INET;
-    const int streamType = SOCK_STREAM;
-    const int protocol = 0;
-    int length = sizeof(clientSocket->Adress);
-    const struct sockaddr* socketAdressPointer = &(clientSocket->Adress);
+    clientSocket->IPMode = AnalyseIPVersion(ipAdress);
    
+    // Create Socket
+    {
+        const int adressFamily = SocketGetAdressFamily(clientSocket->IPMode);
+        const int streamType = SOCK_STREAM;
+        const int protocol = 0;
+
 #ifdef OSWindows
-    errorCode = WindowsSocketAgentStartup(&clientSocket);
+        SocketErrorCode errorCode = WindowsSocketAgentStartup(&clientSocket);
 
-    if (errorCode != NoError)
-    {
-        return errorCode;
-    }
-#endif
+        if (errorCode != NoError)
+        {
+            return errorCode;
+        }
+#endif       
 
-    clientSocket->Adress.sin_family = adressFamily;
-    clientSocket->Adress.sin_addr.s_addr = inet_addr(ipAdress);
-    clientSocket->Adress.sin_port = htons(port);
+        clientSocket->ID = socket(adressFamily, streamType, protocol);
 
-    clientSocket->ID = socket(adressFamily, streamType, protocol);
-
-    if (clientSocket->ID == 1)
-    {
-        return SocketCreationFailure;
+        if (clientSocket->ID == -1)
+        {
+            return SocketCreationFailure;
+        }
     }
 
-    serverSocket->ID = connect(clientSocket->ID, socketAdressPointer, length);
-
-    if (serverSocket->ID == -1)
+    // Connect
     {
-        return SocketConnectionFailure;
+        SocketSetupAdress(clientSocket, clientSocket->IPMode, ipAdress, port);
+
+        switch (clientSocket->IPMode)
+        {
+            case IPVersion4:
+            {
+                serverSocket->ID = connect(clientSocket->ID, &clientSocket->AdressIPv4, sizeof(clientSocket->AdressIPv4));
+                break;
+            }
+
+            case IPVersion6:
+            {
+                serverSocket->ID = connect(clientSocket->ID, clientSocket->AdressIPv6->ai_addr, clientSocket->AdressIPv6->ai_addrlen);
+                break;
+            }
+        }
+
+
+        if (serverSocket->ID == -1)
+        {
+            return SocketConnectionFailure;
+        }
     }
 
     return NoError;
@@ -171,7 +269,7 @@ SocketErrorCode SocketRead(IOSocket* socket)
 
     if (endOfFile)
     {
-        memset(socket->Message, 0, SocketBufferSize);
+        return SocketRecieveConnectionClosed;
     }
 
     return NoError;
@@ -188,6 +286,11 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 
     //essageLengh += 2; // add cause of new length.
 
+    if (messageLengh == 0)
+    {
+        return NoError; // Just send nothing if the message is empty
+    }
+
 #ifdef OSUnix
     writtenBytes = write(socket->ID, message, messageLengh);
 #elif defined(OSWindows)
@@ -202,93 +305,23 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
     return NoError;
 }
 
-/*
-  Check if the given IPv4 is Valid
-
-  Returns the following:
-  0 - Valid IPv4
-  1 - Nullpointer as Parameter
-  2 - Invalid Character (only 0-9 or .)
-  3 - Octet too large (>255)
-  4 - Too long (>15)
-  5 - Too many Octets (more that 4)
-*/
-char IsValidIPv4(char* ipAdress)
+int SocketGetAdressFamily(IPVersion ipVersion)
 {
-    const unsigned char resultIPv4OK = 0;
-    const unsigned char resultIPv4NullPointer = 1;
-    const unsigned char resultIPv4InvalidCharacter = 2;
-    const unsigned char resultIPv4OctetTooLarge = 3;
-    const unsigned char resultIPv4InvalidLength = 4;
-    const unsigned char resultIPv4InvalidOctetAmount = 5;
-
-    const unsigned char expectedDots = 3;
-    const unsigned char minimalSize = 7; // 0.0.0.0
-    const unsigned char maximalSize = 15; //255.255.255.255
-
-    unsigned int index = 0;
-    unsigned int length = 0;
-    unsigned int countedDots = 0;
-    unsigned char hasValidLength = 0;
-    unsigned char hasEnoghDots = 0;
-
-    unsigned short octetValue = 0;
-    unsigned short exponent = 100;
-
-    if (ipAdress == 0)
+    
+    switch (ipVersion)
     {
-        return resultIPv4NullPointer;
+        case IPVersion4:
+            return AF_INET;
+
+        case IPVersion6:
+            return AF_INET6;
+
+        default:
+            return -1;
     }
 
-    for ( ; ipAdress[index] != '\0' && index < maximalSize; index++)
-    {
-        char character = ipAdress[index];
-        char isDot = character == '.';
-        char isInRange = (character >= '0' && character <= '9') || character;
-
-        if (!isInRange)
-        {
-            return resultIPv4InvalidCharacter;
-        }
-
-        if (isDot)
-        {  
-            countedDots++;
-            octetValue = 0;
-            exponent = 100;
-        }
-        else
-        {       
-            octetValue += (character - '0') * exponent;
-
-            if (octetValue > 255)
-            {
-                return resultIPv4OctetTooLarge;
-            }
-
-            exponent /= 10;
-        }
-
-        length++;
-    }
-
-    hasValidLength = length >= minimalSize && length <= maximalSize;
-    hasEnoghDots = countedDots == expectedDots;
-
-    if (!hasValidLength)
-    {
-        return resultIPv4InvalidLength;
-    }
-
-    if (!hasEnoghDots)
-    {
-        return resultIPv4InvalidOctetAmount;
-    }
-
-    return resultIPv4OK;
+    return PF_UNSPEC;
 }
-
-
 
 #ifdef OSWindows
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)

@@ -22,6 +22,7 @@
     <ClCompile Include="Client.c" />
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="ConnectionState.c" />
+    <ClCompile Include="IPVersion.c" />
     <ClCompile Include="Server.c" />
     <ClCompile Include="IOSocket.c" />
     <ClCompile Include="Thread.c" />
@@ -31,6 +32,7 @@
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
     <ClInclude Include="ConnectionState.h" />
+    <ClInclude Include="IPVersion.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="IOSocket.h" />
     <ClInclude Include="SocketErrorCode.h" />

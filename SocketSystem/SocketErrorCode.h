@@ -4,6 +4,7 @@ typedef enum SocketErrorCode_
 {
 	NoError,
 
+	SocketInavlidAdressFamily,
 	SocketCreationFailure,
 	SocketOptionFailure,
 	SocketBindingFailure,
@@ -11,6 +12,7 @@ typedef enum SocketErrorCode_
 
 	SocketSendFailure,
 	SocketRecieveFailure,
+	SocketRecieveConnectionClosed,
 
 	// Client
 	SocketConnectionFailure,
