@@ -125,9 +125,11 @@ unsigned long ThreadServerHandleClientIO(Client* client)
             case NoError:
             {             
                 CommandToken commandToken;
-                CommandTokenParse(&commandToken, message);
+                CommandTokenInitialize(&commandToken);
                 commandToken.ClientSocketID = client->Socket.ID;
 
+                CommandTokenParse(&commandToken, message);
+              
                 readingFailureCounter = 0;
 
                 //TODO: ENTF: Debug show raw Message

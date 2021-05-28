@@ -12,7 +12,10 @@ typedef struct CommandToken_
     char* Value;
 } CommandToken;
 
-extern void CommandTokenInitialize(CommandToken* commandToken);
-extern void CommandTokenParse(CommandToken* commandToken, char* dataString);
+void CommandTokenInitialize(CommandToken* commandToken);
+void CommandTokenClear(CommandToken* commandToken);
+
+unsigned char  CommandTokenParse(CommandToken* commandToken, char* dataString);
+Command ParseCommand(char* command);
 
 #endif
