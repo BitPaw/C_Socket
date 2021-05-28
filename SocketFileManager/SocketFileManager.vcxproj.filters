@@ -15,8 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DeleteMe.c">
+    <ClCompile Include="FileManager.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="FileManagerErrorCodes.h">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="FileManagerErrorCodes.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileManager.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

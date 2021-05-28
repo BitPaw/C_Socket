@@ -6,6 +6,9 @@
 #include "../SocketSystem/IOSocket.h"
 #include "../SocketSystem/Client.h"
 
+#include "../SocketFileManager/FileManager.h"
+#include "../SocketFileManager/FileManagerErrorCodes.h"
+
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
 #endif
@@ -62,6 +65,12 @@ void ClearBuffer()
 
 int main()
 {
+    char* path = calloc(30,sizeof(char));
+
+    memcpy(path, "a.txt", 30 );
+	
+    printf("%s\n", FileManagerErrorCodeToString(DoesFileExist(path)));
+	
     char mode = -1;
 
     //---[Get operating mode]--------------------------------------------------
