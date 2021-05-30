@@ -1,4 +1,5 @@
 #include "Test.h"
+#include "CommandToken.h"
 
 unsigned int testCount;
 

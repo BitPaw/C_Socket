@@ -1,5 +1,4 @@
 #pragma once
-#include "../SocketSystem/CommandToken.h"
 
 void test_int(int expectedInput, int input);
 void test_string(char* expectedInput, char* input);
