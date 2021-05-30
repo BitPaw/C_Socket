@@ -143,9 +143,11 @@
     <ClCompile Include="FileManager.c" />
     <ClCompile Include="FileManagerErrorCodes.c" />
     <ClCompile Include="FileManagerErrorCodes.h" />
+    <ClCompile Include="Path.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="Path.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

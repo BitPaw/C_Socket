@@ -6,6 +6,7 @@
 #include "../SocketSystem/IOSocket.h"
 #include "../SocketSystem/Client.h"
 
+#include "../SocketFileManager/Path.h"
 #include "../SocketFileManager/FileManager.h"
 #include "../SocketFileManager/FileManagerErrorCodes.h"
 
@@ -68,8 +69,15 @@ int main()
     char* path = calloc(30,sizeof(char));
 
     memcpy(path, "a.txt", 30 );
+
+    Path a;
+    PathInitialize(&a, "C:/Users/Merdo/Desktop/a.txt");
+    PathDestruction(&a);
+
 	
-    printf("%s\n", FileManagerErrorCodeToString(DoesFileExist(path)));
+	//printf("Create dir :%i\n", CreateFullDir("CaaaCC/aa/CCC"));
+	
+    //printf("%s\n", FileManagerErrorCodeToString(WriteInFile(NULL,path,"LUUUUUUKAS")));
 	
     char mode = -1;
 
