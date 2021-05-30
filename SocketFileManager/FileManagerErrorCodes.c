@@ -8,25 +8,24 @@ const char* FileManagerErrorCodeToString(FileManagerErrorCode state)
     {
     default:
     case FileManager_NoError:
-        return "NoErrors";
-                
+        return "NoErrors";              
         
     case FileManager_FileIsCurrentlyInUse:
         return "FileIsCurrentlyInUse";
-    case FileManager_InvalidName:
-        return "InvalidName";
+    case FileManager_InvalidDirectory:
+        return "InvalidDirectory";
     case FileManager_FileAlreadyExists:
         return "FileAlreadyExists";
     case FileManager_FileNotFound:
         return "FileNotFound";
     case FileManager_NoFileExtension:
         return "NoFileExtension";
-
     	
     case FileManager_FolderNotFound:
         return "FolderNotFound";
-
-
+    case FileManager_DirectoryNotEmpty:
+        return "DirectoryNotEmpty";
+ 	
     case FileManager_ExtensionToShort:
         return "ExtensionToShort";
 

@@ -44,7 +44,14 @@ FileManagerErrorCode FM_CreateFullDir(char* directory);
 
 FileManagerErrorCode FM_DeleteDir(char* directory);
 
+FileManagerErrorCode FM_ForceDeleteDir(char* directory);
 
+Path* FM_ListAllFiles(char* directory);
+
+#ifdef OSWindows
 static wchar_t* stringToWString(char* string);
+
+static FileManagerErrorCode WindowsErrorToFileManagerError(unsigned long rawError);
+#endif
 
 #endif

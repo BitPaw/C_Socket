@@ -1,5 +1,3 @@
-#define DEBUGSTATE 1
-
 #define True 1
 #define False 0
 
@@ -8,6 +6,7 @@
 #ifdef OSWindows
 #include <windows.h>
 #include <fileapi.h>
+
 #endif
 
 #include <stdio.h>
@@ -17,16 +16,9 @@
 
 
 
+
 FileManagerErrorCode FM_DoesFileExist_FULL(char* directory, const char* filePath)
 {
-	if(DEBUGSTATE)
-	{
-		printf("-------------------------------------\n");
-		printf("- Folder Path: \"%s\"\n", directory);
-		printf("- File Path: \"%s\"\n", filePath);
-		printf("-------------------------------------\n");
-	}
-
 	//checks if '.' is in file
 	int length = 0;
 	while (filePath[length] != '.')
@@ -171,24 +163,7 @@ FileManagerErrorCode FM_CreateFile(char* path)
 	if (h_file == INVALID_HANDLE_VALUE)
 	{
 		const DWORD lastError = GetLastError();
-		switch (lastError)
-		{
-			case ERROR_FILE_EXISTS:
-				returnValue = FileManager_FileAlreadyExists;
-				break;
-			case ERROR_PATH_NOT_FOUND:
-				returnValue = FileManager_PathNotFound;
-				break;
-			case ERROR_ACCESS_DENIED:
-				returnValue = FileManager_AccessDenied;
-				break;
-			case ERROR_INVALID_NAME:
-				returnValue = FileManager_InvalidName;
-				break;
-				
-			default:
-				returnValue = FileManager_UnknownError;
-		}
+		returnValue = WindowsErrorToFileManagerError(lastError);
 	}
 
 	
@@ -211,30 +186,7 @@ FileManagerErrorCode FM_DeleteFile(char* path)
 	if (DeleteFile(w_path) == 0)
 	{
 		const DWORD lastError = GetLastError();
-		
-		switch (lastError)
-		{
-		case ERROR_FILE_NOT_FOUND:
-			returnValue = FileManager_FileNotFound;
-			break;
-		case ERROR_FILE_EXISTS:
-			returnValue = FileManager_FileAlreadyExists;
-			break;
-		case ERROR_PATH_NOT_FOUND:
-			returnValue = FileManager_PathNotFound;
-			break;
-		case ERROR_ACCESS_DENIED:
-			returnValue = FileManager_AccessDenied;
-			break;
-		case ERROR_INVALID_NAME:
-			returnValue = FileManager_InvalidName;
-			break;
-		case ERROR_SHARING_VIOLATION:
-			returnValue = FileManager_FileIsCurrentlyInUse;
-		default:
-			returnValue = FileManager_UnknownError;
-		}
-		
+		returnValue = WindowsErrorToFileManagerError(lastError);		
 	}
 
 	free(w_path);
@@ -257,25 +209,7 @@ FileManagerErrorCode FM_CreateDir(char* directory)
 	if(returnValue != 0)
 	{
 		const DWORD lastError = GetLastError();
-		
-		switch (lastError)
-		{
-		case ERROR_ALREADY_EXISTS:
-			returnValue = FileManager_FolderAlreadyExists;
-			break;
-		case ERROR_PATH_NOT_FOUND:
-			returnValue = FileManager_PathNotFound;
-			break;
-		case ERROR_ACCESS_DENIED:
-			returnValue = FileManager_AccessDenied;
-			break;
-		case ERROR_DIRECTORY:
-			returnValue = FileManager_InvalidName;
-			break;
-
-		default:
-			returnValue = FileManager_UnknownError;
-		}
+		returnValue = WindowsErrorToFileManagerError(lastError);
 	}
 	
 	free(w_directory);
@@ -325,10 +259,99 @@ FileManagerErrorCode FM_CreateFullDir(char* directory)
 FileManagerErrorCode FM_DeleteDir(char* directory)
 {
 	FileManagerErrorCode returnValue = FileManager_NoError;
+	
+	wchar_t* w_directory = stringToWString(directory);
+	
+	if (RemoveDirectory(w_directory) == 0)
+	{
+		const DWORD lastError = GetLastError();
+		returnValue = WindowsErrorToFileManagerError(lastError);
+	}
 
+	free(w_directory);
+	
 	return returnValue;
 }
 
+FileManagerErrorCode FM_ForceDeleteDir(char* directory)
+{
+	FileManagerErrorCode returnValue = FileManager_NoError;
+	
+	WIN32_FIND_DATAA data;
+	HANDLE hFind = FindFirstFileA(directory, &data);
+	
+	if (hFind != INVALID_HANDLE_VALUE) {
+		
+		do {
+			
+			printf("%s \n", &data.cFileName);
+			
+		} while (FindNextFileA(hFind, &data));
+		
+		const unsigned int lastError = GetLastError();
+
+		if (lastError != ERROR_NO_MORE_FILES)
+			returnValue = WindowsErrorToFileManagerError(lastError);
+
+		
+		FindClose(hFind);
+	}
+	
+	
+	return returnValue;
+}
+
+Path* FM_ListAllFiles(char * directory)
+{
+	Path* returnValue;
+
+	int selector;
+	const int directoryLength = strlen(directory);
+
+	if (directoryLength < 2)
+		return NULL;
+	
+	const char hasRightEnding = (directory[directoryLength] == '*' && directory[directoryLength - 1] == '/');
+		
+	WIN32_FIND_DATAA data;
+	HANDLE hFind = FindFirstFileA(directory, &data);
+
+	if (hFind != INVALID_HANDLE_VALUE) {
+
+		int fileCount = (directoryLength > 4? -1:1);
+
+		while (FindNextFileA(hFind, &data)) 
+		{
+			fileCount++;
+		} 
+
+		
+		
+		hFind = FindFirstFileA(directory, &data);
+		printf("%i \n", fileCount);
+
+		//returnValue = ca
+		
+		do {
+			const int compareLenght = sizeof(char) * strlen(&data.cFileName);
+			if(memcmp(&data.cFileName,".", compareLenght) != 0 && memcmp(&data.cFileName, "..", compareLenght) != 0)
+				printf("%s \n", &data.cFileName);
+			
+		} while (FindNextFileA(hFind, &data));
+		
+		const unsigned int lastError = GetLastError();
+
+		if (lastError != ERROR_NO_MORE_FILES)
+			returnValue = NULL;
+
+		
+		FindClose(hFind);
+	}
+
+	
+}
+
+#ifdef OSWindows
 static wchar_t* stringToWString(char* string)
 {
 	const int pathLength = strlen(string) + 1;
@@ -339,3 +362,35 @@ static wchar_t* stringToWString(char* string)
 
 	return w_path;
 }
+
+static FileManagerErrorCode WindowsErrorToFileManagerError(unsigned long rawError)
+{
+	switch (rawError)
+	{
+	case ERROR_ACCESS_DENIED:
+		return FileManager_AccessDenied;
+	case ERROR_ALREADY_EXISTS:
+		return FileManager_FolderAlreadyExists;
+	case ERROR_DIRECTORY:
+		return FileManager_InvalidDirectory;
+	case ERROR_DIR_NOT_EMPTY:
+		return FileManager_DirectoryNotEmpty;
+	case ERROR_FILE_NOT_FOUND:
+		return FileManager_FileNotFound;
+	case ERROR_FILE_EXISTS:
+		return FileManager_FileAlreadyExists;
+	case ERROR_INVALID_NAME:
+		return FileManager_InvalidDirectory;
+	case ERROR_PATH_NOT_FOUND:
+		return FileManager_PathNotFound;
+	case ERROR_SHARING_VIOLATION:
+		return FileManager_FileIsCurrentlyInUse;
+	default:
+		return FileManager_UnknownError;
+	}
+}
+#endif
+
+
+
+

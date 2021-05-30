@@ -13,7 +13,9 @@ typedef enum FileManagerErrorCode_
 	FileManager_FileIsCurrentlyInUse,
 	FileManager_FileNotFound,
 	FileManager_FileAlreadyExists,
-	FileManager_InvalidName,
+	FileManager_InvalidDirectory,
+
+	FileManager_DirectoryNotEmpty,
 
 	FileManager_PathNotFound,
 
