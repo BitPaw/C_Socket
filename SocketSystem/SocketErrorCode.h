@@ -2,7 +2,7 @@
 
 typedef enum SocketErrorCode_
 {
-	NoError,
+	SocketNoError,
 
 	SocketInavlidAdressFamily,
 	SocketCreationFailure,
