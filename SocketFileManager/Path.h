@@ -29,5 +29,6 @@ void PathInitialize(Path* path, char* stringPath);
 
 void PathDestruction(Path* path);
 
+char PathCompare(Path* path0, Path* path1);
 #endif
 

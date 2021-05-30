@@ -59,3 +59,15 @@ void PathDestruction(Path* path)
 	free(path->fileType);
 	*path = (Path){ 0 };
 }
+
+char PathCompare(Path* path0, Path* path1)
+{
+	if (path0->fullPathLength != path1->fullPathLength)
+		return -1;
+
+	if (memcmp(path0->fullPath,path1->fullPath,sizeof(char) * strlen(path0->fullPath)) != 0 )
+		return -1;
+	
+	
+	return 0;
+}

@@ -27,6 +27,9 @@
     <ClCompile Include="Path.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="test.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileManager.h">
