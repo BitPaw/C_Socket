@@ -123,11 +123,16 @@ int main()
 	//FM_WriteInFile(&testPath,"Lukkkkkkas");
 
 	//const FileManagerErrorCode returnCode = FM_CreateFile("C:/Users/Merdo/Desktop/a.txt");
-	const FileManagerErrorCode returnCode2 = FM_DeleteFile("C:/Users/Merdo/Desktop/a.docx");
-	
-	//printf("create: %s\n", FileManagerErrorCodeToString(returnCode));
-	printf("delete: %s\n", FileManagerErrorCodeToString(returnCode2));
+	//const FileManagerErrorCode returnCode2 = FM_DeleteFile("C:/Users/Merdo/Desktop/a.docx");
+	//const FileManagerErrorCode returnCode2 = FM_ForceDeleteDir("C:/Users/Merdo/Desktop/AA/*");
 
+	//Path* returnPath = FM_ListAllFiles("C:/Users/Merdo/Desktop/AA/*");
+	Path* returnPath = FM_ListAllFiles("D:/*");
+	//printf("create: %s\n", FileManagerErrorCodeToString(returnCode));
+	//printf("delete: %s\n", FileManagerErrorCodeToString(returnCode2));
+
+
+	
 	printf("\n\n");
 	
 #ifdef OSWindows
