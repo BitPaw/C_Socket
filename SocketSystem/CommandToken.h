@@ -17,5 +17,6 @@ void CommandTokenClear(CommandToken* commandToken);
 
 unsigned char  CommandTokenParse(CommandToken* commandToken, char* dataString);
 Command ParseCommand(char* command);
+int CommandTokenCompare(CommandToken* commandToken1, CommandToken* commandToken2);
 
 #endif

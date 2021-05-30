@@ -88,5 +88,63 @@ Command ParseCommand(char* command)
 
     return CommandInvalid;
 }
+/*
+Compares CommandToken and returns how much they line up.
+0 if they are the same.
+-1 if they different in 1 Values.
+-2 if they different in 2 Values.
+-3 if they different in 3 Values.
+-4 if they different in 4 Values.
+-5 if they are Totaly different.
+*/
+int CommandTokenCompare(CommandToken* commandToken1, CommandToken* commandToken2)
+{
+    int result = 0;
+
+    if (commandToken1->CommandType != commandToken2->CommandType)
+    {
+        result--;
+    }
+
+    char samelengthKey = strlen(commandToken1->Key) == strlen(commandToken2->Key);
+
+    if (samelengthKey)
+    {
+        if (strcmp(commandToken1->Key,commandToken2->Key))
+        {
+            result--;
+        }
+    }
+    else
+    {
+        result--;
+    }
+
+    char samelengthValue = strlen(commandToken1->Value) == strlen(commandToken2->Value);
+
+    if (samelengthValue)
+    {
+        if (strcmp(commandToken1->Value, commandToken2->Value))
+        {
+            result--;
+        }
+    }
+    else
+    {
+        result--;
+    }
+
+    if (result != 0)
+    {
+        result--;
+    }
+
+    if (commandToken1->ClientSocketID != commandToken2->ClientSocketID)
+    {
+        result--;
+    }
+
+    return result;
+}
 
 
