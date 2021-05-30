@@ -9,11 +9,11 @@
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
 #endif
+#include "CommandToken.h"
 
 #if defined(linux) || defined(__APPLE__)
 #define OSUnix
 #endif
-
 
 #define ScanfInputTag " %50[^\n]"
 
@@ -53,11 +53,173 @@ const char ServerUnreachable[] =
 "        or even offline. Use another IP or try later.\n";
 
 
-void ClearBuffer()
-{
-    char c;
 
-    while ((c = getchar()) != '\n' && c != EOF);
+
+
+
+
+
+
+
+
+
+static Server _server;
+static Client _client;
+
+
+void OnRemoteServerMessageRecieved(int socketID, char* message)
+{
+    printf("[Server]%s\n", message);
+}
+
+void OnRemoteClientMessageRecieved(int socketID, char* message)
+{
+    CommandToken commandToken;
+    CommandTokenInitialize(&commandToken);
+
+    commandToken.ClientSocketID = socketID;
+
+    CommandTokenParse(&commandToken, message);
+
+    switch (commandToken.CommandType)
+    {    
+        case CommandPut:
+        {
+            printf("[Client][%i][Command] PUT KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }            
+        case CommandGet:
+        {
+            printf("[Client][%i][Command] GET KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }
+        case CommandDelete:
+        {
+            printf("[Client][%i][Command] DELETE KEY:%s\n", socketID, commandToken.Key);
+            break;
+        }
+
+        case CommandLockFile:
+        {
+            printf("[Client][%i][Command] LockFile KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }
+        case CommandUnlockFile:
+        {
+            printf("[Client][%i][Command] UnlockFile KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }
+
+        case CommandPublish:
+        {
+            printf("[Client][%i][Command] Publish KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }
+        case CommandSubscribe:
+        {
+            printf("[Client][%i][Command] Subscribe KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }
+
+        case CommandOpenProgram:
+        {
+            printf("[Client][%i][Command] OpenProgramm KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            break;
+        }
+
+        case CommandQuit:
+        {
+            printf("[Client][%i][Command] QUIT\n", socketID);
+            break;
+        }
+
+        case CommandInvalid:
+        default:
+        {
+            printf("[Server][Info] Invalid command from Client:%i. Handle as broadcast message.\n", socketID);
+            char messageBuffer[100];
+
+            sprintf(messageBuffer, "[Client:%i] %s", socketID, message);
+
+            ServerBroadcastToClients(&_server, messageBuffer);
+            break;
+        }
+    }   
+}
+
+void OnRemoteServerDisconnect(int socketID, char disconnectionCause)
+{
+    switch (disconnectionCause)
+    {
+        case 0 :
+        {
+            printf("[Server][Info] disconnected.\n");
+            break;
+        }
+        case 1:
+        {
+            printf("[Server][Warning] Lost connection!\n");
+            break;
+        }
+    }  
+}
+
+void OnRemoteClientDisconnect(int socketID, char disconnectionCause)
+{
+    switch (disconnectionCause)
+    {
+        case 0:
+        {
+            printf("[Server][Info] disconnected.\n");
+            break;
+        }
+        case 1:
+        {
+            printf("[Server][Warning] Client lost connection!\n");
+            break;
+        }
+    }
+}
+
+void OnRemoteServerConnect(int socketID)
+{
+    printf("[Server][Info] Connected succesful!\n");
+}
+
+void OnRemoteClientConnect(int socketID)
+{
+    printf("[Server][Info] New client connected with ID:%i.\n", socketID);
+    
+    // RensResponse
+    {
+        char welcomeMessage[100];
+
+        sprintf
+        (
+            welcomeMessage,
+            "Connected to a "
+#ifdef linux
+            "Linux"
+#endif
+
+#ifdef __APPLE__
+            "MAC_OS"
+#endif
+
+#ifdef OSWindows
+            "Windows"
+#endif    
+            " as (%i)",
+            socketID
+        );
+
+        SocketErrorCode errorCode = ServerSendToClient(&_server, socketID, welcomeMessage);
+
+        if (errorCode != SocketNoError)
+        {
+            printf("[Server][Error] Couldn't send welcome response. ErrorCode <%i>.\n", errorCode);
+        }
+    }   
 }
 
 int main()
@@ -65,13 +227,12 @@ int main()
     char mode = -1;
 
     //---[Get operating mode]--------------------------------------------------
-    printf("%s", MenuMode);
+    printf(MenuMode);
 
     while (1)
     {
         printf("[Input] Mode : ");
         mode = getc(stdin);
-        ClearBuffer();
 
         if (mode == '0' || mode == '1')
         {
@@ -95,8 +256,7 @@ int main()
             unsigned short port = DefaultPort;
 
             Thread thread;
-            Client client;
-            ClientInitialize(&client);
+            ClientInitialize(&_client);
 
             printf(BannerConnectToServer);
             printf("[Info]  Port : %i\n", port);
@@ -109,8 +269,7 @@ int main()
                     memcpy(inputDataBuffer, TagNotSet, 6);
 
                     printf("[Input] IP   : ");
-                    fflush(stdout);
-                    fflush(stdin);
+
                     int scanResult = scanf(ScanfInputTag, &inputDataBuffer);
 
                     char hasUserEnteredIP = memcmp(TagNotSet, &inputDataBuffer, 6) != 0;
@@ -139,10 +298,14 @@ int main()
                 printf(BannerFooter);
                 printf(BannerConnecting);
 
-                ClientConnect(&client, &inputDataBuffer[0], port);
+                ClientConnect(&_client, &inputDataBuffer[0], port);
 
-                if (client.State == ConnectionOnline)
+                if (_client.State == ConnectionOnline)
                 {
+                    _client.Socket.OnConnected = OnRemoteServerConnect;
+                    _client.Socket.OnMessage = OnRemoteServerMessageRecieved;
+                    _client.Socket.OnDisconnected = OnRemoteServerDisconnect;
+
                     printf(ConnectionSuccesful);
                     break;
                 }
@@ -158,21 +321,19 @@ int main()
 
             printf(BannerFooter);
 
-            ThreadCreate(&thread, ThreadClientHandleRead, &client);
+            ThreadCreate(&thread, SocketReadAsync, &_client.Socket);
 
             printf(BannerSendAndRecieve);
 
-            while (client.Socket.ID != -1)
+            while (_client.Socket.ID != -1)
             {
-                ClearBuffer();
-                //fgets(&inputDataBuffer[0], 40, stdin);
-                scanf(ScanfInputTag, &inputDataBuffer[0]);
+                char scanResult = scanf(ScanfInputTag, &inputDataBuffer[0]);
 
-                SocketErrorCode errorCode = SocketWrite(&client.Socket, &inputDataBuffer[0]);
+                SocketErrorCode errorCode = SocketWrite(&_client.Socket, &inputDataBuffer[0]);
 
                 switch (errorCode)
                 {
-                    case NoError:
+                    case SocketNoError:
                     {
                         printf("[You] %s\n", inputDataBuffer);
                         break;
@@ -186,22 +347,21 @@ int main()
                 }
             }
 
-            ClientDisconnect(&client);
+            ClientDisconnect(&_client);
 
             break;
         }
         case '1':
         {
-            Server server;
             IPVersion ipVersion;
-            ServerInitialize(&server);
+            ServerInitialize(&_server);
 
             while (1)
             {
                 char ipInput = -1; 
 
                 printf("Which IP Version shall be used?\nSelect 4 or 6 : ");
-                scanf(ScanfInputTag, &ipInput);
+                char scanResult = scanf(ScanfInputTag, &ipInput);
 
                 if (ipInput == '4')
                 {
@@ -218,21 +378,47 @@ int main()
                 printf("Invalid IP Version! Check your input.\n");
             }
 
-            ServerStart(&server, ipVersion, DefaultPort);
+            ServerStart(&_server, ipVersion, DefaultPort);
 
-            ServerPrint(&server);
+            ServerPrint(&_server);
 
-            if (server.State != ConnectionOnline)
+            switch (_server.State)
             {
-                printf(ServerPortBlocked);
+                case ConnectionOffline:
+                {
+                    printf(ServerPortBlocked);
+                    break;
+                }
+
+                case ConnectionOnline:
+                {
+                    printf(BannerSendAndRecieve);
+                    break;
+                }
+
+                default:
+                case ConnectionInvalid:
+                {
+                    break;
+                }                    
+            }          
+
+            while (_server.State == ConnectionOnline)
+            {
+                Client* client = ServerWaitForClient(&_server);
+
+                if (client != 0)
+                {
+                    client->Socket.OnConnected = OnRemoteClientConnect;
+                    client->Socket.OnMessage = OnRemoteClientMessageRecieved;
+                    client->Socket.OnDisconnected = OnRemoteClientDisconnect;
+
+                    client->Socket.OnConnected(client->Socket.ID);
+                }
             }
 
-            while (server.State == ConnectionOnline)
-            {
-                ServerWaitForClient(&server);
-            }
+            ServerStop(&_server);
 
-            ServerStop(&server);
             break;
         }
     }

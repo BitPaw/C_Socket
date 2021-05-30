@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="Test.c" />
   </ItemGroup>
@@ -163,6 +164,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Test.h" />
+    <ClInclude Include="Command.h" />
+    <ClInclude Include="CommandToken.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

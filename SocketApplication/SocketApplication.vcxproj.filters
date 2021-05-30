@@ -19,11 +19,16 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Test.c">
+    <ClCompile Include="CommandToken.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Test.h">
+    <ClInclude Include="CommandToken.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

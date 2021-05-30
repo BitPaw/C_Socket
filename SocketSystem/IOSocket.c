@@ -18,12 +18,15 @@ void SocketInitialize(IOSocket* socket)
     socket->IPMode = IPVersionInvalid;
     socket->AdressIPv6 = 0;
 
+    socket->OnMessage = 0;
+    socket->OnConnected = 0;
+    socket->OnDisconnected = 0;
+
     memset(socket->Message, 0, SocketBufferSize);
+    memset(&socket->AdressIPv4, 0, sizeof(struct sockaddr_in));
 
-    //socket->Adress = 0; 
-
-#ifdef OSWindows
-    //socket->WindowsSocketAgentData;
+#ifdef OSWindows    
+    memset(&socket->WindowsSocketAgentData, 0, sizeof(WSADATA));
 #endif
 }
 
@@ -70,10 +73,12 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
 }
 
 SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned short port)
-{
+{    
     int adressFamily = SocketGetAdressFamily(ipVersion);
     const int streamType = SOCK_STREAM;
     const int protocol = IPPROTO_TCP;
+
+    SocketInitialize(ioSocket);
 
     ioSocket->IPMode = ipVersion;
     ioSocket->ID = -1;
@@ -84,7 +89,7 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned sho
 #ifdef OSWindows
         SocketErrorCode errorCode = WindowsSocketAgentStartup(&ioSocket);
 
-        if (errorCode != NoError)
+        if (errorCode != SocketNoError)
         {
             return errorCode;
         }
@@ -155,7 +160,7 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned sho
         }
     }
 
-    return NoError;
+    return SocketNoError;
 }
 
 void SocketClose(IOSocket* socket)
@@ -163,7 +168,7 @@ void SocketClose(IOSocket* socket)
 #ifdef OSWindows
     shutdown(socket->ID, SD_SEND);
     closesocket(socket->ID);
-    //WSACleanup();
+    WSACleanup();
 #elif defined(OSUnix)
     close(socket->ID);
 #endif  
@@ -193,6 +198,9 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
 
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
 {
+    SocketInitialize(clientSocket);
+    SocketInitialize(serverSocket);
+
     clientSocket->IPMode = AnalyseIPVersion(ipAdress);
    
     // Create Socket
@@ -204,7 +212,7 @@ SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, ch
 #ifdef OSWindows
         SocketErrorCode errorCode = WindowsSocketAgentStartup(&clientSocket);
 
-        if (errorCode != NoError)
+        if (errorCode != SocketNoError)
         {
             return errorCode;
         }
@@ -244,7 +252,7 @@ SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, ch
         }
     }
 
-    return NoError;
+    return SocketNoError;
 }
 
 SocketErrorCode SocketRead(IOSocket* socket)
@@ -272,7 +280,7 @@ SocketErrorCode SocketRead(IOSocket* socket)
         return SocketRecieveConnectionClosed;
     }
 
-    return NoError;
+    return SocketNoError;
 }
 
 SocketErrorCode SocketWrite(IOSocket* socket, char* message)
@@ -288,7 +296,7 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
 
     if (messageLengh == 0)
     {
-        return NoError; // Just send nothing if the message is empty
+        return SocketNoError; // Just send nothing if the message is empty
     }
 
 #ifdef OSUnix
@@ -302,7 +310,93 @@ SocketErrorCode SocketWrite(IOSocket* socket, char* message)
         return SocketSendFailure;
     }
 
-    return NoError;
+    return SocketNoError;
+}
+
+#ifdef OSUnix
+void* SocketReadAsync(IOSocket* socket)
+#endif
+
+#ifdef OSWindows
+unsigned long SocketReadAsync(IOSocket* socket)
+#endif
+{
+    char lostConnection = 0;
+
+    // Send & Recieve <Permanent Loop>!
+    {
+        char* message;
+        char quitConnection = 0;
+        char readingFailureCounter = 0;
+        char readingFailureMaximal = 3;
+
+        do
+        {
+            SocketErrorCode errorCode = SocketRead(socket);
+            message = &socket->Message[0];
+
+            switch (errorCode)
+            {
+                case SocketNoError:
+                {
+                    char hasCallBack = socket->OnMessage != 0;
+
+                    readingFailureCounter = 0;
+
+                    if (hasCallBack)
+                    {
+                        socket->OnMessage(socket->ID, message);
+                    }
+
+                    break;
+                }
+                case SocketRecieveFailure:
+                {           
+                    if (++readingFailureCounter >= readingFailureMaximal)
+                    {
+                        lostConnection = 1;
+                    }
+                    break;
+                }
+
+                case SocketRecieveConnectionClosed:
+                {
+                    lostConnection = 1;
+                    break;
+                }
+            }
+
+            quitConnection = memcmp("QUIT", message, 4) == 0 || lostConnection;
+
+        }
+        while (!quitConnection);
+    }
+
+    // Handle disconnect
+    {
+        char hasDisconnectCallBack = socket->OnDisconnected != 0;
+
+        if (!lostConnection)
+        {
+            SocketWrite(socket, "ACK_QUIT");
+
+            SocketClose(socket);
+      
+            if (hasDisconnectCallBack)
+            {
+                socket->OnDisconnected(socket->ID, 0);
+            }
+        }
+        else
+        {
+            if (hasDisconnectCallBack)
+            {
+                socket->OnDisconnected(socket->ID, 1);
+            }
+        }
+    }
+
+    return 0;
 }
 
 int SocketGetAdressFamily(IPVersion ipVersion)
@@ -327,7 +421,10 @@ int SocketGetAdressFamily(IPVersion ipVersion)
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
 {
     WORD wVersionRequested = MAKEWORD(2, 2);
-    int result = WSAStartup(wVersionRequested, &socket->WindowsSocketAgentData);
+    int result = -1;
+    WSADATA* wsaData = &socket->WindowsSocketAgentData;
+
+    result = WSAStartup(wVersionRequested, wsaData);
 
     switch (result)
     {
@@ -348,7 +445,7 @@ SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
 
         case 0:
         default:
-            return NoError;
+            return SocketNoError;
     }
 }
 #endif
