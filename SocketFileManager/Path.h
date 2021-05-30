@@ -21,7 +21,10 @@ typedef struct Path_
 	
 	char* file;
 	char* fileName;
-	char* fileType;	
+	char* fileType;
+
+	char hasDirectory;
+	char hasFile;
 }Path;
 
 
@@ -29,6 +32,19 @@ void PathInitialize(Path* path, char* stringPath);
 
 void PathDestruction(Path* path);
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="path0"></param>
+/// <param name="path1"></param>
+/// <returns>
+///	-1: lengthIsNotMatching
+///	-2: fullPathIsNotMatching
+///	-3: directoryIsNotMatching
+///	-4: fileIsNotMatching
+///	-5: fileNameIsNotMatching
+///	-6: fileTypeIsNotMatching
+/// </returns>
 char PathCompare(Path* path0, Path* path1);
 #endif
 

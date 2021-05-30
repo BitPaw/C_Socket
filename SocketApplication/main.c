@@ -66,13 +66,14 @@ void ClearBuffer()
 
 int main()
 {
-    char* path = calloc(30,sizeof(char));
+    //char* path = calloc(30,sizeof(char));
 
-    memcpy(path, "a.txt", 30 );
+    //memcpy(path, "a.txt", 30 );
 
-    Path a;
-    PathInitialize(&a, "C:/Users/Merdo/Desktop/a.txt");
-    PathDestruction(&a);
+    //Path a;
+    //char* pathRaw = "";
+    //PathInitialize(&a, "C:/Users/Merdo/Desktop/a.txt");
+    //PathDestruction(&a);
 
 	
 	//printf("Create dir :%i\n", CreateFullDir("CaaaCC/aa/CCC"));
@@ -253,8 +254,6 @@ int main()
             break;
         }
     }
-
-
 
 
 #ifdef OSWindows

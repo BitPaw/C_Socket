@@ -15,7 +15,9 @@
 #include <string.h>
 #include <sys/stat.h>
 
-FileManagerErrorCode DoesFileExist_FULL(char* directory, const char* filePath)
+
+
+FileManagerErrorCode FM_DoesFileExist_FULL(char* directory, const char* filePath)
 {
 	if(DEBUGSTATE)
 	{
@@ -80,7 +82,7 @@ FileManagerErrorCode DoesFileExist_FULL(char* directory, const char* filePath)
 	return FileManager_NoError;
 }
 
-FileManagerErrorCode DoesFileExist(char* path )
+FileManagerErrorCode FM_DoesFileExist(char* path )
 {
 	int selector = 0;
 	int length = 0;	
@@ -108,56 +110,146 @@ FileManagerErrorCode DoesFileExist(char* path )
 	}
 		
 		
-	return DoesFileExist_FULL(path ,file );
+	return FM_DoesFileExist_FULL(path ,file );
 }
 
-FileManagerErrorCode WriteInFile(char* directory, char* filePath, char* content)
+FileManagerErrorCode FM_WriteInFile(Path* path, char* content)
 {
 	if (content == NULL)
 		return FileManager_ContentIsNull;
 
-	const FileManagerErrorCode fileExistOutput = DoesFileExist_FULL(directory, filePath);
+	const FileManagerErrorCode fileExistOutput = FM_DoesFileExist_FULL(path->directory,path->file);
 	
 	if(fileExistOutput != FileManager_NoError)
 	{
 		switch (fileExistOutput)
 		{
-		case FileManager_FolderNotFound: 
-			mkdir("/some/directory", 0700);
-			
-			break;
-			
-		case FileManager_FileNotFound: break;
-			
-		case FileManager_NoFileExtension: 
-		case FileManager_ExtensionToShort:
-			return fileExistOutput;
+			case FileManager_FolderNotFound:
+			{
+				const FileManagerErrorCode errorCode = FM_CreateFullDir(path->directory);
+				
+				if (errorCode != FileManager_NoError)
+					return errorCode;
 
-			//No Errors or impossible Errors 
-		case FileManager_NoError:
-		case FileManager_ContentIsNull:
-			break;
+				return FM_WriteInFile(path, content);
+			}
+			case FileManager_FileNotFound:
+				//TODO: Write in File 
+				break;
+				
+			case FileManager_NoFileExtension: 
+			case FileManager_ExtensionToShort:
+			case FileManager_CallocWentWrong:
+			case FileManager_AccessDenied:
+			case FileManager_PathNotFound:
+				return fileExistOutput;
+
+				//No Errors or impossible Errors 
+			case FileManager_NoError:
+			case FileManager_ContentIsNull:
+			case FileManager_FolderAlreadyExists:
+				break;			
 		}
 	}
 	
 	return FileManager_NoError;
 }
 
-char CreateDir(char* directory)
+FileManagerErrorCode FM_CreateFile(char* path)
 {
-	char returnValue = -1;
+	FileManagerErrorCode returnValue = FileManager_NoError;
+
+	#ifdef OSWindows
+	
+	wchar_t* w_path = stringToWString(path);
+
+	//file to be opened //open for writing //share for writing //default security //Creates file if not exists //archive and impersonate client //no attribute template
+	const HANDLE h_file = CreateFile(w_path, GENERIC_READ, FILE_SHARE_READ, NULL, CREATE_NEW,FILE_ATTRIBUTE_ARCHIVE | SECURITY_IMPERSONATION, NULL); 
+	
+	// Check the handle, then open...
+
+	if (h_file == INVALID_HANDLE_VALUE)
+	{
+		const DWORD lastError = GetLastError();
+		switch (lastError)
+		{
+			case ERROR_FILE_EXISTS:
+				returnValue = FileManager_FileAlreadyExists;
+				break;
+			case ERROR_PATH_NOT_FOUND:
+				returnValue = FileManager_PathNotFound;
+				break;
+			case ERROR_ACCESS_DENIED:
+				returnValue = FileManager_AccessDenied;
+				break;
+			case ERROR_INVALID_NAME:
+				returnValue = FileManager_InvalidName;
+				break;
+				
+			default:
+				returnValue = FileManager_UnknownError;
+		}
+	}
+
+	
+	if (CloseHandle(h_file) == 0)
+		returnValue = FileManager_UnknownError;
+
+	free(w_path);
+	
+	#endif
+	
+	return returnValue;
+}
+
+FileManagerErrorCode FM_DeleteFile(char* path)
+{
+	FileManagerErrorCode returnValue = FileManager_NoError;
+
+	wchar_t* w_path = stringToWString(path);
+	
+	if (DeleteFile(w_path) == 0)
+	{
+		const DWORD lastError = GetLastError();
+		
+		switch (lastError)
+		{
+		case ERROR_FILE_NOT_FOUND:
+			returnValue = FileManager_FileNotFound;
+			break;
+		case ERROR_FILE_EXISTS:
+			returnValue = FileManager_FileAlreadyExists;
+			break;
+		case ERROR_PATH_NOT_FOUND:
+			returnValue = FileManager_PathNotFound;
+			break;
+		case ERROR_ACCESS_DENIED:
+			returnValue = FileManager_AccessDenied;
+			break;
+		case ERROR_INVALID_NAME:
+			returnValue = FileManager_InvalidName;
+			break;
+		case ERROR_SHARING_VIOLATION:
+			returnValue = FileManager_FileIsCurrentlyInUse;
+		default:
+			returnValue = FileManager_UnknownError;
+		}
+		
+	}
+
+	free(w_path);
+	
+	return returnValue;
+}
+
+FileManagerErrorCode FM_CreateDir(char* directory)
+{
+	FileManagerErrorCode returnValue = FileManager_NoError;
 
 	
 	#ifdef OSWindows
-
-	const int directoryLength = strlen(directory)+1;
 	
-	wchar_t* w_directory = calloc(directoryLength, sizeof(wchar_t));
-
-	if (w_directory == NULL)
-		return 9;
-
-	mbstowcs(w_directory, directory, directoryLength );
+	wchar_t* w_directory = stringToWString(directory);
 
 	
 	returnValue = CreateDirectory(w_directory,NULL)? 0 : -1;
@@ -165,13 +257,25 @@ char CreateDir(char* directory)
 	if(returnValue != 0)
 	{
 		const DWORD lastError = GetLastError();
+		
+		switch (lastError)
+		{
+		case ERROR_ALREADY_EXISTS:
+			returnValue = FileManager_FolderAlreadyExists;
+			break;
+		case ERROR_PATH_NOT_FOUND:
+			returnValue = FileManager_PathNotFound;
+			break;
+		case ERROR_ACCESS_DENIED:
+			returnValue = FileManager_AccessDenied;
+			break;
+		case ERROR_DIRECTORY:
+			returnValue = FileManager_InvalidName;
+			break;
 
-		if (lastError == ERROR_ALREADY_EXISTS)
-			returnValue = 1;
-		if (lastError == ERROR_PATH_NOT_FOUND)
-			returnValue = 2;
-		if (lastError == ERROR_ACCESS_DENIED)
-			returnValue = 3;
+		default:
+			returnValue = FileManager_UnknownError;
+		}
 	}
 	
 	free(w_directory);
@@ -186,34 +290,52 @@ char CreateDir(char* directory)
 	return returnValue;
 }
 
-char CreateFullDir(char* directory)
+FileManagerErrorCode FM_CreateFullDir(char* directory)
 {
-	char returnValue = 0;
+	FileManagerErrorCode returnValue = FileManager_NoError;
 	
 	unsigned int counter = 0;
 
-	while(directory[counter] != '\0' && (returnValue == 0 || returnValue == 1 ))
+	if (directory[counter] == '\0')
+		return FileManager_PathNotFound;
+	
+	do
 	{
 		while (directory[counter] != '/' && directory[counter] != '\0')
 		{
 			counter++;
 		}
-			
 		
 		char* partDirectory = calloc(counter+1, sizeof(char));
 
 		if (partDirectory == NULL)
-			return 9;
+			return FileManager_CallocWentWrong;
 		
-		memcpy(partDirectory, directory, counter * sizeof(char));
+		memcpy(partDirectory, directory, (counter) * sizeof(char));
 
-		returnValue = CreateDir(partDirectory);
+		returnValue = FM_CreateDir(partDirectory);
 		
 		free(partDirectory);
-
-		counter++;
-	}
+				
+	} 	while (directory[counter++] != '\0' && (returnValue == FileManager_NoError || returnValue == FileManager_FolderAlreadyExists));
 
 	return returnValue;
 }
 
+FileManagerErrorCode FM_DeleteDir(char* directory)
+{
+	FileManagerErrorCode returnValue = FileManager_NoError;
+
+	return returnValue;
+}
+
+static wchar_t* stringToWString(char* string)
+{
+	const int pathLength = strlen(string) + 1;
+
+	wchar_t* w_path = calloc(pathLength, sizeof(wchar_t));
+
+	mbstowcs(w_path, string, pathLength);
+
+	return w_path;
+}
