@@ -11,7 +11,9 @@ typedef enum FileManagerErrorCode_
 	FileManager_FileNotFound,
 	
 	FileManager_NoFileExtension,
-	FileManager_ExtensionToShort
+	FileManager_ExtensionToShort,
+
+	FileManager_ContentIsNull
 
 }FileManagerErrorCode;
 

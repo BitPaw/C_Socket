@@ -22,5 +22,9 @@ const char* FileManagerErrorCodeToString(FileManagerErrorCode state)
 
     case FileManager_ExtensionToShort:
         return "ExtensionToShort";
+
+    case FileManager_ContentIsNull:
+        return "ContentCanNotBeNull";
+        
     }
 }
