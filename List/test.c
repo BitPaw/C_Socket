@@ -56,41 +56,58 @@ static void test_string(char* expectedInput, char* input)
 
 int main()
 {
-	List a,b;
-
+	List a,b,c;
+	
+	// Test: 1 [char*]
 	ListInitialize(&a, 3, sizeof(char*));
 
-	ListInsertAt(&a, 0, "a");
-	ListInsertAt(&a, 2, "b");
+	ListItemInsertAt(&a, 0, "a");
+	ListItemInsertAt(&a, 2, "b");
 	
-	test_string("a", (char*)ListGet(&a, 0));
+	test_string("a", (char*)ListItemGet(&a, 0));
 	
+	ListPrint_string(&a);
+	ListItemAdd(&a, "c");
+	ListPrint_string(&a);
 
-	ListAdd(&a, "c");
-
-
-	test_string(NULL, (char*)ListGet(&a, 3));
-	test_string("b", (char*)ListGet(&a, 2));
+	test_string(NULL, (char*)ListItemGet(&a, 3));
+	test_string("b", (char*)ListItemGet(&a, 2));
 	
-	test_string("c", (char*)ListGet(&a, 0));
+	test_string("c", (char*)ListItemGet(&a, 1));
 	
 	ListDestruction(&a);
 
-
+	// Test: 2 [int]
 	ListInitialize(&b, 2, sizeof(int));
-
-	ListAdd(&b, 12321);
-	ListAdd(&b, 5);
-	ListAdd(&b, 54);
 	
-	test_int(12321, (int)ListGet(&b, 0));
-	test_int(5, (int)ListGet(&b, 1));
-	test_int(54, (int)ListGet(&b, 2));
+	ListItemAdd(&b, 12321);
+	ListItemAdd(&b, 5);
+	ListItemAdd(&b, 54);
+	
+	test_int(12321, (int)ListItemGet(&b, 0));
+	test_int(5, (int)ListItemGet(&b, 1));
+	test_int(54, (int)ListItemGet(&b, 2));
 	test_int(0, (int)b.content[3]);
-	test_int(0, (int)ListGet(&b, 4));
+	test_int(0, (int)ListItemGet(&b, 4));
 		
 	ListDestruction(&b);
 
+	// Test: 3 [int]
+	
+	ListInitialize(&c, 2, sizeof(int));
+	
+	for (int i = 0; i < 150; ++i)
+		ListItemAdd(&c, 54);
+	
+
+	ListItemInsertAt(&c, 150,99);
+
+	ListItemAdd(&c, 54);
+	
+	test_int(99, (int)ListItemGet(&c, 150));
+	test_int(54, (int)ListItemGet(&c, 151));
+	
+	ListDestruction(&c);
 	
 #ifdef OSWindows
 	system("pause");

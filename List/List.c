@@ -1,14 +1,14 @@
 #include "List.h"
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void ListInitialize(List* list, size_t count, size_t sizeOfObject)
 {
 	list->content = calloc(count, sizeOfObject);
 	list->size = count;
 	list->sizeOfObject = sizeOfObject;
-	list->addLocation = 0;
-	
 }
 
 void ListDestruction(List* list)
@@ -16,7 +16,7 @@ void ListDestruction(List* list)
 	free(list->content);
 }
 
-void ListInsertAt(List* list, int indexValue, void* value)
+void ListItemInsertAt(List* list, int indexValue, void* value)
 {
 	if(list == NULL)
 		return;
@@ -27,7 +27,7 @@ void ListInsertAt(List* list, int indexValue, void* value)
 	list->content[indexValue] = value;
 }
 
-void* ListGet(List* list, unsigned int index)
+void* ListItemGet(List* list, unsigned int index)
 {
 	if (index > list->size - 1)
 		return NULL;
@@ -38,20 +38,57 @@ void* ListGet(List* list, unsigned int index)
 	return list->content[index];
 }
 
-void ListAdd(List* list, void* value)
+void ListItemAdd(List* list, void* value)
 {
-	
-	if(list->addLocation >= list->size)
-	{
-		list->size = (int)(1.5 * (list->size + 1));
-		list->content = realloc(list->content, list->size * list->sizeOfObject) ;
+	int unsigned addLocation = 0;
 
-		for (int i = list->addLocation; i < list->size; ++i)
-			list->content[i] = NULL;
+	while (list->content[addLocation] != NULL && addLocation <= list->size - 1)
+		addLocation++;
+
+
+	if(addLocation >= list->size)
+	{
+		const unsigned int oldSize = list->size;
 		
+		list->size = (int)(1.5 * (list->size + 1));
+
+		void* reallocOutput = realloc(list->content, list->size * list->sizeOfObject) ;
+
+		if(reallocOutput == NULL)
+			return;
+
+		
+		list->content = reallocOutput;
+		
+		for (int i = oldSize; i < list->size; ++i)
+			list->content[i] = NULL;
 	}
 	
-	ListInsertAt(list,list->addLocation,value);
+	ListItemInsertAt(list, addLocation,value);
+}
 
-	list->addLocation++;
+void ListPrint_string(List* list)
+{
+	printf("{");
+	for (int i = 0; i < list->size; ++i)
+	{
+		if (i != 0)
+			printf(",");
+
+		printf("%s", ListItemGet(list, i));
+	}
+	printf("}");
+}
+
+void ListPrint_int(List* list)
+{
+	printf("{");
+	for (int i = 0; i < list->size; ++i)
+	{
+		if (i != 0)
+			printf(",");
+		
+		printf("%i", ListItemGet(list, i));
+	}
+	printf("}");
 }

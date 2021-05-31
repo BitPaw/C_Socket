@@ -17,7 +17,6 @@ typedef struct List_
 	void** content;
 	unsigned int size;
 	//Don`t Touch
-	unsigned int addLocation;
 	unsigned int sizeOfObject;
 }List;
 
@@ -26,10 +25,20 @@ void ListInitialize(List* list, unsigned int count, unsigned int sizeOfObject);
 
 void ListDestruction(List* path);
 
-void ListInsertAt(List* list, unsigned int indexValue, void* value);
+void ListItemInsertAt(List* list, unsigned int indexValue, void* value);
 
-void* ListGet(List* list, unsigned int index);
+void* ListItemGet(List* list, unsigned int index);
 
-void ListAdd(List* list, void* value);
+/// <summary>
+/// AAAA
+/// </summary>
+/// <param name="list"></param>
+/// <param name="value"></param>
+void ListItemAdd(List* list, void* value);
 
+void ListItemRemove(List* list, unsigned int index);
+
+void ListPrint_string(List* list);
+
+void ListPrint_int(List* list);
 #endif
