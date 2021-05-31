@@ -21,20 +21,19 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{32907af9-1f95-49e1-ae7c-0d26239a75c4}</ProjectGuid>
-    <RootNamespace>FileManager</RootNamespace>
+    <ProjectGuid>{17070f8f-8b28-476b-a9cb-cee128cb9e35}</ProjectGuid>
+    <RootNamespace>UnitTester</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>SocketFileManager</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -87,7 +86,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -140,15 +139,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FileManager.c" />
-    <ClCompile Include="FileManagerErrorCodes.c" />
-    <ClCompile Include="FileManagerErrorCodes.h" />
-    <ClCompile Include="Path.c" />
-    <ClCompile Include="test.c" />
+    <ClCompile Include="Tester.c" />
+    <ClCompile Include="TestMain.c" />
+    <ClCompile Include="Testscripts\ListTest.c" />
+    <ClCompile Include="Testscripts\PathTest.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FileManager.h" />
-    <ClInclude Include="Path.h" />
+    <ClInclude Include="Tester.h" />
+    <ClInclude Include="Testscripts\ListTest.h" />
+    <ClInclude Include="Testscripts\PathTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\List\List.vcxproj">
+      <Project>{1eb493eb-1280-4997-ad99-52f72c588781}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketFileManager\SocketFileManager.vcxproj">
+      <Project>{32907af9-1f95-49e1-ae7c-0d26239a75c4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketSystem\SocketSystem.vcxproj">
+      <Project>{f8da476e-6afb-43ac-bac7-7ce40b5a5c44}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

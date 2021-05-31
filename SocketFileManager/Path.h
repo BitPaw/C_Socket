@@ -46,5 +46,9 @@ void PathDestruction(Path* path);
 ///	-6: fileTypeIsNotMatching
 /// </returns>
 char PathCompare(Path* path0, Path* path1);
+
+
+char* PathToString(Path* path);
+
 #endif
 

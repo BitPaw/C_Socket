@@ -147,3 +147,8 @@ char PathCompare(Path* path0, Path* path1)
 	
 	return 0;
 }
+
+char* PathToString(Path* path)
+{
+	return path->fullPath;
+}
