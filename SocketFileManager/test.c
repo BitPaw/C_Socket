@@ -14,9 +14,9 @@
 #include "FileManagerErrorCodes.h"
 #include "FileManager.h"
 
-unsigned int testCount;
+static unsigned int testCount;
 
-void test_int(int expectedInput, int input)
+static void test_int(int expectedInput, int input)
 {
 	printf("\n------ Test [%i] [INT] --------\n", testCount++);
 	
@@ -28,7 +28,7 @@ void test_int(int expectedInput, int input)
 	printf("------------------------------\n");
 }
 
-void test_string(char* expectedInput, char* input)
+static void test_string(char* expectedInput, char* input)
 {
 	printf("\n------ Test [%i] [String] -----\n", testCount++);
 
@@ -40,7 +40,7 @@ void test_string(char* expectedInput, char* input)
 	printf("------------------------------\n");
 }
 
-void test_path(Path* expectedInput, Path* input)
+static void test_path(Path* expectedInput, Path* input)
 {
 	printf("\n------ Test [%i] [Path] -------\n", testCount++);
 
@@ -55,7 +55,7 @@ void test_path(Path* expectedInput, Path* input)
 }
 
 
-void PathTest()
+static void PathTest()
 {
 	Path path1,path2;
 

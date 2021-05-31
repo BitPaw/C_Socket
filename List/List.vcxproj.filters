@@ -18,5 +18,13 @@
     <ClCompile Include="test.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="List.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="List.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
