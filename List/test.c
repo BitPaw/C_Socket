@@ -92,7 +92,7 @@ int main()
 		
 	ListDestruction(&b);
 
-	// Test: 3 [int]
+	// Test: 3 (add 150 Int)[int]
 	
 	ListInitialize(&c, 2, sizeof(int));
 	
