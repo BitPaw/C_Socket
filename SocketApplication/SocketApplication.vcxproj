@@ -170,6 +170,7 @@
     <ClInclude Include="CommandManager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
@@ -178,7 +179,9 @@
     <ResourceCompile Include="SocketApplication.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="A:\_WorkSpace\Download\Triangle_Blue Down.ico" />
+    <Image Include="Triangle_Blue_Down.ico">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

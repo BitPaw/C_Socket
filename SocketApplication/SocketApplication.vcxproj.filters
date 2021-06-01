@@ -16,11 +16,12 @@
     <ClInclude Include="CommunicationRole.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ApplicationState.h" />
+    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SocketApplication.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="A:\_WorkSpace\Download\Triangle_Blue Down.ico" />
+    <Image Include="Triangle_Blue_Down.ico" />
   </ItemGroup>
 </Project>
