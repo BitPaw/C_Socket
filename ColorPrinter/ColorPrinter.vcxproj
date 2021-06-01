@@ -21,13 +21,13 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{17070f8f-8b28-476b-a9cb-cee128cb9e35}</ProjectGuid>
-    <RootNamespace>UnitTester</RootNamespace>
+    <ProjectGuid>{d019098a-692b-4348-86f7-e68d734955f2}</ProjectGuid>
+    <RootNamespace>ColorPrinter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -139,29 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Tester.c" />
-    <ClCompile Include="TestMain.c" />
-    <ClCompile Include="Testscripts\ListTest.c" />
-    <ClCompile Include="Testscripts\PathTest.c" />
+    <ClInclude Include="ColorPrinter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Tester.h" />
-    <ClInclude Include="Testscripts\ListTest.h" />
-    <ClInclude Include="Testscripts\PathTest.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ColorPrinter\ColorPrinter.vcxproj">
-      <Project>{d019098a-692b-4348-86f7-e68d734955f2}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\List\List.vcxproj">
-      <Project>{1eb493eb-1280-4997-ad99-52f72c588781}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\SocketFileManager\SocketFileManager.vcxproj">
-      <Project>{32907af9-1f95-49e1-ae7c-0d26239a75c4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\SocketSystem\SocketSystem.vcxproj">
-      <Project>{f8da476e-6afb-43ac-bac7-7ce40b5a5c44}</Project>
-    </ProjectReference>
+    <ClCompile Include="ColorPrinter.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

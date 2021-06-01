@@ -6,13 +6,14 @@
 #if defined(linux) || defined(__APPLE__)
 #define OSUnix
 #endif
-
-#include "Testscripts/PathTest.h"
-#include "Testscripts/ListTest.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "Tester.h"
 
-#include <stdlib.h>
+#include "Testscripts/PathTest.h"
+#include "Testscripts/ListTest.h"
+#include "../ColorPrinter/ColorPrinter.h"
 
 
 int main()
@@ -41,6 +42,9 @@ int main()
 	t1 = INT_MAX; t2 = 444;
 	test_t_Failure(&t1, &t2, sizeof(int), "Int", "Generic Test 4");
 	*/
+
+	printColors = 1;
+	//printColorTable();
 
 	path_test(1);
 

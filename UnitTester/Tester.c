@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "../ColorPrinter/ColorPrinter.h"
 
 void testPrintHeader(char* headerContent)
 {
@@ -15,8 +16,8 @@ void testPrintSummery()
 	printf("\n\n");
 	
 	printf("  -----------------------------------------------\n");
-	printf("  - Tests Failed     : [%i]\n", testFailedCount);
-	printf("  - Tests Successful : [%i]\n", (testCount - testFailedCount));
+	colorPrintf("  - Tests Failed     : &1%i\n", testFailedCount);
+	colorPrintf("  - Tests Successful : &2%i\n", (testCount - testFailedCount));
 	printf("  -----------------------------------------------\n");
 }
 
@@ -24,35 +25,35 @@ void testPrint(char result, char* expectedInputAsString, char* inputAsString, ch
 {
 	testCount++;
 	
-	printf("\n\t------ Test [%s] [%s] --------\n", name, dataType);
+	printf("\n  ------ Test [%s] [%s] --------\n", name, dataType);
 
 	if (result)		
-		printf("\t    Test completed -Input '%s', '%s'\n", inputAsString, expectedInputAsString);
+		colorPrintf("    &2Test completed:&r -Input '%s', '%s'\n", inputAsString, expectedInputAsString);
 	else
 	{
-		printf("\t[X] Test failed:\n   -Expected input '%s', actual '%s'\n", expectedInputAsString, inputAsString);
+		colorPrintf("    &1Test failed:&r\n      -Expected input '&b%s&r', actual '&b%s&r'\n", expectedInputAsString, inputAsString);
 		testFailedCount++;
 	}
 
 	
-	printf("\t-------------------------------------------\n");
+	printf("  -------------------------------------------\n");
 }
 void testPrint_int(char result, int expectedInput, int input, char* dataType, char* name)
 {
 	testCount++;
 	
-	printf("\n\t------ Test [%s] [%s] --------\n", name, dataType);
+	printf("\n  ------ Test [%s] [%s] --------\n", name, dataType);
 
 	if (result)
-		printf("\t    Test completed -Input '%i', '%i' \n", input, expectedInput);
+		colorPrintf("    &2Test completed:&r -Input '%i', '%i' \n", input, expectedInput);
 	else
 	{
-		printf("\t[X] Test failed:\n   -Expected input '%i', actual '%i'\n", expectedInput, input);
+		colorPrintf("    &1Test failed:&r\n      -Expected input '&5%i&r', actual '&5%i&r'\n", expectedInput, input);
 		testFailedCount++;
 	}
 		
 
-	printf("\t-------------------------------------------\n");
+	printf("  -------------------------------------------\n");
 }
 
 

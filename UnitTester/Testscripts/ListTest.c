@@ -42,7 +42,7 @@ void list_test(char execute)
 	test_int(5, (int)ListItemGet(&b, 1), "List Test 6");
 	test_int(54, (int)ListItemGet(&b, 2), "List Test 7");
 	test_int(0, (int)b.content[3], "List Test 8");
-	test_int(0, (int)ListItemGet(&b, 4), "List Test 9");
+	test_int(4, (int)ListItemGet(&b, 4), "List Test 9");
 
 	ListDestruction(&b);
 
