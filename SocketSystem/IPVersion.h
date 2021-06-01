@@ -4,6 +4,7 @@
 typedef enum IPVersion
 {
     IPVersionInvalid,
+    IPVersionUnknownDomain,
 
     IPVersion4,
     IPVersion6

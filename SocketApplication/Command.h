@@ -7,19 +7,21 @@ typedef enum Command_
 {
     CommandInvalid,
 
-    CommandPut,
-    CommandGet,
-    CommandDelete,
+    CommandFileDataPut,
+    CommandFileDataGet,
+    CommandFileDelete,
 
-    CommandLockFile,
-    CommandUnlockFile,
+    CommandFileLock,
+    CommandFileUnlock,
 
-    CommandPublish,
-    CommandSubscribe,
+    CommandFileChangePublish,
+    CommandFileChangeSubscribe,
 
     CommandOpenProgram,
 
-    CommandQuit
+    CommandQuit,
+
+    CommandHTTPRequest
 }Command;
 
 #endif

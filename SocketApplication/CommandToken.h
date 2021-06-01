@@ -15,7 +15,7 @@ typedef struct CommandToken_
 void CommandTokenInitialize(CommandToken* commandToken);
 void CommandTokenClear(CommandToken* commandToken);
 
-unsigned char  CommandTokenParse(CommandToken* commandToken, char* dataString);
+unsigned char CommandTokenParse(CommandToken* commandToken, char* message);
 Command ParseCommand(char* command);
 int CommandTokenCompare(CommandToken* commandToken1, CommandToken* commandToken2);
 

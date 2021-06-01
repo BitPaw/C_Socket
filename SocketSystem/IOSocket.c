@@ -10,7 +10,6 @@
 #define OSUnix
 #endif
 
-
 void SocketInitialize(IOSocket* socket)
 {
     socket->ID = -1;
@@ -87,7 +86,7 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned sho
     // Create Socket
     {
 #ifdef OSWindows
-        SocketErrorCode errorCode = WindowsSocketAgentStartup(&ioSocket);
+        SocketErrorCode errorCode = WindowsSocketAgentStartup(ioSocket);
 
         if (errorCode != SocketNoError)
         {
@@ -421,10 +420,8 @@ int SocketGetAdressFamily(IPVersion ipVersion)
 SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
 {
     WORD wVersionRequested = MAKEWORD(2, 2);
-    int result = -1;
     WSADATA* wsaData = &socket->WindowsSocketAgentData;
-
-    result = WSAStartup(wVersionRequested, wsaData);
+    int result = WSAStartup(wVersionRequested, wsaData);
 
     switch (result)
     {

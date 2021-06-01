@@ -19,6 +19,8 @@ typedef struct Server_
 void ServerInitialize(Server* server);
 void ServerStart(Server* server, IPVersion ipVersion, unsigned short port);
 void ServerStop(Server* server);
+char ServerIsRunning(Server* server);
+void ServerKickClient(Server* server, int socketID);
 Client* ServerWaitForClient(Server* server);
 Client* ServerGetClientViaID(Server* server, int socketID);
 SocketErrorCode ServerSendToClient(Server* server, int clientID, char* message);

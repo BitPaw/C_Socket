@@ -2,69 +2,436 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../SocketSystem/Server.h"
-#include "../SocketSystem/IOSocket.h"
-#include "../SocketSystem/Client.h"
+#include "main.h"
+#include "CommandManager.h"
+#include "CommandToken.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
 #endif
-#include "CommandToken.h"
+#include "CommunicationRole.h"
 
 #if defined(linux) || defined(__APPLE__)
 #define OSUnix
 #endif
+#include "ApplicationState.h"
 
-#define ScanfInputTag " %50[^\n]"
+void ChangeState(ApplicationState applicationState)
+{
+    printf
+    (
+        "[System] State changed from <%s> to <%s>.\n",
+        ApplicationStateToString(_currentApplicationState),
+        ApplicationStateToString(applicationState)
+    );
 
-// system("@cls||clear");
+    _currentApplicationState = applicationState;
+}
 
-unsigned short DefaultPort = 5678u;
-const char TagNotSet[] = "NotSet";
-const char ConnectionSuccesful[] = "[OK] Connection successful!\n";
-const char ConnectionFailed[] = "[Error] Connection Failed!\n";
-const char InvalidModeInput[] = "[Error] Invalid Mode! Please select a valid option.\n";
-const char InvalidIPInput[] = "[Error] Invalid IP! Please check your input.\n";
-const char NoIPSelected[] = "[Info] No IP selected! Guessing localhost (127.0.0.1).\n";
-const char ServerPortBlocked[] = "[Error] Port seems to be blocked. Server can't be started.\n";
-const char MenuMode[] =
-"+---------------------------------------------------------+\n"
-"| Select operation mode                                   |\n"
-"+---------------------------------------------------------+\n"
-"| 0 : Client Mode                                         |\n"
-"| 1 : Server Mode                                         |\n"
-"+---------------------------------------------------------+\n";
-const char BannerFooter[] =
-"+---------------------------------------------------------+\n\n\n";
-const char BannerConnectToServer[] =
-"+---------------------------------------------------------+\n"
-"| Connect To Server                                       |\n"
-"+---------------------------------------------------------+\n";
-const char BannerConnecting[] =
-"+---------------------------------------------------------+\n"
-"| Connecting...                                           |\n"
-"+---------------------------------------------------------+\n";
-const char BannerSendAndRecieve[] =
-"+---------------------------------------------------------+\n"
-"| Send & Recieve                                          |\n"
-"+---------------------------------------------------------+\n";
-const char ServerUnreachable[] =
-"[Info]  It seems that the server is unreachable\n"
-"        or even offline. Use another IP or try later.\n";
+int main(int numberOfArguments, char* arguments[])
+{
+    CommunicationRole mode = ModeInvalid;
+    IPVersion ipVersion = -1;
+    Thread thread;
+    char* ip = 0;    
+    unsigned short port = -1;
+    char inputBuffer[1024];
 
+    _currentApplicationState = StateNeutralIDLE;
 
+    ClientInitialize(&_client);
+    ServerInitialize(&_server);
 
+    printf(ASCIIArtLogo);
 
+    //system("color 0B");
 
+    switch (numberOfArguments)
+    {
+        case 1:
+        {
+            ChangeState(StateSelectingDefaultPort);
+            break;
+        }
 
+        case 4:
+        {
+            char* portText = arguments[3];
 
+            port = atoi(portText);
 
+            if (port == 0)
+            {
+                printf("[Error] Invalid port");
+                return -1;
+            }
 
+            // no break, fall thoutghhh
+        }
 
+        case 3:
+        {
+            char* operatingMode = arguments[1];
+            char* ipOption = arguments[2];
+            char ipModeChar = ipOption[0];
+            char isFirstLetterComma = operatingMode[0] == '-';
+            char commandLetter = 0;
 
+            if (!isFirstLetterComma)
+            {
+                printf("[Error] Invalid Parameters");
+                return -1;
+            }
 
-static Server _server;
-static Client _client;
+            commandLetter = operatingMode[1];
+
+            switch (commandLetter)
+            {
+                case 'C':
+                case 'c':
+                {
+                    ip = ipOption;
+                    ipVersion = AnalyseIPVersion(ipOption);
+                    char isValidIP = IsValidIP(ipOption);
+
+                    mode = ModeClient;
+
+                    if (!isValidIP)
+                    {
+                        printf("Invalid IP.");
+                        return -1;
+                    }
+
+                    ChangeState(StateClientConnecting);
+
+                    break;
+                }
+
+                case 'S':
+                case 's':
+                {
+                    mode = ModeServer;
+
+                    switch (ipModeChar)
+                    {
+                        case '4':
+                        {
+                            ipVersion = IPVersion4;
+                            break;
+                        }
+                        case '6':
+                        {
+                            ipVersion = IPVersion6;
+                            break;
+                        }
+                        default:
+                        {
+                            printf("[Error] Invalid IP Mode. 4 or 6 only");
+                            return -1;
+                        }
+                    }
+
+                    ChangeState(StateServerListening);
+
+                    break;
+                }
+                default:
+                {
+                    printf("[Error] Invalid operation mode");
+                    return -1;
+                }
+            }
+
+            break;
+        }
+        default:
+        {
+            printf("[Error] Invalid Parameters");
+            return -1;
+        }
+    } 
+
+    while (1)
+    {
+        switch (_currentApplicationState)
+        {
+            case StateSelectMode:
+            {
+                printf(MenuMode); 
+                printf("[Input] Mode : ");
+
+                int result = scanf(ScanfInputTag, inputBuffer);
+                int mode = atoi(inputBuffer);
+
+                switch (mode)
+                {
+                    case 0:
+                    {
+                        mode = ModeClient;
+                        ChangeState(StateClientSelectingIP);
+                        break;
+                    }
+                    case 1:
+                    {
+                        mode = ModeServer;
+                        ChangeState(StateServerSelectingIPVersion);
+                        break;
+                    }
+                    default:
+                    {
+                        mode = ModeInvalid;
+                        printf(InvalidModeInput);
+                        break;
+                    }
+                }                
+
+                printf(BannerFooter);     
+
+                break;
+            }
+            case StateServerSelectingIPVersion:
+            {
+                char ipInput = -1;
+
+                printf
+                (
+                    "[?] Which IP Version shall be used?\n"
+                    "    Select 4 or 6 : "
+                );
+                char scanResult = scanf(ScanfInputTag, &ipInput);
+
+                switch (ipInput)
+                {
+                    case '4':
+                    {
+                        ipVersion = IPVersion4;
+                        break;
+                    }
+                    case '6':
+                    {
+                        ipVersion = IPVersion6;
+                        break;
+                    }
+                    default:
+                    {
+                        ipVersion = IPVersionInvalid;
+                        printf("Invalid IP Version! Check your input.\n");
+                        break;
+                    }
+                }
+
+                if (ipVersion != IPVersionInvalid)
+                {
+                    ChangeState(StateServerStarting);
+                }
+
+                break;
+            }
+            case StateSelectingSpecificPort:
+            {
+                printf
+                (
+                    "[?] Specify Port : "
+                );
+
+                int result = scanf(ScanfInputTag, inputBuffer);
+                int convertedNumber = atoi(inputBuffer);              
+
+                if (0 < convertedNumber && convertedNumber < 65535)
+                {
+                    port = convertedNumber;
+                    ChangeState(StateSelectMode);                    
+                }  
+                else
+                {
+                    printf("[Error] Invalid Port. Check your input.\n");
+                }
+
+                break;
+            }
+            case StateSelectingDefaultPort:
+            {
+                char useDefaultPort = 0;
+
+                printf
+                (
+                    "[?] Use default Port <%i>?\n"
+                    "    <y/n> : ",
+                    DefaultPort
+                );
+
+                int result = scanf(ScanfInputTag, inputBuffer);
+
+                useDefaultPort = inputBuffer[0];
+
+                switch (useDefaultPort)
+                {
+                    case 'Y':
+                    case 'y':
+                    {
+                        port = DefaultPort;
+                        ChangeState(StateSelectMode);
+                        break;
+                    }
+                    case 'N':
+                    case 'n':
+                    {
+                        ChangeState(StateSelectingSpecificPort);
+                        break;
+                    }
+                    default:
+                    {
+                        printf("[Error] Invalid Option. Check Input.\n");
+                        break;
+                    }
+                }
+
+                break;
+            }
+            case StateClientSelectingIP:
+            {
+                printf(BannerClientSelectIPHeader);
+
+                int scanResult = scanf(ScanfInputTag, &inputBuffer);
+
+                char hasUserEnteredIP = memcmp(TagNotSet, &inputBuffer, 6) != 0;
+
+                if (hasUserEnteredIP)
+                {
+                    char result = IsValidIP(inputBuffer);
+
+                    if (result)
+                    {
+                        ChangeState(StateClientConnecting);
+                    }
+                    else
+                    {
+                        printf(InvalidIPInput);
+                    }
+                }
+                else
+                {
+                    printf(NoIPSelected);
+                    memcpy(inputBuffer, "127.0.0.1", 10);
+                    ChangeState(StateClientConnecting);
+                }                
+
+                printf(BannerFooter);
+
+                break;
+            }
+            case StateClientConnecting:
+            {            
+                printf(BannerConnectToServer);
+
+                ClientConnect(&_client, &inputBuffer[0], port);
+
+                switch (_client.State)
+                {
+                    case ConnectionOnline:
+                    {
+                        _client.Socket.OnConnected = OnRemoteServerConnect;
+                        _client.Socket.OnMessage = OnRemoteServerMessageRecieved;
+                        _client.Socket.OnDisconnected = OnRemoteServerDisconnect;
+
+                        ChangeState(StateClientConnected);
+
+                        ThreadCreate(&thread, SocketReadAsync, &_client.Socket);  
+
+                        printf(ConnectionSuccesful);
+
+                        break;
+                    }
+                    case ConnectionOffline:
+                    {
+                        printf(ServerUnreachable);
+                        break;
+                    }
+                }                
+            
+                printf(BannerFooter);         
+
+                break;
+            }
+            case StateClientConnected:
+            {
+                // printf(BannerSendAndRecieve);
+
+                char scanResult = scanf(ScanfInputTag, inputBuffer);
+
+                SocketErrorCode errorCode = SocketWrite(&_client.Socket, inputBuffer);
+
+                switch (errorCode)
+                {
+                    case SocketNoError:
+                    {
+                        printf("[You] %s\n", inputBuffer);
+                        break;
+                    }
+
+                    default:
+                    {
+                        printf("[Error] Sending failed. ErrorCode: <%i>.\n", errorCode);
+                        break;
+                    }
+                }
+
+                break;
+            }
+            case StateServerStarting:
+            {
+                ServerStart(&_server, ipVersion, port);
+
+                ServerPrint(&_server);
+
+                switch (_server.State)
+                {
+                    case ConnectionOffline:
+                    {
+                        printf(ServerPortBlocked);
+                        ChangeState(StateServerOffline);
+                        break;
+                    }
+
+                    case ConnectionOnline:
+                    {
+                        printf(BannerSendAndRecieve);
+                        ChangeState(StateServerListening);
+                        break;
+                    }
+                }
+
+                break;
+            }
+            case StateServerListening:
+            {
+                if (ServerIsRunning(&_server))
+                {
+                    Client* client = ServerWaitForClient(&_server);
+
+                    if (client != 0)
+                    {
+                        client->Socket.OnConnected = OnRemoteClientConnect;
+                        client->Socket.OnMessage = OnRemoteClientMessageRecieved;
+                        client->Socket.OnDisconnected = OnRemoteClientDisconnect;
+
+                        client->Socket.OnConnected(client->Socket.ID);
+                    }
+                }
+                else
+                {
+                    ChangeState(StateServerOffline);
+                }
+
+                break;
+            }
+        }
+    }
+
+    //     ClientDisconnect(&_client);     ServerStop(&_server);                 
+
+    return 0;
+}
 
 
 void OnRemoteServerMessageRecieved(int socketID, char* message)
@@ -74,7 +441,11 @@ void OnRemoteServerMessageRecieved(int socketID, char* message)
 
 void OnRemoteClientMessageRecieved(int socketID, char* message)
 {
+    char messageBuffer[1024];
+    char* messageToSend = 0;
     CommandToken commandToken;
+    FileError fileError = FileErrorNotSet;
+
     CommandTokenInitialize(&commandToken);
 
     commandToken.ClientSocketID = socketID;
@@ -82,78 +453,144 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
     CommandTokenParse(&commandToken, message);
 
     switch (commandToken.CommandType)
-    {    
-        case CommandPut:
+    {
+        case CommandFileDataPut:
         {
             printf("[Client][%i][Command] PUT KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = FileDataPut(commandToken.Key, commandToken.Value);
+
             break;
-        }            
-        case CommandGet:
+        }
+        case CommandFileDataGet:
         {
             printf("[Client][%i][Command] GET KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = FileDataGet(commandToken.Key, messageBuffer);
+
+            messageToSend = messageBuffer;
+
             break;
         }
-        case CommandDelete:
+        case CommandFileDelete:
         {
             printf("[Client][%i][Command] DELETE KEY:%s\n", socketID, commandToken.Key);
+
+            fileError = FileDelete(commandToken.Key);
+
             break;
         }
 
-        case CommandLockFile:
+        case CommandFileLock:
         {
             printf("[Client][%i][Command] LockFile KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = FileLock(commandToken.Key);
+
             break;
         }
-        case CommandUnlockFile:
+        case CommandFileUnlock:
         {
             printf("[Client][%i][Command] UnlockFile KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = FileUnlock(commandToken.Key);
+
             break;
         }
 
-        case CommandPublish:
+        case CommandFileChangePublish:
         {
             printf("[Client][%i][Command] Publish KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = FileChangePublish(commandToken.Key);
+
             break;
         }
-        case CommandSubscribe:
+        case CommandFileChangeSubscribe:
         {
             printf("[Client][%i][Command] Subscribe KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = FileChangeSubscribe(commandToken.Key);
+
             break;
         }
 
         case CommandOpenProgram:
         {
             printf("[Client][%i][Command] OpenProgramm KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+
+            fileError = ProgramOpen(commandToken.Key);
+
             break;
         }
 
         case CommandQuit:
         {
             printf("[Client][%i][Command] QUIT\n", socketID);
+
+            ApplicationQuit();
+
+            break;
+        }
+
+        case CommandHTTPRequest:
+        {
+            fileError = FileNoError;
+
+            SendHTTPResponse(&_server, socketID);
+
             break;
         }
 
         case CommandInvalid:
         default:
         {
-            printf("[Server][Info] Invalid command from Client:%i. Handle as broadcast message.\n", socketID);
-            char messageBuffer[100];
+            printf("[Server][Info] Invalid command from Client:%i. Broadcast:%s\n", socketID, message);
 
             sprintf(messageBuffer, "[Client:%i] %s", socketID, message);
 
             ServerBroadcastToClients(&_server, messageBuffer);
             break;
         }
-    }   
+    }
+
+    switch (fileError)
+    {
+        case FileNoError:
+        {
+            messageToSend = "[OK] Operation successful.";
+            break;
+        }
+        case FileDoesNotExist:
+        {
+            messageToSend = "[Error] File doesn't exist.";
+            break;
+        }
+        case FileAlreadyExist:
+        {
+            messageToSend = "[Error] File already exist.";
+            break;
+        }
+        case ProgramNameNotFound:
+        {
+            messageToSend = "[Error] There is no program with this name accessible.";
+            break;
+        }
+    }
+
+    if (fileError != FileErrorNotSet)
+    {
+        ServerSendToClient(&_server, commandToken.ClientSocketID, messageToSend);
+    }
 }
 
 void OnRemoteServerDisconnect(int socketID, char disconnectionCause)
 {
     switch (disconnectionCause)
     {
-        case 0 :
+        case 0:
         {
-            printf("[Server][Info] disconnected.\n");
+            printf("[Server][Info] Disconnected.\n");
             break;
         }
         case 1:
@@ -161,7 +598,7 @@ void OnRemoteServerDisconnect(int socketID, char disconnectionCause)
             printf("[Server][Warning] Lost connection!\n");
             break;
         }
-    }  
+    }
 }
 
 void OnRemoteClientDisconnect(int socketID, char disconnectionCause)
@@ -170,12 +607,12 @@ void OnRemoteClientDisconnect(int socketID, char disconnectionCause)
     {
         case 0:
         {
-            printf("[Server][Info] disconnected.\n");
+            printf("[Server][Info] Client disconnected.\n");
             break;
         }
         case 1:
         {
-            printf("[Server][Warning] Client lost connection!\n");
+            printf("[Server][Warning] Client disconnected unexpectedly.\n");
             break;
         }
     }
@@ -189,7 +626,8 @@ void OnRemoteServerConnect(int socketID)
 void OnRemoteClientConnect(int socketID)
 {
     printf("[Server][Info] New client connected with ID:%i.\n", socketID);
-    
+
+#if 0
     // RensResponse
     {
         char welcomeMessage[100];
@@ -209,7 +647,7 @@ void OnRemoteClientConnect(int socketID)
 #ifdef OSWindows
             "Windows"
 #endif    
-            " as (%i)",
+            " System as (ID:%.i)",
             socketID
         );
 
@@ -219,219 +657,6 @@ void OnRemoteClientConnect(int socketID)
         {
             printf("[Server][Error] Couldn't send welcome response. ErrorCode <%i>.\n", errorCode);
         }
-    }   
-}
-
-int main()
-{
-    char mode = -1;
-
-    //---[Get operating mode]--------------------------------------------------
-    printf(MenuMode);
-
-    while (1)
-    {
-        printf("[Input] Mode : ");
-        mode = getc(stdin);
-
-        if (mode == '0' || mode == '1')
-        {
-            break;
-        }
-
-        printf(InvalidModeInput);
     }
-    //-------------------------------------------------------------------------
-
-    printf(BannerFooter);
-
-    switch (mode)
-    {
-        case '0':
-        {
-            char quitFlag = 0;
-            char command = '-';
-            const int bufferLength = 50;
-            char inputDataBuffer[50];
-            unsigned short port = DefaultPort;
-
-            Thread thread;
-            ClientInitialize(&_client);
-
-            printf(BannerConnectToServer);
-            printf("[Info]  Port : %i\n", port);
-
-            while (1) // Repeat until connected succesfully.
-            {    
-                while (1) // Repeat until the entered IP was valid.
-                {
-                    memset(inputDataBuffer, 0, bufferLength);
-                    memcpy(inputDataBuffer, TagNotSet, 6);
-
-                    printf("[Input] IP   : ");
-
-                    int scanResult = scanf(ScanfInputTag, &inputDataBuffer);
-
-                    char hasUserEnteredIP = memcmp(TagNotSet, &inputDataBuffer, 6) != 0;
-
-                    if (hasUserEnteredIP)
-                    {
-                        char result = IsValidIP(inputDataBuffer);
-
-                        if (result == 0)
-                        {                        
-                            break; // IP OK, quit loop.     
-                        }
-                        else
-                        {
-                            printf(InvalidIPInput);
-                        }
-                    }
-                    else
-                    {
-                        printf(NoIPSelected);
-                        memcpy(inputDataBuffer, "127.0.0.1", 10);
-                        break;
-                    }                
-                }     
-
-                printf(BannerFooter);
-                printf(BannerConnecting);
-
-                ClientConnect(&_client, &inputDataBuffer[0], port);
-
-                if (_client.State == ConnectionOnline)
-                {
-                    _client.Socket.OnConnected = OnRemoteServerConnect;
-                    _client.Socket.OnMessage = OnRemoteServerMessageRecieved;
-                    _client.Socket.OnDisconnected = OnRemoteServerDisconnect;
-
-                    printf(ConnectionSuccesful);
-                    break;
-                }
-                else
-                {
-                    printf(ConnectionFailed);
-                    printf(BannerFooter);
-                }
-
-                printf(BannerConnectToServer);
-                printf(ServerUnreachable);
-            }
-
-            printf(BannerFooter);
-
-            ThreadCreate(&thread, SocketReadAsync, &_client.Socket);
-
-            printf(BannerSendAndRecieve);
-
-            while (_client.Socket.ID != -1)
-            {
-                char scanResult = scanf(ScanfInputTag, &inputDataBuffer[0]);
-
-                SocketErrorCode errorCode = SocketWrite(&_client.Socket, &inputDataBuffer[0]);
-
-                switch (errorCode)
-                {
-                    case SocketNoError:
-                    {
-                        printf("[You] %s\n", inputDataBuffer);
-                        break;
-                    }
-
-                    default:
-                    {
-                        printf("[Error] Sending failed. ErrorCode: <%i>.\n", errorCode);
-                        break;
-                    }
-                }
-            }
-
-            ClientDisconnect(&_client);
-
-            break;
-        }
-        case '1':
-        {
-            IPVersion ipVersion;
-            ServerInitialize(&_server);
-
-            while (1)
-            {
-                char ipInput = -1; 
-
-                printf("Which IP Version shall be used?\nSelect 4 or 6 : ");
-                char scanResult = scanf(ScanfInputTag, &ipInput);
-
-                if (ipInput == '4')
-                {
-                    ipVersion = IPVersion4;
-                    break;
-                }
-
-                if (ipInput == '6')
-                {
-                    ipVersion = IPVersion6;
-                    break;
-                }
-
-                printf("Invalid IP Version! Check your input.\n");
-            }
-
-            ServerStart(&_server, ipVersion, DefaultPort);
-
-            ServerPrint(&_server);
-
-            switch (_server.State)
-            {
-                case ConnectionOffline:
-                {
-                    printf(ServerPortBlocked);
-                    break;
-                }
-
-                case ConnectionOnline:
-                {
-                    printf(BannerSendAndRecieve);
-                    break;
-                }
-
-                default:
-                case ConnectionInvalid:
-                {
-                    break;
-                }                    
-            }          
-
-            while (_server.State == ConnectionOnline)
-            {
-                Client* client = ServerWaitForClient(&_server);
-
-                if (client != 0)
-                {
-                    client->Socket.OnConnected = OnRemoteClientConnect;
-                    client->Socket.OnMessage = OnRemoteClientMessageRecieved;
-                    client->Socket.OnDisconnected = OnRemoteClientDisconnect;
-
-                    client->Socket.OnConnected(client->Socket.ID);
-                }
-            }
-
-            ServerStop(&_server);
-
-            break;
-        }
-    }
-
-
-
-
-#ifdef OSWindows
-    system("pause");
-#else
-    printf("Terminated\n");
 #endif
-
-
-    return 0;
 }

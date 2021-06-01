@@ -79,6 +79,18 @@ void ServerStop(Server* server)
     }
 }
 
+char ServerIsRunning(Server* server)
+{
+    return server->Socket.ID != -1;
+}
+
+void ServerKickClient(Server* server, int socketID)
+{
+    Client* client = ServerGetClientViaID(server, socketID);
+
+    ClientDisconnect(client);
+}
+
 Client* ServerWaitForClient(Server* server)
 {
     char hasCallBack = server->Socket.OnConnected != 0;
