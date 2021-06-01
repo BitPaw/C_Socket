@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.c" />
-    <ClCompile Include="CommandToken.c" />
     <ClCompile Include="ConnectionState.c" />
     <ClCompile Include="IPVersion.c" />
     <ClCompile Include="Server.c" />
@@ -29,8 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
-    <ClInclude Include="Command.h" />
-    <ClInclude Include="CommandToken.h" />
     <ClInclude Include="ConnectionState.h" />
     <ClInclude Include="IPVersion.h" />
     <ClInclude Include="Server.h" />
@@ -150,10 +147,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

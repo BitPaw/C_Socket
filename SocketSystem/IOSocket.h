@@ -37,6 +37,12 @@ typedef struct IOSocket_
 
 	IPVersion IPMode;
 
+	//---[ Events ]------------------------------------------------------------
+	void (*OnMessage)(int socketID, char* message);
+	void (*OnConnected)(int socketID);
+	void (*OnDisconnected)(int socketID, char disconnectionCause);
+	//-------------------------------------------------------------------------
+
 	struct sockaddr_in AdressIPv4; // Used only in IPv4
 
 
@@ -54,6 +60,15 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket);
 SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
 SocketErrorCode SocketRead(IOSocket* socket);
 SocketErrorCode SocketWrite(IOSocket* socket, char* message);
+
+#ifdef OSUnix
+void* SocketReadAsync(IOSocket* socket);
+#endif
+
+#ifdef OSWindows
+unsigned long SocketReadAsync(IOSocket* socket);
+#endif
+
 
 // Private
 static int SocketGetAdressFamily(IPVersion ipVersion);

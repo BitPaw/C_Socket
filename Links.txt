@@ -1,1 +1,5 @@
 https://www.youtube.com/watch?v=esXw4bdaZkc
+
+MultiThread - Syncro
+https://www.bogotobogo.com/cplusplus/multithreading_win32B.php
+https://stackoverflow.com/questions/33098419/linux-posix-equivalent-for-win32s-createevent-setevent-waitforsingleobject

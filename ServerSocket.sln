@@ -7,6 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketSystem", "SocketSyste
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketApplication", "SocketApplication\SocketApplication.vcxproj", "{BD6DF275-CECE-4B57-85E0-17B4820F68C0}"
 	ProjectSection(ProjectDependencies) = postProject
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB} = {3F21E42C-B5CE-4626-973B-2767D36BFCBB}
 		{F8DA476E-6AFB-43AC-BAC7-7CE40B5A5C44} = {F8DA476E-6AFB-43AC-BAC7-7CE40B5A5C44}
 		{32907AF9-1F95-49E1-AE7C-0D26239A75C4} = {32907AF9-1F95-49E1-AE7C-0D26239A75C4}
 	EndProjectSection
@@ -27,6 +28,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTester", "UnitTester\Un
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorPrinter", "ColorPrinter\ColorPrinter.vcxproj", "{D019098A-692B-4348-86F7-E68D734955F2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextColor", "TextColor\TextColor.vcxproj", "{3F21E42C-B5CE-4626-973B-2767D36BFCBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +86,14 @@ Global
 		{D019098A-692B-4348-86F7-E68D734955F2}.Release|x64.Build.0 = Release|x64
 		{D019098A-692B-4348-86F7-E68D734955F2}.Release|x86.ActiveCfg = Release|Win32
 		{D019098A-692B-4348-86F7-E68D734955F2}.Release|x86.Build.0 = Release|Win32
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Debug|x64.ActiveCfg = Debug|x64
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Debug|x64.Build.0 = Debug|x64
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Debug|x86.ActiveCfg = Debug|Win32
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Debug|x86.Build.0 = Debug|Win32
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Release|x64.ActiveCfg = Release|x64
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Release|x64.Build.0 = Release|x64
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Release|x86.ActiveCfg = Release|Win32
+		{3F21E42C-B5CE-4626-973B-2767D36BFCBB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

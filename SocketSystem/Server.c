@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "Server.h"
 #include "Thread.h"
-#include <stdlib.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
@@ -12,19 +12,16 @@
 #define OSUnix
 #endif
 
-
-
-void OnMessageRecieved(Server* server, CommandToken* commandToken)
-{
-   printf("[Client][%i] %s\n", commandToken->ClientSocketID, commandToken->CommandRaw);
-}
-
 void ServerInitialize(Server* server)
 {
+    SocketInitialize(&server->Socket);
+
     server->State = ConnectionInvalid;
     server->ClientList = 0;
     server->NumberOfConnectedClients = 0;
     server->NumberOfMaximalClients = 10;
+
+    //---[Hardcoded]-----------------------------------------------------------
     server->ClientList = malloc(server->NumberOfMaximalClients * sizeof(Client));
 
     for (size_t i = 0; i < server->NumberOfMaximalClients; i++)
@@ -33,8 +30,7 @@ void ServerInitialize(Server* server)
 
         ClientInitialize(client);
     }
-
-    SocketInitialize(&server->Socket);
+    //-------------------------------------------------------------------------
 }
 
 Client* GetNextClient(Server* server)
@@ -56,19 +52,24 @@ void ServerStart(Server* server, IPVersion ipVersion, unsigned short port)
 {
     SocketErrorCode errorCode = SocketOpen(&server->Socket, ipVersion, port);
     
-    if (errorCode == NoError)
+    switch (errorCode)
     {
-        server->State = ConnectionOnline;
-    }
-    else
-    {
-
+        case SocketNoError:
+        {
+            server->State = ConnectionOnline;
+            break;
+        }
+        default:
+        {
+            server->State = ConnectionOffline;
+            break;
+        }
     }
 }
 
 void ServerStop(Server* server)
 {
-    char isRunning = server->State = ConnectionOnline;
+    char isRunning = server->State == ConnectionOnline;
 
     if (isRunning)
     {
@@ -78,127 +79,63 @@ void ServerStop(Server* server)
     }
 }
 
-
-
-#ifdef OSUnix
-void* ThreadServerHandleClientIO(Client* client)
-#elif defined(OSWindows)
-unsigned long ThreadServerHandleClientIO(Client* client)
-#endif
+char ServerIsRunning(Server* server)
 {
-    char bzffer[60];
-
-    sprintf
-    (
-        bzffer,         
-        "Connected to a "
-#ifdef linux
-        "Linux"
-#endif
-
-#ifdef __APPLE__
-        "MAC_OS"
-#endif
-
-#ifdef OSWindows
-        "Windows"
-#endif    
-        " as (%i)",
-        client->Socket.ID
-    );
-
-    SocketWrite(&client->Socket, bzffer);
-
-    char* message;
-    char quitConnection = 0;
-    char lostConnection = 0;
-    char readingFailureCounter = 0;
-    char readingFailureMaximal = 3;
-	
-    do
-    {
-        SocketErrorCode errorCode = SocketRead(&client->Socket);
-        message = &client->Socket.Message[0];
-
-        switch (errorCode)
-        {
-            case NoError:
-            {             
-                CommandToken commandToken;
-                CommandTokenParse(&commandToken, message);
-                commandToken.ClientSocketID = client->Socket.ID;
-
-                readingFailureCounter = 0;
-
-                //TODO: ENTF: Debug show raw Message
-                printf("[Client][%i] %s\n", client->Socket.ID, commandToken.CommandRaw);
-                break;
-            }
-            case SocketRecieveFailure:
-            {       
-                printf("[System] Client (%i) reading failure (%i/%i).\n", client->Socket.ID, readingFailureCounter+1, readingFailureMaximal);
-
-                if (++readingFailureCounter >= readingFailureMaximal)                
-                {                    
-                    lostConnection = 1;
-                }         
-                break;
-            }
-
-            case SocketRecieveConnectionClosed:
-            {               
-                lostConnection = 1;
-                break;
-            }
-        }       
-
-        //TODO: To main Thread [commandToken]
-
-
-        quitConnection = memcmp("QUIT", message, 4) == 0 || lostConnection;
-
-    } while (!quitConnection);
-	
-
-    if (!lostConnection)
-    {
-        SocketWrite(&client->Socket, "ACK_QUIT");
-
-        SocketClose(&client->Socket);
-        client->State = ConnectionOffline;
-        printf("[System] Client disconnected %i\n", client->Socket.ID);
-    }
-    else
-    {
-        printf("[System] Client (%i) disconnected or lost connection.\n", client->Socket.ID);
-    }
-
-    
-	
-    //ServerUnRegisterClient(this, &client);
-	
-    return 0;
+    return server->Socket.ID != -1;
 }
 
-void ServerWaitForClient(Server* server)
+void ServerKickClient(Server* server, int socketID)
 {
+    Client* client = ServerGetClientViaID(server, socketID);
+
+    ClientDisconnect(client);
+}
+
+Client* ServerWaitForClient(Server* server)
+{
+    char hasCallBack = server->Socket.OnConnected != 0;
     Client* client = GetNextClient(server);
     
     ClientInitialize(client);
 
     SocketAwaitConnection(&server->Socket, &client->Socket);
       
-    if(-1 == client->Socket.ID)
+    if(client->Socket.ID == -1)
     {
         client->State = ConnectionInvalid;
-        return;
+
+        return 0;
     }
 
     client->State = ConnectionOnline;
 
+    if (hasCallBack)
+    {
+        server->Socket.OnConnected(server->Socket.ID);
+    }
+
     ServerRegisterClient(server, client);
     
-    ThreadCreate(&client->CommunicationThread, ThreadServerHandleClientIO, client);
+    ThreadCreate(&client->CommunicationThread, SocketReadAsync, &client->Socket);
+
+    return client;
+}
+
+Client* ServerGetClientViaID(Server* server, int socketID)
+{
+    for (unsigned int i = 0; i < server->NumberOfMaximalClients; i++)
+    {
+        Client* client = &server->ClientList[i];
+        int clientSocketID = client->Socket.ID;
+        char foundTarget = clientSocketID == socketID;
+
+        if (foundTarget)
+        {
+            return client;
+        }
+    }
+
+    return 0;
 }
 
 void ServerPrint(Server* server)
@@ -222,12 +159,41 @@ void ServerPrint(Server* server)
     );
 }
 
-void ServerUnRegisterClient(Server* server, Client* client)
+SocketErrorCode ServerSendToClient(Server* server, int clientID, char* message)
 {
-    server->NumberOfConnectedClients--;
+    // Client LookUp
+    Client* client = ServerGetClientViaID(server, clientID);
 
-    printf("[Server] Client (%i) unregistered.\n", client->Socket.ID);
+    if (client == 0)
+    {
+        // Error: No client with this ID.
+        return SocketSendFailure;
+    }
 
+    // Sent to Client;
+    return SocketWrite(&client->Socket, message);
+}
+
+SocketErrorCode ServerBroadcastToClients(Server* server, char* message)
+{
+    SocketErrorCode errorCode = SocketNoError;
+
+    for (size_t i = 0; i < server->NumberOfMaximalClients; i++)
+    {
+        Client* client = &server->ClientList[i];
+
+        if (client->Socket.ID != -1)
+        {
+            SocketErrorCode currentCrrorCode = SocketWrite(&client->Socket, message);
+
+            if (currentCrrorCode != SocketNoError)
+            {
+                errorCode = currentCrrorCode;
+            }
+        }     
+    }
+
+    return errorCode;
 }
 
 void ServerRegisterClient(Server* server, Client* client)
@@ -237,8 +203,9 @@ void ServerRegisterClient(Server* server, Client* client)
    // server->ClientList = realloc(server->ClientList, ++server->NumberOfConnectedClients);
 
     //server->ClientList[server->NumberOfConnectedClients - 1] = *client;  
+}
 
-    printf("[Server] New client (%i) registered.\n",client->Socket.ID);
-
-
+void ServerUnRegisterClient(Server* server, Client* client)
+{
+    server->NumberOfConnectedClients--;
 }

@@ -116,11 +116,38 @@ char IsValidIPv6(char* ipAdress)
 
 IPVersion AnalyseIPVersion(char* ip)
 {
+    IPVersion ipVersion = IPVersionInvalid;
+
+    char containsDot = 0;
+    char containsDoubleDot = 0;
+    char containsHexadezimal = 0;
+    char textChars = 0;
+    char containsNumbers = 0;
+
     for (int index = 0; ip[index] != '\0'; index++)
     {
         char character = ip[index];
+        char isNumber = character >= '0' && character <= '9';
+        char isBetweenAToF = (character >= 'a' && character <= 'f') || (character >= 'A' && character <= 'F');     
         char isDot = character == '.';
         char isDoubleDot = character == ':';
+        char isTextChars = !isNumber && !isBetweenAToF && !isDot && !isDoubleDot;
+
+        if (isTextChars)
+            textChars++;
+
+        if (isNumber)  
+            containsNumbers++;   
+
+        if (isBetweenAToF) 
+            containsHexadezimal++;
+
+        if (isDot) 
+            containsDot++;
+
+        if (isDoubleDot)
+            containsDoubleDot++;
+
 
         if (isDot)
         {
@@ -133,6 +160,22 @@ IPVersion AnalyseIPVersion(char* ip)
         }
     }
 
+    if (containsNumbers && containsDot && !containsDoubleDot && !containsHexadezimal && !textChars)
+    {
+        return IPVersion4;
+    }
+
+    if (containsNumbers && containsDoubleDot && containsHexadezimal && !textChars && !containsDot)
+    {
+        return IPVersion6;
+    }
+
+    if (!containsDoubleDot)
+    {
+        return IPVersionUnknownDomain;
+    }
+
+
     return IPVersionInvalid;
 }
 
@@ -144,17 +187,21 @@ char IsValidIP(char* ipAdress)
     {  
         case IPVersion4:
         {
-            return IsValidIPv4(ipAdress);
+            return IsValidIPv4(ipAdress) == 0;
+        }
+        case IPVersionUnknownDomain:
+        {
+            return 1;
         }
         case IPVersion6:
         {
-            return IsValidIPv6(ipAdress);
+            return IsValidIPv6(ipAdress) == 0;
         }
 
         default:
         case IPVersionInvalid:
         {
-            return -1;
+            return 0;
         }
     }
 }
