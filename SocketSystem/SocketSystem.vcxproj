@@ -20,19 +20,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.c" />
-    <ClCompile Include="ConnectionState.c" />
     <ClCompile Include="IPVersion.c" />
+    <ClCompile Include="Semaphore.c" />
     <ClCompile Include="Server.c" />
     <ClCompile Include="IOSocket.c" />
+    <ClCompile Include="SocketError.c" />
     <ClCompile Include="Thread.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
-    <ClInclude Include="ConnectionState.h" />
     <ClInclude Include="IPVersion.h" />
+    <ClInclude Include="Semaphore.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="IOSocket.h" />
-    <ClInclude Include="SocketErrorCode.h" />
+    <ClInclude Include="SocketError.h" />
     <ClInclude Include="Thread.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

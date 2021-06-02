@@ -21,13 +21,16 @@
     <ClCompile Include="Client.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="ConnectionState.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="IOSocket.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Thread.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Semaphore.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketError.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="IPVersion.c">
@@ -35,22 +38,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ConnectionState.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="Server.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Client.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="SocketErrorCode.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="IOSocket.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Thread.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Semaphore.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketError.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="IPVersion.h">

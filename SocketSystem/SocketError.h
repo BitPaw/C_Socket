@@ -1,6 +1,7 @@
-#pragma once
+#ifndef SocketErrorInclude
+#define SocketErrorInclude
 
-typedef enum SocketErrorCode_
+typedef enum SocketError_
 {
 	SocketNoError,
 
@@ -18,16 +19,20 @@ typedef enum SocketErrorCode_
 	SocketConnectionFailure,
 
 
-
 	//---[ Windows Only (WindowsSocketAgent) ]-------
-
 	SubSystemNotReady,
 	VersionNotSupported,
 	BlockedByOtherOperation,
 	LimitReached,
-	InvalidParameter
-
+	InvalidParameter,
+	SubSystemNotInitialised,
+	SubSystemNetworkFailed,
+	SocketIsBlocking
 	//----------------------------------------
 
 
-}SocketErrorCode;
+}SocketError;
+
+const char* SocketErrorToString(SocketError socketError);
+
+#endif

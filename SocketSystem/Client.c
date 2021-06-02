@@ -15,26 +15,18 @@
 
 void ClientInitialize(Client* client)
 {
-	client->State = ConnectionInvalid;
 	client->IP = 0;
-
 	client->ConnectedServerID = -1;
 
 	SocketInitialize(&client->Socket);
 	SocketInitialize(&client->ConnectedServerData);
 }
 
-void ClientConnect(Client* client, char* ip, unsigned short port)
+char ClientConnect(Client* client, char* ip, unsigned short port)
 {
-	SocketErrorCode errorCode = SocketConnect(&client->Socket, &client->ConnectedServerData, ip, port);
+	SocketError errorCode = SocketConnect(&client->Socket, &client->ConnectedServerData, ip, port);
 
-	if (errorCode != SocketNoError)
-	{
-		client->State = ConnectionOffline;
-		return;
-	}
-
-	client->State = ConnectionOnline;
+	return errorCode == SocketNoError;
 }
 
 void ClientSendCommand(Client* client)

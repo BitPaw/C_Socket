@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IOSocketInclude
+#define IOSocketInclude
 
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
@@ -7,7 +8,6 @@
 #if defined(linux) || defined(__APPLE__)
 #define OSUnix
 #endif
-
 
 #ifdef OSUnix
 #include <sys/types.h> 
@@ -21,13 +21,10 @@
 #include <WS2tcpip.h>
 #endif
 
-#include "SocketErrorCode.h"
+#include "SocketError.h"
 #include "IPVersion.h"
 
-#define SocketBufferSize 1024u
-
-#ifndef IOSocketInclude
-#define IOSocketInclude
+#define SocketBufferSize 2048u
 
 typedef struct IOSocket_
 {
@@ -40,42 +37,32 @@ typedef struct IOSocket_
 	//---[ Events ]------------------------------------------------------------
 	void (*OnMessage)(int socketID, char* message);
 	void (*OnConnected)(int socketID);
-	void (*OnDisconnected)(int socketID, char disconnectionCause);
+	void (*OnDisconnected)(int socketID);
 	//-------------------------------------------------------------------------
 
 	struct sockaddr_in AdressIPv4; // Used only in IPv4
-
-
-#ifdef OSWindows
-	ADDRINFO* AdressIPv6;
-	WSADATA WindowsSocketAgentData;
-#endif
+	ADDRINFO* AdressIPv6; // Windows only??
 }IOSocket;
 
-
+char SocketIsCurrentlyUsed(IOSocket* socket);
 void SocketInitialize(IOSocket* socket);
-SocketErrorCode SocketOpen(IOSocket* socket, IPVersion ipVersion, unsigned short port);
+SocketError SocketOpen(IOSocket* socket, IPVersion ipVersion, unsigned short port);
 void SocketClose(IOSocket* socket);
 void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket);
-SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
-SocketErrorCode SocketRead(IOSocket* socket);
-SocketErrorCode SocketWrite(IOSocket* socket, char* message);
-
-#ifdef OSUnix
-void* SocketReadAsync(IOSocket* socket);
-#endif
-
-#ifdef OSWindows
-unsigned long SocketReadAsync(IOSocket* socket);
-#endif
-
+SocketError SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port);
+SocketError SocketRead(IOSocket* socket);
+SocketError SocketWrite(IOSocket* socket, char* message);
 
 // Private
 static int SocketGetAdressFamily(IPVersion ipVersion);
-static char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip, unsigned short port);
+static char SocketSetupAdress(IOSocket* connectionSocket, char* ip, unsigned short port);
 
-#ifdef OSWindows
-SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket);
+#ifdef OSUnix
+void* SocketReadAsync(IOSocket* socket);
+#elif defined(OSWindows)
+unsigned long SocketReadAsync(IOSocket* socket);
+SocketError WindowsSocketAgentStartup();
+int WindowsSocketAgentShutdown();
 #endif
 
 #endif

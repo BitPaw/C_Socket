@@ -10,6 +10,11 @@
 #define OSUnix
 #endif
 
+char SocketIsCurrentlyUsed(IOSocket* socket)
+{
+    return socket->ID != -1;
+}
+
 void SocketInitialize(IOSocket* socket)
 {
     socket->ID = -1;
@@ -24,14 +29,14 @@ void SocketInitialize(IOSocket* socket)
     memset(socket->Message, 0, SocketBufferSize);
     memset(&socket->AdressIPv4, 0, sizeof(struct sockaddr_in));
 
-#ifdef OSWindows    
-    memset(&socket->WindowsSocketAgentData, 0, sizeof(WSADATA));
-#endif
 }
 
 char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip, unsigned short port)
 {  
     int adressFamily = SocketGetAdressFamily(ipVersion);
+
+    connectionSocket->IPMode = ipVersion;
+    connectionSocket->Port = port;
 
     switch (ipVersion)
     {
@@ -46,73 +51,119 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
 
         case IPVersion6:
         {
-            const int streamType = SOCK_STREAM;
             ADDRINFO adressIPv6Hint;
-
-            memset(&adressIPv6Hint, 0, sizeof(adressIPv6Hint));
-            adressIPv6Hint.ai_family = adressFamily;
-            adressIPv6Hint.ai_socktype = streamType;
-            adressIPv6Hint.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
-
             char portString[10];
+            int result;
+
             sprintf(portString, "%i", port);
+            memset(&adressIPv6Hint, 0, sizeof(ADDRINFO));
 
-            int result = getaddrinfo(ip, portString, &adressIPv6Hint, &connectionSocket->AdressIPv6);
+            adressIPv6Hint.ai_family = adressFamily; //    AF_INET / AF_INET6:
+            adressIPv6Hint.ai_socktype = SOCK_STREAM;
+            adressIPv6Hint.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
+            adressIPv6Hint.ai_protocol = IPPROTO_TCP;
 
-            if (result != 0)
+            result = getaddrinfo(ip, portString, &adressIPv6Hint, &connectionSocket->AdressIPv6);
+
+            switch (result)
             {
-                return -1;
+                case 0:
+                    return SocketNoError;
+
+                case EAI_AGAIN: 	// A temporary failure in name resolution occurred.
+                {
+                    break;
+                }
+                case EAI_BADFLAGS: // An invalid value was provided for the ai_flags member of the pHints parameter.
+                {
+                    break;
+                }
+                case EAI_FAIL: // A nonrecoverable failure in name resolution occurred.
+                {
+                    break;
+                }
+                case EAI_FAMILY: // The ai_family member of the pHints parameter is not supported.
+                {
+                    break;
+                }
+                case EAI_MEMORY: // A memory allocation failure occurred.
+                {
+                    break;
+                }
+                case EAI_NONAME: // The name does not resolve for the supplied parameters or the pNodeName and pServiceName parameters were not provided.
+                {
+                    break;
+                }
+                case EAI_SERVICE: // The pServiceName parameter is not supported for the specified ai_socktype member of the pHints parameter.
+                {
+                    break;
+                }
+                case EAI_SOCKTYPE: // The ai_socktype member of the pHints parameter is not supported.
+                {
+                    break;
+                }
             }
 
             break;
         }
     }
 
-    return 0;
+    return SocketNoError; // Delete this
 }
 
-SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned short port)
+SocketError SocketOpen(IOSocket* serverSocket, IPVersion ipVersion, unsigned short port)
 {    
-    int adressFamily = SocketGetAdressFamily(ipVersion);
-    const int streamType = SOCK_STREAM;
-    const int protocol = IPPROTO_TCP;
+    SocketInitialize(serverSocket);
 
-    SocketInitialize(ioSocket);
+#ifdef OSWindows
+    SocketError errorCode = WindowsSocketAgentStartup();
 
-    ioSocket->IPMode = ipVersion;
-    ioSocket->ID = -1;
-    ioSocket->Port = port;
+    if (errorCode != SocketNoError)
+    {
+        return errorCode;
+    }
+#endif 
+
+    SocketSetupAdress(serverSocket, ipVersion, 0, port);
 
     // Create Socket
     {
-#ifdef OSWindows
-        SocketErrorCode errorCode = WindowsSocketAgentStartup(ioSocket);
+        int adressFamily;
+        int streamType;
+        int protocol;
 
-        if (errorCode != SocketNoError)
+        switch (serverSocket->IPMode)
         {
-            return errorCode;
+            case IPVersion4:
+            {
+                adressFamily = serverSocket->AdressIPv4.sin_family;
+                streamType = SOCK_STREAM;
+                protocol = 0;
+                break;
+            }
+            case IPVersion6:
+            {
+                adressFamily = serverSocket->AdressIPv6->ai_family;
+                streamType = serverSocket->AdressIPv6->ai_socktype;
+                protocol = serverSocket->AdressIPv6->ai_protocol;
+                break;
+            }
         }
-#endif 
 
-        // Create a socket (IPv4) as a stream.
-        // Returns -1 on failure. ID if succesful. 
-        ioSocket->ID = socket(adressFamily, streamType, protocol);
+        serverSocket->ID = socket(adressFamily, streamType, protocol);
 
-        if (ioSocket->ID == -1)
+        if (serverSocket->ID == -1)
         {
             return SocketCreationFailure;
         }
     }
 
     // Set Socket Options
-    {
-#ifdef OSUnix
-        char* options = SO_REUSEADDR | SO_REUSEPORT;
-#elif defined(OSWindows)
-        char* options = SO_REUSEADDR;
-#endif  
+    {        
+        const int level = SOL_SOCKET;
+        const int optionName = SO_EXCLUSIVEADDRUSE;      // Do not use SO_REUSEADDR, else the port can be hacked. SO_REUSEPORT
         int opval = 1;
-        int optionsocketResult = setsockopt(ioSocket->ID, SOL_SOCKET, options, &opval, sizeof(opval));
+        int optionsocketResult = setsockopt(serverSocket->ID, level, optionName, &opval, sizeof(opval));
 
         if (optionsocketResult == 1)
         {
@@ -122,22 +173,18 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned sho
        
     // Bind Socket
     {
-        int result;
         int bindingResult = -1;
-
-        SocketSetupAdress(ioSocket, ipVersion, 0, port);
-
         switch (ipVersion)
         {
             case IPVersion4:
             {
-                bindingResult = bind(ioSocket->ID, &ioSocket->AdressIPv4, sizeof(ioSocket->AdressIPv4));
+                bindingResult = bind(serverSocket->ID, &serverSocket->AdressIPv4, sizeof(serverSocket->AdressIPv4));
                 break;
             }
 
             case IPVersion6:
             {
-                bindingResult = bind(ioSocket->ID, ioSocket->AdressIPv6->ai_addr, ioSocket->AdressIPv6->ai_addrlen);
+                bindingResult = bind(serverSocket->ID, serverSocket->AdressIPv6->ai_addr, serverSocket->AdressIPv6->ai_addrlen);
                 break;
             }
         }
@@ -151,7 +198,7 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned sho
     // Listen
     {
         int maximalClientsWaitingInQueue = 10;
-        int listeningResult = listen(ioSocket->ID, maximalClientsWaitingInQueue);
+        int listeningResult = listen(serverSocket->ID, maximalClientsWaitingInQueue);
 
         if (listeningResult == -1)
         {
@@ -164,13 +211,25 @@ SocketErrorCode SocketOpen(IOSocket* ioSocket, IPVersion ipVersion, unsigned sho
 
 void SocketClose(IOSocket* socket)
 {
+    char isSocketUsed = SocketIsCurrentlyUsed(socket);
+    char hasOnDisconnectCallBack = socket->OnDisconnected != 0;
+
+    if (!isSocketUsed)
+    {
+        return;
+    }
+
 #ifdef OSWindows
     shutdown(socket->ID, SD_SEND);
     closesocket(socket->ID);
-    WSACleanup();
 #elif defined(OSUnix)
     close(socket->ID);
-#endif  
+#endif     
+
+    if (hasOnDisconnectCallBack)
+    {
+        socket->OnDisconnected(socket->ID);
+    }
 
     SocketInitialize(socket);
 }
@@ -192,30 +251,48 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
             clientSocket->ID = accept(serverSocket->ID, clientSocket->AdressIPv6->ai_addr, clientSocket->AdressIPv6->ai_addrlen);
             break;
         }
-    } 
+    }
 }
 
-SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
+SocketError SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* ipAdress, unsigned short port)
 {
     SocketInitialize(clientSocket);
-    SocketInitialize(serverSocket);
-
-    clientSocket->IPMode = AnalyseIPVersion(ipAdress);
-   
-    // Create Socket
-    {
-        const int adressFamily = SocketGetAdressFamily(clientSocket->IPMode);
-        const int streamType = SOCK_STREAM;
-        const int protocol = 0;
+    SocketInitialize(serverSocket); 
 
 #ifdef OSWindows
-        SocketErrorCode errorCode = WindowsSocketAgentStartup(&clientSocket);
+    SocketError errorCode = WindowsSocketAgentStartup();
 
-        if (errorCode != SocketNoError)
+    if (errorCode != SocketNoError)
+    {
+        return errorCode;
+    }
+#endif  
+
+    SocketSetupAdress(clientSocket, AnalyseIPVersion(ipAdress) ,ipAdress, port);
+
+    // Create Socket
+    {
+        int adressFamily;
+        int streamType;
+        int protocol;       
+
+        switch (clientSocket->IPMode)
         {
-            return errorCode;
+            case IPVersion4:
+            {
+                adressFamily = clientSocket->AdressIPv4.sin_family;
+                streamType = SOCK_STREAM;
+                protocol = 0;
+                break;                
+            }   
+            case IPVersion6:
+            {       
+                adressFamily = clientSocket->AdressIPv6->ai_family;
+                streamType = clientSocket->AdressIPv6->ai_socktype;
+                protocol = clientSocket->AdressIPv6->ai_protocol;              
+                break;
+            }
         }
-#endif       
 
         clientSocket->ID = socket(adressFamily, streamType, protocol);
 
@@ -226,7 +303,7 @@ SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, ch
     }
 
     // Connect
-    {
+    {     
         SocketSetupAdress(clientSocket, clientSocket->IPMode, ipAdress, port);
 
         switch (clientSocket->IPMode)
@@ -244,7 +321,6 @@ SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, ch
             }
         }
 
-
         if (serverSocket->ID == -1)
         {
             return SocketConnectionFailure;
@@ -254,10 +330,9 @@ SocketErrorCode SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, ch
     return SocketNoError;
 }
 
-SocketErrorCode SocketRead(IOSocket* socket)
+SocketError SocketRead(IOSocket* socket)
 {
     unsigned int byteRead = 0;
-    char endOfFile = 0;
 
     memset(socket->Message, 0, SocketBufferSize);
 
@@ -267,14 +342,12 @@ SocketErrorCode SocketRead(IOSocket* socket)
     byteRead = recv(socket->ID, &socket->Message[0], SocketBufferSize - 1, 0);
 #endif
 
-    endOfFile = byteRead == 0;
-
     if (byteRead == -1)
     {
         return SocketRecieveFailure;
     }
 
-    if (endOfFile)
+    if (byteRead == 0) // endOfFile
     {
         return SocketRecieveConnectionClosed;
     }
@@ -282,7 +355,7 @@ SocketErrorCode SocketRead(IOSocket* socket)
     return SocketNoError;
 }
 
-SocketErrorCode SocketWrite(IOSocket* socket, char* message)
+SocketError SocketWrite(IOSocket* socket, char* message)
 {
     int messageLengh = 0;
     unsigned int writtenBytes = 0;
@@ -320,87 +393,35 @@ void* SocketReadAsync(IOSocket* socket)
 unsigned long SocketReadAsync(IOSocket* socket)
 #endif
 {
-    char lostConnection = 0;
-
     // Send & Recieve <Permanent Loop>!
+    while (1)
     {
-        char* message;
-        char quitConnection = 0;
-        char readingFailureCounter = 0;
-        char readingFailureMaximal = 3;
+        SocketError errorCode = SocketRead(socket);
+        char* message = &socket->Message[0];
 
-        do
+        if (errorCode == SocketNoError)
         {
-            SocketErrorCode errorCode = SocketRead(socket);
-            message = &socket->Message[0];
+            char hasCallBack = socket->OnMessage != 0;
 
-            switch (errorCode)
+            if (hasCallBack)
             {
-                case SocketNoError:
-                {
-                    char hasCallBack = socket->OnMessage != 0;
-
-                    readingFailureCounter = 0;
-
-                    if (hasCallBack)
-                    {
-                        socket->OnMessage(socket->ID, message);
-                    }
-
-                    break;
-                }
-                case SocketRecieveFailure:
-                {           
-                    if (++readingFailureCounter >= readingFailureMaximal)
-                    {
-                        lostConnection = 1;
-                    }
-                    break;
-                }
-
-                case SocketRecieveConnectionClosed:
-                {
-                    lostConnection = 1;
-                    break;
-                }
-            }
-
-            quitConnection = memcmp("QUIT", message, 4) == 0 || lostConnection;
-
-        }
-        while (!quitConnection);
-    }
-
-    // Handle disconnect
-    {
-        char hasDisconnectCallBack = socket->OnDisconnected != 0;
-
-        if (!lostConnection)
-        {
-            SocketWrite(socket, "ACK_QUIT");
-
-            SocketClose(socket);
-      
-            if (hasDisconnectCallBack)
-            {
-                socket->OnDisconnected(socket->ID, 0);
+                socket->OnMessage(socket->ID, message);
             }
         }
         else
         {
-            if (hasDisconnectCallBack)
-            {
-                socket->OnDisconnected(socket->ID, 1);
-            }
+            break;
         }
     }
+
+    SocketClose(socket);
 
     return 0;
 }
 
 int SocketGetAdressFamily(IPVersion ipVersion)
 {
-    
+
     switch (ipVersion)
     {
         case IPVersion4:
@@ -417,11 +438,15 @@ int SocketGetAdressFamily(IPVersion ipVersion)
 }
 
 #ifdef OSWindows
-SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
+SocketError WindowsSocketAgentStartup()
 {
     WORD wVersionRequested = MAKEWORD(2, 2);
-    WSADATA* wsaData = &socket->WindowsSocketAgentData;
-    int result = WSAStartup(wVersionRequested, wsaData);
+    WSADATA wsaData;
+    int result = -1;
+
+    memset(&wsaData, 0, sizeof(WSADATA));
+
+    result = WSAStartup(wVersionRequested, &wsaData);
 
     switch (result)
     {
@@ -440,6 +465,29 @@ SocketErrorCode WindowsSocketAgentStartup(IOSocket* socket)
         case WSAEFAULT:
             return InvalidParameter;
 
+        case 0:
+        default:
+            return SocketNoError;
+    }
+}
+int WindowsSocketAgentShutdown()
+{
+    int result = WSACleanup();
+
+    switch (result)
+    {
+        case WSANOTINITIALISED:
+        {
+            return SubSystemNotInitialised;
+        }
+        case WSAENETDOWN:
+        {
+            return SubSystemNetworkFailed;
+        }
+        case WSAEINPROGRESS:
+        {
+            return SocketIsBlocking;
+        }   
         case 0:
         default:
             return SocketNoError;

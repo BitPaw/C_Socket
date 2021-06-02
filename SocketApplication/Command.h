@@ -21,7 +21,8 @@ typedef enum Command_
 
     CommandQuit,
 
-    CommandHTTPRequest
+    CommandHTTPRequest,
+    CommandMinecraftServerList
 }Command;
 
 #endif

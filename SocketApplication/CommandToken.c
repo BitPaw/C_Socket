@@ -33,9 +33,13 @@ unsigned char CommandTokenParse(CommandToken* commandToken, char* message)
 
     commandToken->CommandType = ParseCommand(message);
 
-    if (commandToken->CommandType == CommandHTTPRequest)
+    switch (commandToken->CommandType)
     {
-        return 0;
+        case CommandMinecraftServerList:
+        case CommandHTTPRequest:
+        {
+            return 0;
+        }
     }
 
     commandToken->CommandRaw = calloc(stringLength + 1, sizeof(char));
@@ -79,9 +83,11 @@ unsigned char CommandTokenParse(CommandToken* commandToken, char* message)
 
 Command ParseCommand(char* command)
 {   
-    unsigned int length = 0;
+   
 
     /*
+    *  unsigned int length = 0;
+    * 
     for ( ; command[length] != '\0' && length < 3; length++)
     {
         char character = command[length];
@@ -91,14 +97,17 @@ Command ParseCommand(char* command)
         {
             command[length] -= 32; // toUpperCase
         }
-    }*/
 
-    if (length < 3)
+            if (length < 3)
     {
         return CommandInvalid;
     }
+    }*/
 
-    if (memcmp("GET / HTTP/1.1", command, 14) == 0)
+    if (memcmp("\x10", command, 1) == 0)
+        return CommandMinecraftServerList;
+
+    if (memcmp("GET /", command, 5) == 0)
         return CommandHTTPRequest;
 
     if (memcmp("GET;", command, 4) == 0)
@@ -156,7 +165,7 @@ int CommandTokenCompare(CommandToken* commandToken1, CommandToken* commandToken2
         if (strcmp(commandToken1->Key,commandToken2->Key))
         {
             result--;
-        }
+        }        
     }
     else
     {

@@ -4,11 +4,19 @@
 
 unsigned short DefaultPort = 5678u;
 const char TagNotSet[] = "NotSet";
-const char ConnectionSuccesful[] = "[OK] Connection successful!\n";
-const char InvalidModeInput[] = "[Error] Invalid Mode! Please select a valid option.\n";
-const char InvalidIPInput[] = "[Error] Invalid IP! Please check your input.\n";
-const char NoIPSelected[] = "[Info] No IP selected! Guessing localhost (127.0.0.1).\n";
-const char ServerPortBlocked[] = "[Error] Port seems to be blocked. Server can't be started.\n";
+const char ConnectionSuccesful[] = "[i] Connection successful!\n";
+
+const char InputSpecifyPort[] = "[?] Specify Port : ";
+
+const char InfoNoIPSelected[] = "[Info] No IP selected! Guessing localhost (127.0.0.1).\n";
+
+const char ErrorInvalidModeInput[] = "[x] Invalid Mode! Please select a valid option.\n";
+const char ErrorInvalidIPInput[] = "[x] Invalid IP! Please check your input.\n";
+const char ErrorServerPortBlocked[] = "[x] Port seems to be blocked. Server can't be started.\n";
+const char ErrorInvalidInput[] = "[x] Invalid input.\n";
+const char ErrorInvalidPort[] = "[x] Invalid Port. Check your input.\n";
+const char ErrorSendingFailed[] = "[x] Sending failed. ErrorCode: <%i:%s>.\n";
+
 const char ASCIIArtLogo[] =
 "-----------------------------------------------------------\n"
 "         _____      _____            _        _   \n"
@@ -24,7 +32,8 @@ const char MenuMode[] =
 "+---------------------------------------------------------+\n"
 "| 0 : Client Mode                                         |\n"
 "| 1 : Server Mode                                         |\n"
-"+---------------------------------------------------------+\n";
+"+---------------------------------------------------------+\n"
+"| [Input] Operation mode : ";
 const char BannerFooter[] =
 "+---------------------------------------------------------+\n";
 const char BannerConnectToServer[] =
@@ -38,11 +47,35 @@ const char BannerSendAndRecieve[] =
 const char ServerUnreachable[] =
 "[Info]  It seems that the server is unreachable\n"
 "        or even offline. Use another IP or try later.\n";
+
+const char BannerClientDisconnecting[] =
+"+---------------------------------------------------------+\n"
+"| Disconnecting...                                        |\n"
+"+---------------------------------------------------------+\n";
 const char BannerClientSelectIPHeader[] =
 "+---------------------------------------------------------+\n"
 "| Select Server-IP to connect to.                         |\n"
 "+---------------------------------------------------------+\n"
 "| [Input] IP   : ";
+
+const char InputUseDefaultPort[] =
+"[?] Use default Port <%i>?\n"
+"    <y/n> : ";
+
+const char InputIPVersion[] =
+"[?] Which IP Version shall be used?\n"
+"    Select 4 or 6 : ";
+
+const char InputConnectionTryAgain[] =
+"[?] Connection failed.\n"
+"    Do you want to try again?\n"
+"    <y/n> : ";
+
+const char InputServerStartTryAgain[] =
+"[?] Server starting failed.\n"
+"    Do you want to try again?\n"
+"    <y/n> : ";
+
 
 #define ScanfInputTag " %50[^\n]"
 
@@ -56,7 +89,7 @@ static ApplicationState _currentApplicationState;
 int main(int numberOfArguments, char* arguments[]);
 static void OnRemoteServerMessageRecieved(int socketID, char* message);
 static void OnRemoteClientMessageRecieved(int socketID, char* message);
-static void OnRemoteServerDisconnect(int socketID, char disconnectionCause);
-static void OnRemoteClientDisconnect(int socketID, char disconnectionCause);
+static void OnRemoteServerDisconnect(int socketID);
+static void OnRemoteClientDisconnect(int socketID);
 static void OnRemoteServerConnect(int socketID);
 static void OnRemoteClientConnect(int socketID);

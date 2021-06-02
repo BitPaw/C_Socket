@@ -16,7 +16,6 @@ void ServerInitialize(Server* server)
 {
     SocketInitialize(&server->Socket);
 
-    server->State = ConnectionInvalid;
     server->ClientList = 0;
     server->NumberOfConnectedClients = 0;
     server->NumberOfMaximalClients = 10;
@@ -38,8 +37,9 @@ Client* GetNextClient(Server* server)
     for (unsigned int i = 0; i < server->NumberOfMaximalClients; i++)
     {
         Client* client = &server->ClientList[i];
+        char isUsed = SocketIsCurrentlyUsed(&client->Socket);
 
-        if (client->State == ConnectionInvalid || client->State == ConnectionOffline)
+        if (!isUsed)
         {
             return client;
         }
@@ -48,40 +48,21 @@ Client* GetNextClient(Server* server)
     return 0;
 }
 
-void ServerStart(Server* server, IPVersion ipVersion, unsigned short port)
+char ServerStart(Server* server, IPVersion ipVersion, unsigned short port)
 {
-    SocketErrorCode errorCode = SocketOpen(&server->Socket, ipVersion, port);
+    SocketError errorCode = SocketOpen(&server->Socket, ipVersion, port);
     
-    switch (errorCode)
-    {
-        case SocketNoError:
-        {
-            server->State = ConnectionOnline;
-            break;
-        }
-        default:
-        {
-            server->State = ConnectionOffline;
-            break;
-        }
-    }
+    return errorCode == SocketNoError;
 }
 
 void ServerStop(Server* server)
 {
-    char isRunning = server->State == ConnectionOnline;
+    char isRunning = SocketIsCurrentlyUsed(&server->Socket);
 
     if (isRunning)
-    {
-        server->State = ConnectionOffline;
-        
+    {        
         SocketClose(&server->Socket);
     }
-}
-
-char ServerIsRunning(Server* server)
-{
-    return server->Socket.ID != -1;
 }
 
 void ServerKickClient(Server* server, int socketID)
@@ -102,12 +83,8 @@ Client* ServerWaitForClient(Server* server)
       
     if(client->Socket.ID == -1)
     {
-        client->State = ConnectionInvalid;
-
         return 0;
     }
-
-    client->State = ConnectionOnline;
 
     if (hasCallBack)
     {
@@ -145,7 +122,7 @@ void ServerPrint(Server* server)
         "+--------------------+\n"
         "| Socket (Server)    |\n"
         "+--------------------+\n"
-        "| ID      : %8i |\n" 
+        "| ID      : %8i |\n"
         "| Mode    : %8s |\n"
         "| Port    : %8i |\n"
         "| State   : %8s |\n"
@@ -154,12 +131,12 @@ void ServerPrint(Server* server)
         server->Socket.ID,
         server->Socket.IPMode == IPVersion4 ? "IPv4" : "IPv6",
         server->Socket.Port,
-        ConnectionStateToString(server->State),
+        SocketIsCurrentlyUsed(&server->Socket) ? "ONLINE" : "OFFLINE",
         server->NumberOfConnectedClients
     );
 }
 
-SocketErrorCode ServerSendToClient(Server* server, int clientID, char* message)
+SocketError ServerSendToClient(Server* server, int clientID, char* message)
 {
     // Client LookUp
     Client* client = ServerGetClientViaID(server, clientID);
@@ -174,9 +151,9 @@ SocketErrorCode ServerSendToClient(Server* server, int clientID, char* message)
     return SocketWrite(&client->Socket, message);
 }
 
-SocketErrorCode ServerBroadcastToClients(Server* server, char* message)
+SocketError ServerBroadcastToClients(Server* server, char* message)
 {
-    SocketErrorCode errorCode = SocketNoError;
+    SocketError errorCode = SocketNoError;
 
     for (size_t i = 0; i < server->NumberOfMaximalClients; i++)
     {
@@ -184,7 +161,7 @@ SocketErrorCode ServerBroadcastToClients(Server* server, char* message)
 
         if (client->Socket.ID != -1)
         {
-            SocketErrorCode currentCrrorCode = SocketWrite(&client->Socket, message);
+            SocketError currentCrrorCode = SocketWrite(&client->Socket, message);
 
             if (currentCrrorCode != SocketNoError)
             {

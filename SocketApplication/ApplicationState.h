@@ -9,14 +9,16 @@ typedef enum ApplicationState_
 
 	StateSelectMode,
 
+	StateClientConnectionFailed,
 	StateClientSelectingIP,
 	StateClientConnecting,
 	StateClientConnected,
+	StateClientDisconnecting,
 
 	StateServerSelectingIPVersion,
 	StateServerStarting,
 	StateServerListening,
-	StateServerOffline
+	StateServerStartFailed
 
 
 }ApplicationState;
@@ -32,8 +34,14 @@ const char* ApplicationStateToString(ApplicationState applicationState)
 		case StateServerStarting:
 			return "server starting";
 
+		case StateClientDisconnecting:
+			return "disconnecting";
+
 		case 	StateSelectingDefaultPort:
 			return "selecting default port";
+
+		case StateClientConnectionFailed:
+			return "connection failed";
 
 		case 	StateSelectingSpecificPort:
 			return "selecting specific port";
@@ -56,7 +64,7 @@ const char* ApplicationStateToString(ApplicationState applicationState)
 		case 	StateServerListening:
 			return "server listening";
 
-		case 	StateServerOffline:
-			return "server offline";
+		case 	StateServerStartFailed:
+			return "server start failed";
 	}
 }
