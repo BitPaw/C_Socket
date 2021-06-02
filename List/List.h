@@ -9,8 +9,8 @@
 #endif
 
 
-#ifndef FileManagerInclude
-#define FileManagerInclude
+#ifndef ListInclude
+#define ListInclude
 
 typedef struct List_
 {
@@ -25,18 +25,64 @@ void ListInitialize(List* list, unsigned int count, unsigned int sizeOfObject);
 
 void ListDestruction(List* path);
 
-void ListItemInsertAt(List* list, unsigned int indexValue, void* value);
+/*
+ * Function:  ListItemInsertAt
+ * --------------------
+ * adds parameter value to index in parameter list->content
+ * --------------------
+ *  returns: 0 if successful
+ *	  -1 List is NULL
+ *	  -2 Out of bounds
+ */
+int ListItemInsertAt(List* list, unsigned int indexValue, void* value);
 
+/*
+ * Function:  ListItemGet
+ * --------------------
+ * adds parameter value to index in parameter list->content
+ * --------------------
+ *  returns: Value if successful
+ *	  NULL List is NULL
+ *	  NULL Out of bounds
+ */
 void* ListItemGet(List* list, unsigned int index);
 
-/// <summary>
-/// AAAA
-/// </summary>
-/// <param name="list"></param>
-/// <param name="value"></param>
-void ListItemAdd(List* list, void* value);
+/*
+ * Function:  ListItemAdd
+ * --------------------
+ * adds parameter value to next free value in parameter list->content
+ * --------------------
+ *
+ * When the List is full, it will be made bigger
+ *
+ *  returns: 0 if successful
+ *	  -1 List is NULL
+ *	  -2 Out of bounds
+ *	  -9 Calloc failed
+ */
+int ListItemAdd(List* list, void* value);
 
-void ListItemRemove(List* list, unsigned int index);
+/*
+ * Function:  ListItemRemove
+ * --------------------
+ * adds parameter value to index in parameter list->content
+ * --------------------
+ *  returns: 0 if successful
+ *     1 Removed Value already NULL
+ *	  -1 List is NULL
+ *	  -2 Out of bounds
+ */
+int ListItemRemove(List* list, unsigned int index);
+
+/*
+ * Function:  ListClear
+ * --------------------
+ * sets all values in list->content = 0
+ * --------------------
+ *  returns: 0 if successful
+ *	  -1 List is NULL
+ */
+int ListClear(List* list);
 
 void ListPrint_string(List* list);
 

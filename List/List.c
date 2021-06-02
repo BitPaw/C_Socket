@@ -16,15 +16,17 @@ void ListDestruction(List* list)
 	free(list->content);
 }
 
-void ListItemInsertAt(List* list, int indexValue, void* value)
+int ListItemInsertAt(List* list, int indexValue, void* value)
 {
 	if(list == NULL)
-		return;
+		return -1;
 
 	if(indexValue < 0 || indexValue > (list->size-1))
-		return;
+		return -2;
 	
 	list->content[indexValue] = value;
+
+	return 0;
 }
 
 void* ListItemGet(List* list, unsigned int index)
@@ -38,14 +40,17 @@ void* ListItemGet(List* list, unsigned int index)
 	return list->content[index];
 }
 
-void ListItemAdd(List* list, void* value)
+int ListItemAdd(List* list, void* value)
 {
+	if (list == NULL)
+		return -1;
+	
 	int unsigned addLocation = 0;
 
 	while (list->content[addLocation] != NULL && addLocation <= list->size - 1)
 		addLocation++;
 
-
+	
 	if(addLocation >= list->size)
 	{
 		const unsigned int oldSize = list->size;
@@ -55,7 +60,7 @@ void ListItemAdd(List* list, void* value)
 		void* reallocOutput = realloc(list->content, list->size * list->sizeOfObject) ;
 
 		if(reallocOutput == NULL)
-			return;
+			return -9;
 
 		
 		list->content = reallocOutput;
@@ -64,7 +69,34 @@ void ListItemAdd(List* list, void* value)
 			list->content[i] = NULL;
 	}
 	
-	ListItemInsertAt(list, addLocation,value);
+	return ListItemInsertAt(list, addLocation,value);
+}
+
+int ListItemRemove(List* list, unsigned int index)
+{
+	if (index > list->size - 1)
+		return -2;
+
+	if (list == NULL)
+		return -1;
+	
+	if (list->content[index] == NULL)
+		return 1;
+
+	list->content[index] = NULL;
+	
+	return 0;
+}
+
+int ListClear(List* list)
+{
+	if (list == NULL)
+		return -1;
+
+	for (int i = 0; i < list->size; ++i)
+		list->content[i] = NULL;
+
+	return 0;
 }
 
 void ListPrint_string(List* list)
