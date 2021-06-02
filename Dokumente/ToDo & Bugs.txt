@@ -1,0 +1,40 @@
+--------------------------------------------------------------------------
+Man kann keine Domains nutzen.
+
+Wie www.stuff.de kann nicht verwendet werden vom internen system.
+Das muss man auflösen zu 123.100.0.1 ect.
+NSLOOKUP gibt es zwar, da gibt es aber noch andere befehle im code selbst
+
+"gethostbyname()" funktioniert aber nur für IPv4.
+"getaddrinfo()" funktioniert bei domains nicht.
+--------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------
+Befehle müssen noch verabeitet werden. GET / PUT usw..
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+Brauchen wir ein User system für publish & subscribe?
+
+Dennis: Wie währe es eine Lokale Datei zu nutzen? Neben der .exe.
+	Da kann man dann eine UUID anlegen.
+
+Lukas:	Das break't aber das, das die .exe mehrmals gleich öffnen kann.
+	Man braucht dann immer einen seperaten ordner.
+	(Vieleicht ignorieren wir das einfach, wenn der Client leftet wird er quasi gelöscht.)
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+semaphore Async Testen Windows & Linux
+Auf linux auch erstmal testen/bauen
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+IPv6 auf linux?
+Das muss man testen, ggf was hinzufügen, vieleicht auch nicht.
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+Farbe von Dennis verwenden, für das ganze programm.
+--------------------------------------------------------------------------
