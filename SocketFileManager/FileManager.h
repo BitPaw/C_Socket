@@ -12,19 +12,22 @@
 
 #include "FileManagerErrorCodes.h"
 #include "Path.h"
+#include "../List/List.h"
 
 #ifndef FileManagerInclude
 #define FileManagerInclude
 
-FileManagerErrorCode FM_DoesFileExist_FULL(char* directory, char* filePath);
-FileManagerErrorCode FM_DoesFileExist(char* path);
+FileManagerErrorCode FM_FileExists_split(char* directory, char* filePath);
+FileManagerErrorCode FM_FileExists(char* path);
 
-FileManagerErrorCode FM_WriteInFile(Path* path, char * content);
+FileManagerErrorCode FM_DirExists(char* directory);
+
+FileManagerErrorCode FM_FileWrite(Path* path, char * content);
 
 
-FileManagerErrorCode FM_CreateFile(char* path);
+FileManagerErrorCode FM_FileCreate(char* path);
 
-FileManagerErrorCode FM_DeleteFile(char* path);
+FileManagerErrorCode FM_FileDelete(char* path);
 
 /// <summary>
 /// Creates the last folder of directory.
@@ -32,7 +35,7 @@ FileManagerErrorCode FM_DeleteFile(char* path);
 /// <param name="directory"></param>
 /// <returns>
 /// </returns>
-FileManagerErrorCode FM_CreateDir(char* directory);
+FileManagerErrorCode FM_DirCreate(char* directory);
 
 /// <summary>
 /// Creates the full directory.
@@ -40,13 +43,13 @@ FileManagerErrorCode FM_CreateDir(char* directory);
 /// <param name="directory"></param>
 /// <returns>
 /// </returns>
-FileManagerErrorCode FM_CreateFullDir(char* directory);
+FileManagerErrorCode FM_DirFullCreate(char* directory);
 
-FileManagerErrorCode FM_DeleteDir(char* directory);
+FileManagerErrorCode FM_DirDelete(char* directory);
 
-FileManagerErrorCode FM_ForceDeleteDir(char* directory);
+FileManagerErrorCode FM_DirForceDelete(char* directory);
 
-Path* FM_ListAllFiles(char* directory);
+void FM_ListAllFiles(List* emptyList, char* directory);
 
 #ifdef OSWindows
 static wchar_t* stringToWString(char* string);

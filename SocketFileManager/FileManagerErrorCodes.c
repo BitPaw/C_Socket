@@ -42,5 +42,9 @@ const char* FileManagerErrorCodeToString(FileManagerErrorCode state)
         return "CallocWentWrong";
     case FileManager_UnknownError:
         return "UnknownError";
+    case FileManager_NotImplemented:
+        return "NotImplemented";
+
+        
     }
 }

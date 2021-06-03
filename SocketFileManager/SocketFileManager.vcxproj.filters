@@ -27,7 +27,7 @@
     <ClCompile Include="Path.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="test.c">
+    <ClCompile Include="PathList.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,6 +36,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Path.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="PathList.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

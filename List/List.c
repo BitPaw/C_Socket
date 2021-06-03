@@ -13,7 +13,25 @@ void ListInitialize(List* list, size_t count, size_t sizeOfObject)
 
 void ListDestruction(List* list)
 {
+	if(list == NULL) // Parameter NULL
+		return;
+
+	if (list->content == NULL) // No data to delete
+		return;
+	
+	for (int i = 0; i < list->size; ++i)
+	{
+		void* element = list->content[i];
+		
+		if(element != NULL)
+		{
+			free(element);
+			list->content[i] = NULL;
+		}
+	}
+		
 	free(list->content);
+	list->content = NULL;
 }
 
 int ListItemInsertAt(List* list, int indexValue, void* value)
@@ -83,7 +101,13 @@ int ListItemRemove(List* list, unsigned int index)
 	if (list->content[index] == NULL)
 		return 1;
 
-	list->content[index] = NULL;
+	if(list->content[index] != NULL)
+	{
+		free(list->content[index]);
+		list->content[index] = NULL;
+	}
+	
+	
 	
 	return 0;
 }
@@ -94,7 +118,7 @@ int ListClear(List* list)
 		return -1;
 
 	for (int i = 0; i < list->size; ++i)
-		list->content[i] = NULL;
+		ListItemRemove(list, i);
 
 	return 0;
 }

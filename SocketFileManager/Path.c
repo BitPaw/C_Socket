@@ -14,10 +14,11 @@ void PathInitialize(Path* path, char* stringPath)
 	path->fullPathLength = strlen(stringPath);
 	
 	path->fullPath = calloc(path->fullPathLength + 1, sizeof(char));
-	memcpy(path->fullPath, stringPath, path->fullPathLength);
+	strcpy_s(path->fullPath, path->fullPathLength + 1, stringPath);
 
-	path->directory = calloc(path->fullPathLength +1, sizeof(char));
-	memcpy(path->directory, path->fullPath, path->fullPathLength);
+
+	path->directory = calloc(path->fullPathLength + 1, sizeof(char));
+	strcpy_s(path->directory, path->fullPathLength + 1, path->fullPath);
 	
 	int selector = 0;
 	int length = 0;
@@ -41,14 +42,16 @@ void PathInitialize(Path* path, char* stringPath)
 		{
 			path->hasDirectory = 0;
 			
-			path->file = stringPath + selector;
+			path->file = path->fullPath + selector;
+			free(path->directory);
 			path->directory = NULL;
+			
 		}
 		else
 		{
 			path->hasDirectory = 1;
 			
-			path->file = stringPath + selector + 1;
+			path->file = path->fullPath + selector + 1;
 			path->directory[selector] = '\0';
 		}
 
@@ -63,7 +66,7 @@ void PathInitialize(Path* path, char* stringPath)
 		}
 
 		unsigned const int fileNameLength = strlen(path->file);
-		path->fileName = calloc((fileNameLength + 1) - (selector + 1), sizeof(char));
+		path->fileName = calloc((fileNameLength + 1), sizeof(char));
 		memcpy(path->fileName, path->file, selector);
 
 		path->fileType = calloc((fileNameLength + 1) - (selector + 1), sizeof(char));
@@ -86,6 +89,18 @@ void PathDestruction(Path* path)
 	free(path->directory);
 	free(path->fileName);
 	free(path->fileType);
+
+	path->fullPathLength = 0;
+
+	path->fullPath = NULL;
+	path->directory = NULL;
+	path->fileName = NULL;
+	path->fileType = NULL;
+	path->file = NULL;
+
+	path->hasFile = 0;
+	path->hasDirectory = 0;
+	
 	*path = (Path){ 0 };
 }
 

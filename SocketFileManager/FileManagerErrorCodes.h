@@ -1,5 +1,7 @@
 #pragma once
 
+#define FM_TODO FileManager_NotImplemented
+
 #ifndef FileManagerErrorCodeInclude
 #define FileManagerErrorCodeInclude
 
@@ -28,7 +30,9 @@ typedef enum FileManagerErrorCode_
 	
 	FileManager_ContentIsNull,
 
-	FileManager_UnknownError
+	FileManager_UnknownError,
+
+	FileManager_NotImplemented
 
 }FileManagerErrorCode;
 

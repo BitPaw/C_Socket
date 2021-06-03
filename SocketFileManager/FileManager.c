@@ -3,6 +3,7 @@
 
 #include "FileManager.h"
 
+
 #ifdef OSWindows
 #include <windows.h>
 #include <fileapi.h>
@@ -14,11 +15,17 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include "PathList.h"
 
 
-
-FileManagerErrorCode FM_DoesFileExist_FULL(char* directory, const char* filePath)
+FileManagerErrorCode FM_FileExists_split(char* directory, const char* filePath)
 {
+	
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+		
+	
 	//checks if '.' is in file
 	int length = 0;
 	while (filePath[length] != '.')
@@ -58,9 +65,12 @@ FileManagerErrorCode FM_DoesFileExist_FULL(char* directory, const char* filePath
 		Path[pathLength - 1] = '/';
 		memcpy(Path + pathLength, filePath, fileLength * sizeof(char));
 
-		if (stat(Path, &st) == -1)
-			return FileManager_FileNotFound;
+		const char checkValue = stat(Path, &st) == -1;
 
+		free(Path);
+		if (checkValue)
+			return FileManager_FileNotFound;
+		
 	}else
 	{
 		Path = filePath;
@@ -68,19 +78,20 @@ FileManagerErrorCode FM_DoesFileExist_FULL(char* directory, const char* filePath
 		if (stat(Path, &st) == -1)
 			return FileManager_FileNotFound;
 	}
-
-
 	
 	return FileManager_NoError;
 }
 
-FileManagerErrorCode FM_DoesFileExist(char* path )
+FileManagerErrorCode FM_FileExists(char* path )
 {
+	char* tempPath = calloc(strlen(path)+1,sizeof(char));
+	strcpy_s(tempPath, strlen(path) + 1,path);
+		
 	int selector = 0;
 	int length = 0;	
-	while(path[length] != '\0')
+	while(tempPath[length] != '\0')
 	{		
-		if (path[length] == '/')
+		if (tempPath[length] == '/')
 			selector = length;
 
 
@@ -92,25 +103,53 @@ FileManagerErrorCode FM_DoesFileExist(char* path )
 	
 	if (selector == 0)
 	{
-		file = path + selector;
-		path = NULL;
+		file = tempPath + selector;
+		tempPath = NULL;
 	}
 	else
 	{
-		file = path + selector + 1;
-		path[selector] = '\0';
+		file = tempPath + selector + 1;
+		tempPath[selector] = '\0';
 	}
 		
 		
-	return FM_DoesFileExist_FULL(path ,file );
+	FileManagerErrorCode returnValue = FM_FileExists_split(tempPath,file );
+
+	free(tempPath);
+
+	return returnValue;
 }
 
-FileManagerErrorCode FM_WriteInFile(Path* path, char* content)
+FileManagerErrorCode FM_DirExists(char* directory)
 {
+
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+
+	if (directory == NULL)
+		return FileManager_ContentIsNull;
+	
+	struct stat st = { 0 };
+	char* Path;
+	
+	if (stat(directory, &st) == -1)
+		return FileManager_FolderNotFound;
+
+	return FileManager_NoError;
+}
+
+FileManagerErrorCode FM_FileWrite(Path* path, char* content)
+{
+
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+	
 	if (content == NULL)
 		return FileManager_ContentIsNull;
 
-	const FileManagerErrorCode fileExistOutput = FM_DoesFileExist_FULL(path->directory,path->file);
+	const FileManagerErrorCode fileExistOutput = FM_FileExists_split(path->directory,path->file);
 	
 	if(fileExistOutput != FileManager_NoError)
 	{
@@ -118,12 +157,12 @@ FileManagerErrorCode FM_WriteInFile(Path* path, char* content)
 		{
 			case FileManager_FolderNotFound:
 			{
-				const FileManagerErrorCode errorCode = FM_CreateFullDir(path->directory);
+				const FileManagerErrorCode errorCode = FM_DirFullCreate(path->directory);
 				
 				if (errorCode != FileManager_NoError)
 					return errorCode;
 
-				return FM_WriteInFile(path, content);
+				return FM_FileWrite(path, content);
 			}
 			case FileManager_FileNotFound:
 				//TODO: Write in File 
@@ -147,8 +186,13 @@ FileManagerErrorCode FM_WriteInFile(Path* path, char* content)
 	return FileManager_NoError;
 }
 
-FileManagerErrorCode FM_CreateFile(char* path)
+FileManagerErrorCode FM_FileCreate(char* path)
 {
+
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 
 	#ifdef OSWindows
@@ -177,8 +221,14 @@ FileManagerErrorCode FM_CreateFile(char* path)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DeleteFile(char* path)
+FileManagerErrorCode FM_FileDelete(char* path)
 {
+
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+
+	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 
 	wchar_t* w_path = stringToWString(path);
@@ -194,8 +244,14 @@ FileManagerErrorCode FM_DeleteFile(char* path)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_CreateDir(char* directory)
+FileManagerErrorCode FM_DirCreate(char* directory)
 {
+
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+
+	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 
 	
@@ -224,8 +280,14 @@ FileManagerErrorCode FM_CreateDir(char* directory)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_CreateFullDir(char* directory)
+FileManagerErrorCode FM_DirFullCreate(char* directory)
 {
+
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+
+	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 	
 	unsigned int counter = 0;
@@ -247,7 +309,7 @@ FileManagerErrorCode FM_CreateFullDir(char* directory)
 		
 		memcpy(partDirectory, directory, (counter) * sizeof(char));
 
-		returnValue = FM_CreateDir(partDirectory);
+		returnValue = FM_DirCreate(partDirectory);
 		
 		free(partDirectory);
 				
@@ -256,8 +318,13 @@ FileManagerErrorCode FM_CreateFullDir(char* directory)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DeleteDir(char* directory)
+FileManagerErrorCode FM_DirDelete(char* directory)
 {
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+
+	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 	
 	wchar_t* w_directory = stringToWString(directory);
@@ -273,82 +340,139 @@ FileManagerErrorCode FM_DeleteDir(char* directory)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_ForceDeleteDir(char* directory)
+FileManagerErrorCode FM_DirForceDelete(char* directory)
 {
+	#ifdef OSUnix
+	return FileManager_NotImplemented;
+	#endif
+
+	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 	
-	WIN32_FIND_DATAA data;
-	HANDLE hFind = FindFirstFileA(directory, &data);
+	List dirContent;
+
+	PathListInitialize(&dirContent, 1);
+
+	FM_ListAllFiles(&dirContent,directory);
+
+	PathListToString(&dirContent);
+
 	
-	if (hFind != INVALID_HANDLE_VALUE) {
-		
-		do {
+	if(dirContent.size > 0)
+	{
+		for (int i = 0; i < dirContent.size; ++i)
+		{
+			Path* tempPath = PathListItemGet(&dirContent, i);
 			
-			printf("%s \n", &data.cFileName);
-			
-		} while (FindNextFileA(hFind, &data));
-		
-		const unsigned int lastError = GetLastError();
+			if (tempPath != NULL)
+			{
+				if(tempPath->hasFile == 1)
+					FM_FileDelete(tempPath->fullPath);
+				else
+				{
+					FileManagerErrorCode tempErrorCode = FM_DirDelete(tempPath->fullPath);
 
-		if (lastError != ERROR_NO_MORE_FILES)
-			returnValue = WindowsErrorToFileManagerError(lastError);
-
-		
-		FindClose(hFind);
+					if (tempErrorCode == FileManager_DirectoryNotEmpty)
+					{
+						FM_DirForceDelete(tempPath->fullPath);
+						FM_DirDelete(tempPath->fullPath);
+					}
+				}
+			}
+		}
 	}
 	
+	PathListDestruction(&dirContent);
+
+	FM_DirDelete(directory);
 	
 	return returnValue;
 }
 
-Path* FM_ListAllFiles(char * directory)
+void FM_ListAllFiles(List* emptyList,char * directory)
 {
-	Path* returnValue;
+#ifdef OSUnix
+	return FileManager_NotImplemented;
+#endif
+	
 
 	int selector;
 	const int directoryLength = strlen(directory);
 
 	if (directoryLength < 2)
-		return NULL;
+		return;
+
+	const char hasRightEnding = (directory[directoryLength - 1] == '*') && (directory[directoryLength - 2] == '/');
+
+	char* tempDirectory;
 	
-	const char hasRightEnding = (directory[directoryLength] == '*' && directory[directoryLength - 1] == '/');
-		
-	WIN32_FIND_DATAA data;
-	HANDLE hFind = FindFirstFileA(directory, &data);
-
-	if (hFind != INVALID_HANDLE_VALUE) {
-
-		int fileCount = (directoryLength > 4? -1:1);
-
-		while (FindNextFileA(hFind, &data)) 
-		{
-			fileCount++;
-		} 
-
-		
-		
-		hFind = FindFirstFileA(directory, &data);
-		printf("%i \n", fileCount);
-
-		//returnValue = ca
-		
-		do {
-			const int compareLenght = sizeof(char) * strlen(&data.cFileName);
-			if(memcmp(&data.cFileName,".", compareLenght) != 0 && memcmp(&data.cFileName, "..", compareLenght) != 0)
-				printf("%s \n", &data.cFileName);
-			
-		} while (FindNextFileA(hFind, &data));
-		
-		const unsigned int lastError = GetLastError();
-
-		if (lastError != ERROR_NO_MORE_FILES)
-			returnValue = NULL;
-
-		
-		FindClose(hFind);
+	if(hasRightEnding == 1)
+	{
+		tempDirectory = directory;
+	}
+	else
+	{
+		tempDirectory = calloc(directoryLength + 3, sizeof(char));
+		strcpy_s(tempDirectory, (directoryLength + 1) * sizeof(char), directory);
+		strcpy_s(tempDirectory + directoryLength, (3) * sizeof(char), "/*");
 	}
 
 	
+	WIN32_FIND_DATAA data;
+	HANDLE hFind = FindFirstFileA(tempDirectory, &data);
+
+	if (hFind != INVALID_HANDLE_VALUE) {
+
+		int fileCount = (directoryLength > 4 ? -1 : 1);
+
+		while (FindNextFileA(hFind, &data))
+		{
+			fileCount++;
+		}
+	
+
+		PathListInitialize(emptyList, fileCount);
+
+		if(fileCount == 0)
+		{
+			FindClose(hFind);
+			
+			if (hasRightEnding == 0)
+				free(tempDirectory);
+			
+			return;
+		}
+
+		FindClose(hFind);
+		hFind = FindFirstFileA(tempDirectory, &data);
+		
+		do {
+
+			char* fileName = data.cFileName;
+			
+			const unsigned int compareLenght = sizeof(char) * strlen(fileName);
+			if (memcmp(fileName, ".", compareLenght) != 0 && memcmp(fileName, "..", compareLenght) != 0)
+			{
+				const unsigned int directoryLength = strlen(tempDirectory);
+				const unsigned int FileNameLength = strlen(fileName);
+				
+				char* stringPath = calloc(directoryLength + FileNameLength +1,sizeof(char));
+				memcpy(stringPath, tempDirectory, directoryLength * sizeof(char));
+				memcpy(stringPath + directoryLength -1, fileName, FileNameLength * sizeof(char));
+				
+				Path* newPath = calloc(1,sizeof(Path));
+				PathInitialize(newPath, stringPath);
+				PathListItemAdd(emptyList, newPath);
+
+				free(stringPath);
+			}
+		} while (FindNextFileA(hFind, &data));	
+	}
+
+	if(hasRightEnding == 0)
+		free(tempDirectory);
+
+	FindClose(hFind);
 }
 
 #ifdef OSWindows

@@ -6,6 +6,8 @@
 #if defined(linux) || defined(__APPLE__)
 #define OSUnix
 #endif
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,11 +15,15 @@
 
 #include "Testscripts/PathTest.h"
 #include "Testscripts/ListTest.h"
+#include "Testscripts/FileManagerTest.h"
 #include "../ColorPrinter/ColorPrinter.h"
 
+#include "../SocketFileManager/FileManager.h"
 
 int main()
-{		
+{
+	
+	
 	// Example Tests:
 	/*
 	// -- Test Int
@@ -44,14 +50,23 @@ int main()
 	*/
 
 	printColors = 1;
-	//printColorTable();
-
-	path_test(1);
-
-	list_test(1);
 	
-	testPrintSummery();
+	//printColorTable();
+	
+	path_test(0);
 
+	list_test(0);
+
+	fileManager_test(0);
+
+	path_ListAllFiles_test(0);
+		
+	//testPrintSummery();
+
+	FM_DirForceDelete("C:/Users/Merdo/Desktop/A");
+
+
+	
 	
 #ifdef OSWindows
 system("pause");
