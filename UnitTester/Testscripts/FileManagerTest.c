@@ -42,19 +42,19 @@ void fileManager_test(char execute)
 	returnCode = FM_DirExists("TestFileManagerFolder/Test/B/B");
 	if (!(returnCode == FileManager_FolderNotFound))
 	{
-		returnCode = FM_DirForceDelete("TestFileManagerFolder/Test/B/B");
+		returnCode = FM_DirForceDelete("TestFileManagerFolder/Test/B");
 		test_fileManager(FileManager_NoError, returnCode, "FolderForceDeleteTest 3.5");
 	}
 
 	returnCode = FM_DirFullCreate("TestFileManagerFolder/Test/B/B");
 	test_fileManager(FileManager_NoError, returnCode, "FolderCreateTest 4");
 	
-	returnCode = FM_DirForceDelete("TestFileManagerFolder/Test/B/B");
+	returnCode = FM_DirForceDelete("TestFileManagerFolder/Test/B");
 	test_fileManager(FileManager_NoError, returnCode, "FolderForceDeleteTest 5");
 
 	//File test
 
-	returnCode = FM_FileExists("TestFileManagerFolder/NULL.txt");
+	returnCode = FM_FileExists("TestFileManagerFolder/dontDelete.txt");
 	test_fileManager(FileManager_NoError, returnCode, "FileExistTest 6");
 	
 	returnCode = FM_FileExists("TestFileManagerFolder/test.txt");
@@ -68,9 +68,5 @@ void fileManager_test(char execute)
 	test_fileManager(FileManager_NoError, returnCode, "FileCreateTest 7");
 
 	returnCode = FM_FileDelete("TestFileManagerFolder/test.txt");
-	test_fileManager(FileManager_NoError, returnCode, "FileDeleteTest 8");
-
-	
-	
-	
+	test_fileManager(FileManager_NoError, returnCode, "FileDeleteTest 8");	
 }

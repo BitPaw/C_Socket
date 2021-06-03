@@ -12,7 +12,6 @@ void test_path(Path* expectedInput, Path* input, char* name)
 	testPrint(PathCompare(expectedInput, input) == 0,PathToString(expectedInput),PathToString(input),"Path",name);
 }
 
-
 void path_test(char execute)
 {
 	if(execute == 0)
@@ -90,7 +89,7 @@ void path_ListAllFiles_test(char execute)
 	testPrintHeader("ListAllFiles-Tests");
 	
 	Path testPath1, testPath2;
-	List test;
+	List test = EMPTYLIST;
 	
 	//List all Files
 
@@ -114,6 +113,8 @@ void path_ListAllFiles_test(char execute)
 
 	// Test without '/*'
 
+	test = EMPTYLIST;
+	
 	FM_ListAllFiles(&test, "TestFileManagerFolder");
 
 	test_int(2, test.size, "ListAllFiles-Test 4 [SizeOfList]");
@@ -134,6 +135,8 @@ void path_ListAllFiles_test(char execute)
 	
 	// Test Empty dic
 
+	test = EMPTYLIST;
+	
 	FM_ListAllFiles(&test, "TestFileManagerFolder/Test");
 
 	test_int(0, test.size, "ListAllFiles-Test 7 [Empty Folder]");

@@ -12,6 +12,8 @@
 #ifndef ListInclude
 #define ListInclude
 
+#define EMPTYLIST (List){0}
+
 typedef struct List_
 {
 	void** content;
@@ -20,7 +22,14 @@ typedef struct List_
 	unsigned int sizeOfObject;
 }List;
 
-
+/*
+ * Function:  ListInitialize
+ * --------------------
+ * Acts like a constructor
+ * ! A list must be set to EMPTYLIST before each initialization
+ * eg: 'List a = EMPTYLIST;'
+ * --------------------
+ */
 void ListInitialize(List* list, unsigned int count, unsigned int sizeOfObject);
 
 void ListDestruction(List* path);

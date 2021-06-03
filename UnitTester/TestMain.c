@@ -19,6 +19,7 @@
 #include "../ColorPrinter/ColorPrinter.h"
 
 #include "../SocketFileManager/FileManager.h"
+#include "../SocketFileManager/PathList.h"
 
 int main()
 {
@@ -52,7 +53,7 @@ int main()
 	printColors = 1;
 	
 	//printColorTable();
-	
+
 	path_test(0);
 
 	list_test(0);
@@ -61,12 +62,7 @@ int main()
 
 	path_ListAllFiles_test(0);
 		
-	//testPrintSummery();
-
-	FM_DirForceDelete("C:/Users/Merdo/Desktop/A");
-
-
-	
+	testPrintSummery();
 	
 #ifdef OSWindows
 system("pause");

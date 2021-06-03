@@ -1,6 +1,7 @@
 #include "PathList.h"
 
 #include <stddef.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,12 +14,14 @@ void PathListDestruction(List* pathList)
 {
 	if(pathList == NULL)
 		return;
-
+			
 	for (int i = 0; i < pathList->size; ++i)
 	{
 		if (pathList->content[i] != NULL)
 		{
 			PathDestruction(pathList->content[i]);
+			free(pathList->content[i]);
+			pathList->content[i] = NULL;
 		}
 	}
 	
@@ -46,13 +49,19 @@ int PathListItemRemove(List* pathList, unsigned int index)
 	return ListItemRemove(pathList, index);
 }
 
-void PathListToString(List* pathList)
+void PathListToString(List* pathList, char* buffer)
 {
-
+	int length = 0;
 	for (int i = 0; i < pathList->size; ++i)
 	{
-		printf("%s\n",PathToString(PathListItemGet(pathList, i)));
+		char* PathAsString = PathToString(PathListItemGet(pathList, i));
+		if(PathAsString != NULL)
+		{
+			const int pathStringLength = strlen(PathAsString);
+			strcpy_s(buffer + length, (pathStringLength + 1)*sizeof(char), PathAsString);
+			length += pathStringLength;
+			buffer[length++] = '\n';
+		}	
 	}
 
-	printf("\n\n");
 }

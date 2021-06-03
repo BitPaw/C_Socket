@@ -14,7 +14,9 @@ void list_test(char execute)
 	testPrintHeader("List-Tests");
 	
 	
-	List a, b, c;
+	List a = EMPTYLIST;
+	List b = EMPTYLIST;
+	List c = EMPTYLIST;
 
 	// Test: 1 [char*]
 	ListInitialize(&a, 3, sizeof(char*));
@@ -92,7 +94,8 @@ void list_test(char execute)
 	ListDestruction(&c);
 	
 	// Test: 4 Remove an Clear[int]
-
+	b = EMPTYLIST;
+	
 	ListInitialize(&b, 2, sizeof(int));
 	
 	int* testInt6 = calloc(1, sizeof(int));

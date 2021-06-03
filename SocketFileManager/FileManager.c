@@ -272,10 +272,7 @@ FileManagerErrorCode FM_DirCreate(char* directory)
 	
 	#endif
 	
-	#ifdef OSUnix
 
-	
-	#endif
 	
 	return returnValue;
 }
@@ -345,38 +342,36 @@ FileManagerErrorCode FM_DirForceDelete(char* directory)
 	#ifdef OSUnix
 	return FileManager_NotImplemented;
 	#endif
-
 	
 	FileManagerErrorCode returnValue = FileManager_NoError;
 	
-	List dirContent;
-
-	PathListInitialize(&dirContent, 1);
-
+	List dirContent = EMPTYLIST;
+	
 	FM_ListAllFiles(&dirContent,directory);
-
-	PathListToString(&dirContent);
-
 	
 	if(dirContent.size > 0)
 	{
 		for (int i = 0; i < dirContent.size; ++i)
 		{
 			Path* tempPath = PathListItemGet(&dirContent, i);
+
+			if(returnValue != FileManager_NoError)
+				continue;
 			
 			if (tempPath != NULL)
 			{
 				if(tempPath->hasFile == 1)
-					FM_FileDelete(tempPath->fullPath);
+					returnValue = FM_FileDelete(tempPath->fullPath);
 				else
 				{
-					FileManagerErrorCode tempErrorCode = FM_DirDelete(tempPath->fullPath);
+					const FileManagerErrorCode tempErrorCode = FM_DirDelete(tempPath->fullPath);
 
 					if (tempErrorCode == FileManager_DirectoryNotEmpty)
-					{
-						FM_DirForceDelete(tempPath->fullPath);
-						FM_DirDelete(tempPath->fullPath);
-					}
+						returnValue = FM_DirForceDelete(tempPath->fullPath);
+					else
+						if (tempErrorCode != FileManager_NoError)
+							returnValue = tempErrorCode;
+					
 				}
 			}
 		}
@@ -384,7 +379,8 @@ FileManagerErrorCode FM_DirForceDelete(char* directory)
 	
 	PathListDestruction(&dirContent);
 
-	FM_DirDelete(directory);
+	if (returnValue == FileManager_NoError)
+		returnValue = FM_DirDelete(directory);
 	
 	return returnValue;
 }
@@ -396,7 +392,7 @@ void FM_ListAllFiles(List* emptyList,char * directory)
 #endif
 	
 
-	int selector;
+	int selector = 0;
 	const int directoryLength = strlen(directory);
 
 	if (directoryLength < 2)

@@ -6,6 +6,9 @@
 
 void ListInitialize(List* list, size_t count, size_t sizeOfObject)
 {
+	if(list->size != 0 || list->content != 0 || list->sizeOfObject != 0)
+		return;
+	
 	list->content = calloc(count, sizeOfObject);
 	list->size = count;
 	list->sizeOfObject = sizeOfObject;

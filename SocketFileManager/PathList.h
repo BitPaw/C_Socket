@@ -7,12 +7,20 @@
 #ifndef PathListInclude
 #define PathListInclude
 
+/*
+ * Function:  PathListInitialize
+ * --------------------
+ * Acts like a constructor
+ * ! A list must be set to EMPTYLIST before each initialization
+ * eg: 'List a = EMPTYLIST;'
+ * --------------------
+ */
 void PathListInitialize(List* pathList, unsigned int count);
 
 void PathListDestruction(List* pathList);
 
 /*
- * Function:  ListItemInsertAt
+ * Function:  PathListItemInsertAt
  * --------------------
  * adds parameter value to index in parameter list->content
  * --------------------
@@ -23,7 +31,7 @@ void PathListDestruction(List* pathList);
 int PathListItemInsertAt(List* pathList, unsigned int indexValue, Path* value);
 
 /*
- * Function:  ListItemGet
+ * Function:  PathListItemGet
  * --------------------
  * adds parameter value to index in parameter list->content
  * --------------------
@@ -34,7 +42,7 @@ int PathListItemInsertAt(List* pathList, unsigned int indexValue, Path* value);
 Path* PathListItemGet(List* pathList, unsigned int index);
 
 /*
- * Function:  ListItemAdd
+ * Function:  PathListItemAdd
  * --------------------
  * adds parameter value to next free value in parameter list->content
  * --------------------
@@ -49,7 +57,7 @@ Path* PathListItemGet(List* pathList, unsigned int index);
 int PathListItemAdd(List* pathList, Path* value);
 
 /*
- * Function:  ListItemRemove
+ * Function:  PathListItemRemove
  * --------------------
  * adds parameter value to index in parameter list->content
  * --------------------
@@ -60,7 +68,7 @@ int PathListItemAdd(List* pathList, Path* value);
  */
 int PathListItemRemove(List* pathList, unsigned int index);
 
-void PathListToString(List* pathList);
+void PathListToString(List* pathList, char* buffer);
 
 
 
