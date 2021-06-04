@@ -3,7 +3,7 @@
 #ifdef OSUnix
 void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter)
 {
-	thread->ThreadHandle = pthread_create(&thread->ID, 0, threadTask, parameter);
+	int result = pthread_create(&thread->ThreadHandle, 0, threadTask, parameter);
 }
 #elif defined(OSWindows)
 void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void* parameter)

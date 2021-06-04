@@ -1,6 +1,7 @@
 #include "IOSocket.h"
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 char SocketIsCurrentlyUsed(IOSocket* socket)
 {
@@ -12,7 +13,6 @@ void SocketInitialize(IOSocket* socket)
     socket->ID = -1;
     socket->Port = -1;
     socket->IPMode = IPVersionInvalid;
-    socket->AdressIPv6 = 0;
 
     socket->OnMessage = 0;
     socket->OnConnected = 0;
@@ -21,6 +21,11 @@ void SocketInitialize(IOSocket* socket)
     memset(socket->Message, 0, SocketBufferSize);
     memset(&socket->AdressIPv4, 0, sizeof(struct sockaddr_in));
 
+#ifdef OSUnix
+    memset(&socket->AdressIPv6, 0, sizeof(socket->AdressIPv6));
+#elif defined(OSWindows)
+    socket->AdressIPv6 = 0;
+#endif
 }
 
 char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip, unsigned short port)
@@ -43,19 +48,26 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
 
         case IPVersion6:
         {
+#ifdef OSUnix
+            struct addrinfo adressIPv6Hint;
+            struct addrinfo* adressIPv6HintPointer = &adressIPv6Hint;
+#elif defined(OSWindows)
             ADDRINFO adressIPv6Hint;
+            ADDRINFO adressIPv6HintPointer = adressIPv6Hint;
+#endif
+
             char portString[10];
             int result;
 
             sprintf(portString, "%i", port);
-            memset(&adressIPv6Hint, 0, sizeof(ADDRINFO));
+            memset(&adressIPv6Hint, 0, sizeof(adressIPv6Hint));
 
             adressIPv6Hint.ai_family = adressFamily; //    AF_INET / AF_INET6:
             adressIPv6Hint.ai_socktype = SOCK_STREAM;
             adressIPv6Hint.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
             adressIPv6Hint.ai_protocol = IPPROTO_TCP;
 
-            result = getaddrinfo(ip, portString, &adressIPv6Hint, &connectionSocket->AdressIPv6);
+            result = getaddrinfo(ip, portString, &adressIPv6Hint, &adressIPv6HintPointer);
 
             switch (result)
             {
@@ -135,9 +147,16 @@ SocketError SocketOpen(IOSocket* serverSocket, IPVersion ipVersion, unsigned sho
             }
             case IPVersion6:
             {
+#ifdef OSUnix
+                adressFamily = serverSocket->AdressIPv6.ai_family;
+                streamType = serverSocket->AdressIPv6.ai_socktype;
+                protocol = serverSocket->AdressIPv6.ai_protocol;
+#elif defined(OSWindows)
                 adressFamily = serverSocket->AdressIPv6->ai_family;
                 streamType = serverSocket->AdressIPv6->ai_socktype;
                 protocol = serverSocket->AdressIPv6->ai_protocol;
+#endif
+
                 break;
             }
         }
@@ -151,9 +170,14 @@ SocketError SocketOpen(IOSocket* serverSocket, IPVersion ipVersion, unsigned sho
     }
 
     // Set Socket Options
-    {        
+    {
         const int level = SOL_SOCKET;
-        const int optionName = SO_EXCLUSIVEADDRUSE;      // Do not use SO_REUSEADDR, else the port can be hacked. SO_REUSEPORT
+
+#ifdef OSUnix
+        const int optionName = SO_REUSEADDR;      // Do not use SO_REUSEADDR, else the port can be hacked. SO_REUSEPORT
+#elif defined(OSWIndows)
+        const int optionName = SO_EXCLUSIVEADDRUSE;
+#endif
         int opval = 1;
         int optionsocketResult = setsockopt(serverSocket->ID, level, optionName, &opval, sizeof(opval));
 
@@ -176,7 +200,13 @@ SocketError SocketOpen(IOSocket* serverSocket, IPVersion ipVersion, unsigned sho
 
             case IPVersion6:
             {
+#ifdef OSUnix
+                bindingResult = bind(serverSocket->ID, serverSocket->AdressIPv6.ai_addr, serverSocket->AdressIPv6.ai_addrlen);
+#elif defined(OSWindows)
                 bindingResult = bind(serverSocket->ID, serverSocket->AdressIPv6->ai_addr, serverSocket->AdressIPv6->ai_addrlen);
+#endif
+
+
                 break;
             }
         }
@@ -239,8 +269,12 @@ void SocketAwaitConnection(IOSocket* serverSocket, IOSocket* clientSocket)
 
         case IPVersion6:
         {
+#ifdef OSUnix
+            clientSocket->ID = accept(serverSocket->ID, clientSocket->AdressIPv6.ai_addr, clientSocket->AdressIPv6.ai_addrlen);
+#elif defined(OSWindows)
             clientSocket->AdressIPv6 = calloc(1, sizeof(ADDRINFO));
             clientSocket->ID = accept(serverSocket->ID, clientSocket->AdressIPv6->ai_addr, clientSocket->AdressIPv6->ai_addrlen);
+#endif
             break;
         }
     }
@@ -278,10 +312,17 @@ SocketError SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* 
                 break;                
             }   
             case IPVersion6:
-            {       
+            {
+#ifdef OSUnix
+                adressFamily = clientSocket->AdressIPv6.ai_family;
+                streamType = clientSocket->AdressIPv6.ai_socktype;
+                protocol = clientSocket->AdressIPv6.ai_protocol;
+#elif defined(OSWindows)
                 adressFamily = clientSocket->AdressIPv6->ai_family;
                 streamType = clientSocket->AdressIPv6->ai_socktype;
-                protocol = clientSocket->AdressIPv6->ai_protocol;              
+                protocol = clientSocket->AdressIPv6->ai_protocol;
+#endif
+
                 break;
             }
             default:
@@ -312,7 +353,12 @@ SocketError SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* 
 
             case IPVersion6:
             {
+#ifdef OSUnix
+                serverSocket->ID = connect(clientSocket->ID, clientSocket->AdressIPv6.ai_addr, clientSocket->AdressIPv6.ai_addrlen);
+#elif defined(OSWindows)
                 serverSocket->ID = connect(clientSocket->ID, clientSocket->AdressIPv6->ai_addr, clientSocket->AdressIPv6->ai_addrlen);
+#endif
+
                 break;
             }
         }
@@ -383,9 +429,7 @@ SocketError SocketWrite(IOSocket* socket, char* message)
 
 #ifdef OSUnix
 void* SocketReadAsync(IOSocket* socket)
-#endif
-
-#ifdef OSWindows
+#elif defined(OSWindows)
 unsigned long SocketReadAsync(IOSocket* socket)
 #endif
 {

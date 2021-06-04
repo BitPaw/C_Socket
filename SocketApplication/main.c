@@ -47,7 +47,7 @@ FileError FileWriteToEnd(char* filePath, char* message)
     if (!file)
         return FileDoesNotExist;
 
-    contentLength = strnlen_s(message, 2048);
+    contentLength = strnlen(message, 2048);
 
     fseek(file, 0, SEEK_END); // Move to file end
 
@@ -178,8 +178,6 @@ int main(int numberOfArguments, char* arguments[])
 
     ClientInitialize(&_client);
     ServerInitialize(&_server);
-
-    
 
     printf(ASCIIArtLogo);
 

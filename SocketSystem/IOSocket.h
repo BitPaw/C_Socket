@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 #elif defined(OSWindows)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
@@ -34,7 +35,13 @@ typedef struct IOSocket_
 	//-------------------------------------------------------------------------
 
 	struct sockaddr_in AdressIPv4; // Used only in IPv4
-	ADDRINFO* AdressIPv6; // Windows only??
+
+#ifdef OSUnix
+    struct addrinfo AdressIPv6;
+#elif defined(OSWindows)
+    ADDRINFO* AdressIPv6;
+#endif
+
 }IOSocket;
 
 char SocketIsCurrentlyUsed(IOSocket* socket);
@@ -48,7 +55,7 @@ SocketError SocketWrite(IOSocket* socket, char* message);
 
 // Private
 static int SocketGetAdressFamily(IPVersion ipVersion);
-static char SocketSetupAdress(IOSocket* connectionSocket, char* ip, unsigned short port);
+static char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip, unsigned short port);
 
 #ifdef OSUnix
 void* SocketReadAsync(IOSocket* socket);
