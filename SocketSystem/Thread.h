@@ -1,39 +1,27 @@
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
-
-#ifdef OSUnix
-	#include <pthread.h>
-#elif defined(OSWindows)
-	#include <Windows.h>
-#endif 
-
 #ifndef ThreadInclude
 #define ThreadInclude
 
+#include "OSDefine.h"
 
 #ifdef OSUnix
+#include <pthread.h>
+#elif defined(OSWindows)
+#include <Windows.h>
+#endif 
+
 typedef struct Thread_
 {
-	pthread_t ID;
-}Thread;
-
-void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter);
-
+#ifdef OSUnix
+	pthread_t ThreadHandle;
+#elif defined(OSWindows)
+	HANDLE ThreadHandle;
 #endif
-
-#ifdef OSWindows
-
-typedef struct Thread_
-{
-	void* Handle;
 }Thread;
 
+#ifdef OSUnix
+void ThreadCreate(Thread* thread, void* (*threadTask)(void* data), void* parameter);
+#elif defined(OSWindows)
 void ThreadCreate(Thread* thread, unsigned long (*threadTask)(void* data), void* parameter);
-
 #endif
 
 void ThreadWaitForFinish(Thread* thread);

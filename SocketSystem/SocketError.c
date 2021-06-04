@@ -1,6 +1,5 @@
 #include "SocketError.h"
 
-
 const char* SocketErrorToString(SocketError socketError)
 {
 	switch (socketError)

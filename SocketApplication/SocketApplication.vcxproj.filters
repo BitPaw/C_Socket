@@ -4,24 +4,21 @@
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="Test.c" />
-    <ClCompile Include="CommandManager.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Test.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="CommandManager.h" />
     <ClInclude Include="FileError.h" />
     <ClInclude Include="CommunicationRole.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ApplicationState.h" />
-    <ClInclude Include="resource1.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="SocketApplication.rc" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Triangle_Blue_Down.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SocketApplication.rc" />
   </ItemGroup>
 </Project>

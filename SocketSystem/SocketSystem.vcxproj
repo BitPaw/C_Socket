@@ -30,6 +30,7 @@
   <ItemGroup>
     <ClInclude Include="Client.h" />
     <ClInclude Include="IPVersion.h" />
+    <ClInclude Include="OSDefine.h" />
     <ClInclude Include="Semaphore.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="IOSocket.h" />

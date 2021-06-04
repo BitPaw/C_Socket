@@ -2,14 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
-
 char SocketIsCurrentlyUsed(IOSocket* socket)
 {
     return socket->ID != -1;
@@ -292,6 +284,10 @@ SocketError SocketConnect(IOSocket* clientSocket, IOSocket* serverSocket, char* 
                 protocol = clientSocket->AdressIPv6->ai_protocol;              
                 break;
             }
+            default:
+            {
+                return SocketCreationFailure;
+            }
         }
 
         clientSocket->ID = socket(adressFamily, streamType, protocol);
@@ -421,7 +417,6 @@ unsigned long SocketReadAsync(IOSocket* socket)
 
 int SocketGetAdressFamily(IPVersion ipVersion)
 {
-
     switch (ipVersion)
     {
         case IPVersion4:

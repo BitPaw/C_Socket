@@ -4,15 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
-
-
 void ClientInitialize(Client* client)
 {
 	client->IP = 0;

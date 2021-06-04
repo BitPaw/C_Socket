@@ -147,7 +147,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CommandManager.c" />
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="Test.c" />
@@ -167,21 +166,19 @@
     <ClInclude Include="ApplicationState.h" />
     <ClInclude Include="CommunicationRole.h" />
     <ClInclude Include="FileError.h" />
-    <ClInclude Include="CommandManager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SocketApplication.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="Triangle_Blue_Down.ico">
       <DeploymentContent>true</DeploymentContent>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SocketApplication.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

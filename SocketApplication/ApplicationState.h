@@ -32,39 +32,39 @@ const char* ApplicationStateToString(ApplicationState applicationState)
 			return "neutral IDLE";
 
 		case StateServerStarting:
-			return "server starting";
+			return "Server Starting...";
 
 		case StateClientDisconnecting:
-			return "disconnecting";
+			return "Disconnecting...";
 
 		case 	StateSelectingDefaultPort:
-			return "selecting default port";
+			return "Selecting Default Port";
 
 		case StateClientConnectionFailed:
-			return "connection failed";
+			return "Connection failed";
 
 		case 	StateSelectingSpecificPort:
-			return "selecting specific port";
+			return "Selecting specific port";
 
 		case 	StateSelectMode:
-			return "select mode";
+			return "Select operation mode";
 
 		case 	StateClientSelectingIP:
-			return "client selecting ip";
+			return "Client selecting IP";
 
 		case 	StateClientConnecting:
-			return "Client connecting";
+			return "Client Connecting...";
 
 		case 	StateClientConnected:
-			return "client connected";
+			return "Client Connected";
 
 		case 	StateServerSelectingIPVersion:
-			return "server selecting IP version";
+			return "Server selecting IP version";
 
 		case 	StateServerListening:
-			return "server listening";
+			return "Server listening";
 
 		case 	StateServerStartFailed:
-			return "server start failed";
+			return "Server start failed";
 	}
 }

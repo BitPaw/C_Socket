@@ -1,13 +1,9 @@
 #ifndef IOSocketInclude
 #define IOSocketInclude
 
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
+#include "OSDefine.h"
+#include "SocketError.h"
+#include "IPVersion.h"
 
 #ifdef OSUnix
 #include <sys/types.h> 
@@ -20,9 +16,6 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #endif
-
-#include "SocketError.h"
-#include "IPVersion.h"
 
 #define SocketBufferSize 2048u
 

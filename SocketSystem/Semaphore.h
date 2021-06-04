@@ -1,31 +1,28 @@
-#pragma once
+#ifndef SemaphoreIncluded
+#define SemaphoreIncluded
 
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
+#include "OSDefine.h"
 
-#ifdef OSWindows
+#ifdef OSUnix
+// ???
+#elif defined(OSWindows)
 #include <Windows.h>
 #include <process.h>
+#endif 
 
 typedef struct Semaphore_
 {
+#ifdef OSUnix
+	sem_t HandleID;
+#elif defined(OSWindows)
 	HANDLE HandleID;
-}Semaphore;
-
 #endif
 
-#ifdef OSUnix
-typedef struct Semaphor_
-{
-	sem_t HandleID;
-}Semaphor;
-#endif 
+}Semaphore;
 
 int SemaphoreCreate(Semaphore* semaphore);
 int SemaphoreDelete(Semaphore* semaphore);
 int SemaphoreLock(Semaphore* semaphore);
 int SemaphoreRelease(Semaphore* semaphore);
+
+#endif

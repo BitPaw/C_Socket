@@ -1,16 +1,9 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "Server.h"
 #include "Thread.h"
 
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void ServerInitialize(Server* server)
 {

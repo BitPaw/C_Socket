@@ -3,32 +3,166 @@
 #include <stdlib.h>
 
 #include "main.h"
-#include "CommandManager.h"
+#include "FileError.h"
 #include "CommandToken.h"
-
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
 #include "CommunicationRole.h"
-
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
 #include "ApplicationState.h"
+#include "../SocketSystem/OSDefine.h"
 
-
-void ChangeState(ApplicationState applicationState)
+char DoesFileExist(char* path)
 {
-    /*
+    FILE* file = fopen(path, "r");
+    char doesDileExist = file != NULL;
+
+    fclose(file);
+
+    return doesDileExist;
+}
+
+FileError FileDelete(char* filePath)
+{
+    int removeResult = remove(filePath);
+
+    switch (removeResult)
+    {
+        default:
+        case 0:
+            return FileNoError;
+    }
+}
+
+FileError FileWriteToEnd(char* filePath, char* message)
+{
+    FILE* file = 0;
+    int contentLength = 0;
+
+    if (!filePath)
+        return FileEmptyFileName;
+
+    if (!message)
+        return FileEmptyMessage;
+
+    file = fopen(filePath, "w");
+
+    if (!file)
+        return FileDoesNotExist;
+
+    contentLength = strnlen_s(message, 2048);
+
+    fseek(file, 0, SEEK_END); // Move to file end
+
+    fwrite(message, sizeof(char), contentLength, file);
+
+    fclose(file);
+
+    return FileNoError;
+}
+
+FileError FileLoad(char* filePath, char* content)
+{
+    int fileLength = -1;
+    FILE* file = 0;
+
+    if (!filePath)
+        return FileEmptyFileName;
+
+    if (!content)
+        return FileEmptyMessage;
+
+    file = fopen(filePath, "r");
+
+    if (!file)
+        return FileDoesNotExist;
+
+
+    fseek(file, 0, SEEK_END); // Jump to end of file
+    fileLength = ftell(file); // Get length of file
+    fseek(file, 0, SEEK_SET); // jump to beginning
+
+    content = calloc(fileLength + 1, sizeof(char));
+
+    if (!content)
+    {
+        fclose(file);
+        return FileNotEnoghMemory;
+    }
+
+    int readSize = fread(content, sizeof(char), fileLength, file);
+
+    int closeResult = fclose(file);
+
+    return FileNoError;
+}
+
+FileError FileLoadHTML(char* filePath, char* content)
+{
+    FILE* file = fopen(filePath, "r");
+    int fileLength = -1;
+    const char* htmlResponseTag = "HTTP/1.0 200 OK\r\n\r\n";
+    const int htmlResponselength = 19;
+
+    if (file == NULL)
+    {
+        return 0; // File does not exist
+    }
+
+    fseek(file, 0, SEEK_END);
+    fileLength = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    content = calloc(fileLength + htmlResponseTag + 1, sizeof(char));
+
+    if (!content)
+    {
+        return 0; // calloc failed
+    }
+
+    memcpy(content, htmlResponseTag, htmlResponselength);
+    fread(content + htmlResponselength, 1, fileLength, file);
+
+    fclose(file);
+
+    return FileNoError;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void StateChange(ApplicationState newState)
+{
+    ApplicationState oldState = _currentApplicationState;
+    char hasChanged = newState != oldState;
+
+    if (!hasChanged)
+    {
+        return;
+    }
+
+    _currentApplicationState = newState;
+
+    printf(BannerGeneral, ApplicationStateToString(newState));
+
+#if 0 // Debug
     printf
     (
         "[System] State changed from <%s> to <%s>.\n",
-        ApplicationStateToString(_currentApplicationState),
-        ApplicationStateToString(applicationState)
+        ApplicationStateToString(oldState),
+        ApplicationStateToString(newState)
     );
-    */
-
-    _currentApplicationState = applicationState;
+#endif
+ 
 }
 
 int main(int numberOfArguments, char* arguments[])
@@ -45,6 +179,8 @@ int main(int numberOfArguments, char* arguments[])
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
+    
+
     printf(ASCIIArtLogo);
 
     //system("color 0B");
@@ -53,7 +189,7 @@ int main(int numberOfArguments, char* arguments[])
     {
         case 1:
         {
-            ChangeState(StateSelectingDefaultPort);
+            StateChange(StateSelectingDefaultPort);
             break;
         }
 
@@ -105,7 +241,7 @@ int main(int numberOfArguments, char* arguments[])
                         return -1;
                     }
 
-                    ChangeState(StateClientConnecting);
+                    StateChange(StateClientConnecting);
 
                     break;
                 }
@@ -134,7 +270,7 @@ int main(int numberOfArguments, char* arguments[])
                         }
                     }
 
-                    ChangeState(StateServerListening);
+                    StateChange(StateServerListening);
 
                     break;
                 }
@@ -170,13 +306,13 @@ int main(int numberOfArguments, char* arguments[])
                     case '0':
                     {
                         mode = ModeClient;
-                        ChangeState(StateClientSelectingIP);
+                        StateChange(StateClientSelectingIP);
                         break;
                     }
                     case '1':
                     {
                         mode = ModeServer;
-                        ChangeState(StateServerSelectingIPVersion);
+                        StateChange(StateServerSelectingIPVersion);
                         break;
                     }
                     default:
@@ -187,20 +323,16 @@ int main(int numberOfArguments, char* arguments[])
                     }
                 }                
 
-                printf(BannerFooter);     
-
                 break;
             }
             case StateServerSelectingIPVersion:
             {                 
                 char ipInput = -1;
+                char scanResult = 0;
 
-                printf
-                (
-                    "[?] Which IP Version shall be used?\n"
-                    "    Select 4 or 6 : "
-                );
-                char scanResult = scanf(ScanfInputTag, &ipInput);
+                printf(InputIPVersion);
+
+                scanResult = scanf(ScanfInputTag, &ipInput);
 
                 switch (ipInput)
                 {
@@ -217,14 +349,14 @@ int main(int numberOfArguments, char* arguments[])
                     default:
                     {
                         ipVersion = IPVersionInvalid;
-                        printf("Invalid IP Version! Check your input.\n");
+                        printf(ErrorInvalidIPVersion);
                         break;
                     }
                 }
 
                 if (ipVersion != IPVersionInvalid)
                 {
-                    ChangeState(StateServerStarting);
+                    StateChange(StateServerStarting);
                 }
                 
 
@@ -240,7 +372,7 @@ int main(int numberOfArguments, char* arguments[])
                 if (0 < convertedNumber && convertedNumber < 65535)
                 {
                     port = convertedNumber;
-                    ChangeState(StateSelectMode);                    
+                    StateChange(StateSelectMode);                    
                 }  
                 else
                 {
@@ -265,13 +397,13 @@ int main(int numberOfArguments, char* arguments[])
                     case 'y':
                     {
                         port = DefaultPort;
-                        ChangeState(StateSelectMode);
+                        StateChange(StateSelectMode);
                         break;
                     }
                     case 'N':
                     case 'n':
                     {
-                        ChangeState(StateSelectingSpecificPort);
+                        StateChange(StateSelectingSpecificPort);
                         break;
                     }
                     default:
@@ -297,7 +429,7 @@ int main(int numberOfArguments, char* arguments[])
 
                     if (result)
                     {
-                        ChangeState(StateClientConnecting);
+                        StateChange(StateClientConnecting);
                     }
                     else
                     {
@@ -308,17 +440,13 @@ int main(int numberOfArguments, char* arguments[])
                 {
                     printf(InfoNoIPSelected);
                     memcpy(inputBuffer, "127.0.0.1", 10);
-                    ChangeState(StateClientConnecting);
+                    StateChange(StateClientConnecting);
                 }                
-
-                printf(BannerFooter);
 
                 break;
             }
             case StateClientConnecting:
             {            
-                printf(BannerConnectToServer);
-
                 char connectionSuccesful = ClientConnect(&_client, &inputBuffer[0], port);
 
                 if (connectionSuccesful)
@@ -327,19 +455,17 @@ int main(int numberOfArguments, char* arguments[])
                     _client.Socket.OnMessage = OnRemoteServerMessageRecieved;
                     _client.Socket.OnDisconnected = OnRemoteServerDisconnect;
 
-                    ChangeState(StateClientConnected);
-
-                    ThreadCreate(&thread, SocketReadAsync, &_client.Socket);
-
                     printf(ConnectionSuccesful);
+
+                    StateChange(StateClientConnected);
+
+                    ThreadCreate(&thread, SocketReadAsync, &_client.Socket);           
                 }
                 else
                 {
-                    ChangeState(StateClientConnectionFailed);
-                    printf(ServerUnreachable);                    
-                }         
-            
-                printf(BannerFooter);         
+                    printf(ServerUnreachable);
+                    StateChange(StateClientConnectionFailed);                             
+                }
 
                 break;
             }
@@ -357,14 +483,14 @@ int main(int numberOfArguments, char* arguments[])
                     case 'N':
                     case 'n':
                     {
-                        ChangeState(StateClientSelectingIP);
+                        StateChange(StateClientSelectingIP);
                         break;
                     }
 
                     case 'Y':
                     case 'y':
                     {
-                        ChangeState(StateClientConnecting);
+                        StateChange(StateClientConnecting);
                         break;
                     }
                 }
@@ -373,19 +499,15 @@ int main(int numberOfArguments, char* arguments[])
             }
             case StateClientDisconnecting:
             {
-                printf(BannerClientDisconnecting);
-
                 ClientDisconnect(&_client);
 
-                ChangeState(StateClientSelectingIP);
+                StateChange(StateClientSelectingIP);
 
                 break;
             }
 
             case StateClientConnected:
             {
-                // printf(BannerSendAndRecieve); This is nice, but its to spammy. -> after every message the user sends.
-
                 char scanResult = scanf(ScanfInputTag, inputBuffer);
 
                 SocketError errorCode = SocketWrite(&_client.Socket, inputBuffer);
@@ -394,7 +516,7 @@ int main(int numberOfArguments, char* arguments[])
                 {
                     printf(ErrorSendingFailed, errorCode, SocketErrorToString(errorCode));
 
-                    ChangeState(StateClientDisconnecting);
+                    StateChange(StateClientDisconnecting);
                 }
 
                 break;
@@ -411,7 +533,7 @@ int main(int numberOfArguments, char* arguments[])
                     case 'Y':
                     case 'y':
                     {
-                        ChangeState(StateServerStarting);
+                        StateChange(StateServerStarting);
                         break;
                     }
                     case 'N':
@@ -439,13 +561,12 @@ int main(int numberOfArguments, char* arguments[])
 
                 if (serverStartSuccesful)
                 {
-                    printf(BannerSendAndRecieve);
-                    ChangeState(StateServerListening);
+                    StateChange(StateServerListening);
                 }
                 else
                 {
                     printf(ErrorServerPortBlocked);
-                    ChangeState(StateServerStartFailed);
+                    StateChange(StateServerStartFailed);
                 }
 
                 break;
@@ -469,7 +590,7 @@ int main(int numberOfArguments, char* arguments[])
                 }
                 else
                 {
-                    ChangeState(StateSelectMode);
+                    StateChange(StateSelectMode);
                 }
 
                 break;
@@ -483,7 +604,7 @@ int main(int numberOfArguments, char* arguments[])
 
 void OnRemoteServerMessageRecieved(int socketID, char* message)
 {
-    printf("[Server]%s\n", message);
+    printf("[Server] %s\n", message);
 }
 
 void OnRemoteClientMessageRecieved(int socketID, char* message)
@@ -493,143 +614,114 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
     char messageBuffer[2048];
     char* messageToSend = 0;
 
-    CommandTokenInitialize(&commandToken);
-
-    commandToken.ClientSocketID = socketID;
-
+    CommandTokenInitialize(&commandToken);   
     CommandTokenParse(&commandToken, message);
+
+    commandToken.ClientSocketID = socketID;    
 
     switch (commandToken.CommandType)
     {
         case CommandFileDataPut:
         {
-            printf("[#][Client:%i] PUT KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
 
-            fileError = FileDataPut(commandToken.Key, commandToken.Value);
+            fileError = FileWriteToEnd(commandToken.Key, commandToken.Value);
 
             break;
         }
         case CommandFileDataGet:
         {
-            printf("[#][Client:%i] GET KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = FileDataGet(commandToken.Key, messageBuffer);
-
-            messageToSend = messageBuffer;
+            fileError = FileLoad(commandToken.Key, messageToSend);             
 
             break;
         }
         case CommandFileDelete:
         {
-            printf("[#][Client:%i] DELETE KEY:%s\n", socketID, commandToken.Key);
+            printf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
 
             fileError = FileDelete(commandToken.Key);
 
             break;
         }
-
         case CommandFileLock:
         {
-            printf("[#][Client:%i] LockFile KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = FileLock(commandToken.Key);
+           // fileError = FileLock(commandToken.Key);
 
             break;
         }
         case CommandFileUnlock:
         {
-            printf("[#][Client:%i] UnlockFile KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = FileUnlock(commandToken.Key);
+            //fileError = FileUnlock(commandToken.Key);
 
             break;
         }
-
         case CommandFileChangePublish:
         {
-            printf("[#][Client:%i] Publish KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandPublishMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = FileChangePublish(commandToken.Key);
+           // fileError = FileChangePublish(commandToken.Key);
 
             break;
         }
         case CommandFileChangeSubscribe:
         {
-            printf("[#][Client:%i] Subscribe KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = FileChangeSubscribe(commandToken.Key);
+            //fileError = FileChangeSubscribe(commandToken.Key);
 
             break;
         }
-
         case CommandOpenProgram:
         {
-            printf("[#][Client:%i]OpenProgramm KEY:%s Value:%s\n", socketID, commandToken.Key, commandToken.Value);
+            printf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = ProgramOpen(commandToken.Key);
+           // fileError = ProgramOpen(commandToken.Key);
 
             break;
         }
-
         case CommandQuit:
         {
-            printf("[#][Client:%i] QUIT\n", socketID);
+            printf(IncommingCommandQuitMessage, socketID);
 
-            ApplicationQuit();
+            //ApplicationQuit();
 
             break;
         }
-
         case CommandHTTPRequest:
         {
-            printf("[#][Client:%i] HTTP Request\n", socketID);
+            printf(IncommingCommandHTTPRequestMessage, socketID);
 
-            fileError = FileNoError;
+            char* htmlFile = 0;
 
-            SendHTTPResponse(&_server, socketID);
+            fileError = FileLoadHTML(commandToken.Key, htmlFile);
+
+            if (fileError == FileNoError)
+            {
+                ServerSendToClient(&_server, commandToken.ClientSocketID, htmlFile);
+                free(htmlFile);
+            }
+            else
+            {
+                ServerSendToClient(&_server, commandToken.ClientSocketID, "Error NO");
+            }                   
 
             break;
         }
-
         case CommandInvalid:
         default:
         {
-            printf("[#][Client:%i] Invalid command. Broadcast:%s\n", socketID, message);
+            printf(IncommingCommandInvalidMessage, socketID, message);
 
-            sprintf(messageBuffer, "[Client:%i] %s", socketID, message);
+            ServerSendToClient(&_server, commandToken.ClientSocketID, "Invalid Command.Check your input.");
 
-            ServerBroadcastToClients(&_server, messageBuffer);
             break;
         }
-    }
-
-    switch (fileError)
-    {
-        case FileNoError:
-        {
-            messageToSend = "[OK] Operation successful.";
-            break;
-        }
-        case FileDoesNotExist:
-        {
-            messageToSend = "[Error] File doesn't exist.";
-            break;
-        }
-        case FileAlreadyExist:
-        {
-            messageToSend = "[Error] File already exist.";
-            break;
-        }
-        case ProgramNameNotFound:
-        {
-            messageToSend = "[Error] There is no program with this name accessible.";
-            break;
-        }
-    }
-
-    if (fileError != FileErrorNotSet)
-    {
-        ServerSendToClient(&_server, commandToken.ClientSocketID, messageToSend);
     }
 
     CommandTokenClear(&commandToken);
@@ -638,6 +730,8 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 void OnRemoteServerDisconnect(int socketID)
 {
     printf("[!][Server] Server closed connection.\n");
+
+    StateChange(StateClientDisconnecting);
 }
 
 void OnRemoteClientDisconnect(int socketID)
