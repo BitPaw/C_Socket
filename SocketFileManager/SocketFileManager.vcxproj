@@ -141,8 +141,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.c" />
-    <ClCompile Include="FileManagerErrorCodes.c" />
-    <ClCompile Include="FileManagerErrorCodes.h" />
+    <ClCompile Include="OSFileError.c" />
+    <ClCompile Include="OSFileError.h" />
     <ClCompile Include="Path.c" />
     <ClCompile Include="PathList.c" />
   </ItemGroup>

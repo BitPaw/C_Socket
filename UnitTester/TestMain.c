@@ -54,13 +54,13 @@ int main()
 	
 	//printColorTable();
 
-	path_test(0);
+	path_test(1);
 
 	list_test(0);
 
-	fileManager_test(0);
+	fileManager_test(1);
 
-	path_ListAllFiles_test(0);
+	path_ListAllFiles_test(1);
 		
 	testPrintSummery();
 	

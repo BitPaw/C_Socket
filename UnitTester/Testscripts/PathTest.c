@@ -93,12 +93,12 @@ void path_ListAllFiles_test(char execute)
 	
 	//List all Files
 
-	FM_ListAllFiles(&test, "TestFileManagerFolder/*");
+	OSListAllFiles(&test, "TestOSFileFolder/*");
 
 	test_int(2, test.size, "ListAllFiles-Test 1 [SizeOfList]");
 
-	PathInitialize(&testPath1, "TestFileManagerFolder/Test");
-	PathInitialize(&testPath2, "TestFileManagerFolder/dontDelete.txt");
+	PathInitialize(&testPath1, "TestOSFileFolder/Test");
+	PathInitialize(&testPath2, "TestOSFileFolder/dontDelete.txt");
 	
 	if(test.size == 2)
 	{
@@ -115,12 +115,12 @@ void path_ListAllFiles_test(char execute)
 
 	test = EMPTYLIST;
 	
-	FM_ListAllFiles(&test, "TestFileManagerFolder");
+	OSListAllFiles(&test, "TestOSFileFolder");
 
 	test_int(2, test.size, "ListAllFiles-Test 4 [SizeOfList]");
 
-	PathInitialize(&testPath1, "TestFileManagerFolder/Test");
-	PathInitialize(&testPath2, "TestFileManagerFolder/dontDelete.txt");
+	PathInitialize(&testPath1, "TestOSFileFolder/Test");
+	PathInitialize(&testPath2, "TestOSFileFolder/dontDelete.txt");
 
 	if (test.size == 2)
 	{
@@ -137,7 +137,7 @@ void path_ListAllFiles_test(char execute)
 
 	test = EMPTYLIST;
 	
-	FM_ListAllFiles(&test, "TestFileManagerFolder/Test");
+	OSListAllFiles(&test, "TestOSFileFolder/Test");
 
 	test_int(0, test.size, "ListAllFiles-Test 7 [Empty Folder]");
 

@@ -3,32 +3,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-void PathInitialize(Path* path, char* stringPath)
+void PathInitialize(Path* EmptyPath, char* stringPath)
 {
 	if(stringPath == NULL || stringPath[0] == '\0')
 	{
-		*path = (Path){0};
+		*EmptyPath = (Path){0};
 		return;
 	}
 	
-	path->fullPathLength = strlen(stringPath);
+	EmptyPath->fullPathLength = strlen(stringPath);
 	
-	path->fullPath = calloc(path->fullPathLength + 1, sizeof(char));
-	strcpy_s(path->fullPath, path->fullPathLength + 1, stringPath);
+	EmptyPath->fullPath = calloc(EmptyPath->fullPathLength + 1, sizeof(char));
+	strcpy_s(EmptyPath->fullPath, EmptyPath->fullPathLength + 1, stringPath);
 
 
-	path->directory = calloc(path->fullPathLength + 1, sizeof(char));
-	strcpy_s(path->directory, path->fullPathLength + 1, path->fullPath);
+	EmptyPath->directory = calloc(EmptyPath->fullPathLength + 1, sizeof(char));
+	strcpy_s(EmptyPath->directory, EmptyPath->fullPathLength + 1, EmptyPath->fullPath);
 	
 	int selector = 0;
 	int length = 0;
 	char hasFile = 0;
-	while (path->directory[length] != '\0')
+	while (EmptyPath->directory[length] != '\0')
 	{
-		if (path->directory[length] == '/')
+		if (EmptyPath->directory[length] == '/')
 			selector = length;
 
-		if(path->directory[length] == '.')
+		if(EmptyPath->directory[length] == '.')
 			hasFile = 1;
 		
 		length++;
@@ -36,23 +36,23 @@ void PathInitialize(Path* path, char* stringPath)
 
 	if(hasFile == 1)
 	{
-		path->hasFile = 1;
+		EmptyPath->hasFile = 1;
 		
 		if (selector == 0)
 		{
-			path->hasDirectory = 0;
+			EmptyPath->hasDirectory = 0;
 			
-			path->file = path->fullPath + selector;
-			free(path->directory);
-			path->directory = NULL;
+			EmptyPath->file = EmptyPath->fullPath + selector;
+			free(EmptyPath->directory);
+			EmptyPath->directory = NULL;
 			
 		}
 		else
 		{
-			path->hasDirectory = 1;
+			EmptyPath->hasDirectory = 1;
 			
-			path->file = path->fullPath + selector + 1;
-			path->directory[selector] = '\0';
+			EmptyPath->file = EmptyPath->fullPath + selector + 1;
+			EmptyPath->directory[selector] = '\0';
 		}
 
 
@@ -60,26 +60,26 @@ void PathInitialize(Path* path, char* stringPath)
 		selector = 0;
 		length = 0;
 
-		while (path->file[selector] != '.')
+		while (EmptyPath->file[selector] != '.')
 		{
 			selector++;
 		}
 
-		unsigned const int fileNameLength = strlen(path->file);
-		path->fileName = calloc((fileNameLength + 1), sizeof(char));
-		memcpy(path->fileName, path->file, selector);
+		unsigned const int fileNameLength = strlen(EmptyPath->file);
+		EmptyPath->fileName = calloc((fileNameLength + 1), sizeof(char));
+		memcpy(EmptyPath->fileName, EmptyPath->file, selector);
 
-		path->fileType = calloc((fileNameLength + 1) - (selector + 1), sizeof(char));
-		memcpy(path->fileType, path->file + selector + 1, fileNameLength - selector);
+		EmptyPath->fileType = calloc((fileNameLength + 1) - (selector + 1), sizeof(char));
+		memcpy(EmptyPath->fileType, EmptyPath->file + selector + 1, fileNameLength - selector);
 		
 	} else
 	{
-		path->hasFile = 0;
-		path->hasDirectory = 1;
+		EmptyPath->hasFile = 0;
+		EmptyPath->hasDirectory = 1;
 		
-		path->fileName = NULL;
-		path->file = NULL;
-		path->fileType = NULL;
+		EmptyPath->fileName = NULL;
+		EmptyPath->file = NULL;
+		EmptyPath->fileType = NULL;
 	}	
 }
 

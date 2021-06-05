@@ -10,7 +10,7 @@
 
 #include <wchar.h>
 
-#include "FileManagerErrorCodes.h"
+#include "OSFileError.h"
 #include "Path.h"
 #include "../List/List.h"
 
@@ -18,149 +18,171 @@
 #define FileManagerInclude
 
 /*
- * Function:  FM_FileExists_split
+ * Function:  OSFileExists_splitParameter
  * --------------------
- * checks if (directory + filePath) exists
+ * checks if combined(directory + filePath) exists
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_NoFileExtension
- *	   FileManager_ExtensionToShort
- *	   FileManager_FolderNotFound
- *	   FileManager_FileNotFound
+ *  returns: OSFileError_NoError
+ *	   OSFileError_NoFileExtension
+ *	   OSFileError_ExtensionToShort
+ *	   OSFileError_FolderNotFound
+ *	   OSFileError_FileNotFound
  */
-FileManagerErrorCode FM_FileExists_spit(char* directory, char* filePath);
+OSFileError OSFileExists_splitParameter(char* directory, char* filePath);
 
 /*
- * Function:  FM_FileExists
+ * Function:  OSFileExists
  * --------------------
  * checks if path exists
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_NoFileExtension
- *	   FileManager_ExtensionToShort
- *	   FileManager_FolderNotFound
- *	   FileManager_FileNotFound
+ *  returns: OSFileError_NoError
+ *	   OSFileError_NoFileExtension
+ *	   OSFileError_ExtensionToShort
+ *	   OSFileError_FolderNotFound
+ *	   OSFileError_FileNotFound
  */
-FileManagerErrorCode FM_FileExistsA(char* path);
-
-//FileManagerErrorCode FM_FileExists_path(Path path);
+OSFileError OSFileExists(char* path);
 
 /*
- * Function:  FM_DirExists
+ * Function:  OSFileExistsP
+ * --------------------
+ * checks if path exists
+ * --------------------
+ *  returns: OSFileError_NoError
+ *	   OSFileError_NoFileExtension
+ *	   OSFileError_ExtensionToShort
+ *	   OSFileError_FolderNotFound
+ *	   OSFileError_FileNotFound
+ */
+OSFileError OSFileExistsP(Path path);
+
+/*
+ * Function:  OSDirectoryExists
  * --------------------
  * checks if directory exists
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_ContentIsNull
- *	   FileManager_FolderNotFound
+ *  returns: OSFileError_NoError
+ *	   OSFileError_ContentIsNull
+ *	   OSFileError_FolderNotFound
  */
-FileManagerErrorCode FM_DirExists(char* directory);
-
-//FileManagerErrorCode FM_DirExists(Path directory);
+OSFileError OSDirectoryExists(char* directory);
 
 /*
- * Function:  FM_FileWrite
+ * Function:  OSFileWriteP
  * --------------------
  * writes content in path
  * --------------------
- *  returns: FileManager_NoError
- *	  FileManager_ContentIsNull
- *	  FileManager_FolderNotFound
- *	  FileManager_NoFileExtension
- *	  FileManager_ExtensionToShort
+ *  returns: OSFileError_NoError
+ *	  OSFileError_ContentIsNull
+ *	  OSFileError_FolderNotFound
+ *	  OSFileError_NoFileExtension
+ *	  OSFileError_ExtensionToShort
  */
-FileManagerErrorCode FM_FileWrite(Path* path, char* content);
-
-FileManagerErrorCode FM_FileWriteBase(char* path, char* content);
+OSFileError OSFileWriteP(Path* path, char* content);
 
 /*
- * Function:  FM_FileCreate
+ * Function:  OSFileWrite
+ * --------------------
+ * writes content in path
+ * --------------------
+ *  returns: OSFileError_NoError
+ *	  OSFileError_ContentIsNull
+ *	  OSFileError_FolderNotFound
+ *	  OSFileError_NoFileExtension
+ *	  OSFileError_ExtensionToShort
+ */
+OSFileError OSFileWrite(char* path, char* content);
+
+OSFileError OSFileWriteBase(char* path, char* content);
+
+/*
+ * Function:  OSFileCreate
  * --------------------
  * Creates a File. If the File exists, it wont be overwritten
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_FileAlreadyExists
- *	   FileManager_AccessDenied
- *	   FileManager_InvalidDirectory
- *	   FileManager_PathNotFound
- *	   FileManager_UnknownError
+ *  returns: OSFileError_NoError
+ *	   OSFileError_FileAlreadyExists
+ *	   OSFileError_AccessDenied
+ *	   OSFileError_InvalidDirectory
+ *	   OSFileError_PathNotFound
+ *	   OSFileError_UnknownError
  */
-FileManagerErrorCode FM_FileCreate(char* path);
+OSFileError OSFileCreate(char* path);
 
 /*
- * Function:  FM_FileDelete
+ * Function:  OSFileDelete
  * --------------------
  * Deletes File
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_AccessDenied
- *	   FileManager_InvalidDirectory
- *	   FileManager_PathNotFound
- *	   FileManager_FileIsCurrentlyInUse
- *	   FileManager_UnknownError
+ *  returns: OSFileError_NoError
+ *	   OSFileError_AccessDenied
+ *	   OSFileError_InvalidDirectory
+ *	   OSFileError_PathNotFound
+ *	   OSFileError_FileIsCurrentlyInUse
+ *	   OSFileError_UnknownError
  */
-FileManagerErrorCode FM_FileDelete(char* path);
+OSFileError OSFileDelete(char* path);
 
 /*
- * Function:  FM_DirCreate
+ * Function:  OSDirectoryCreate
  * --------------------
  * Creates Folder
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_PathNotFound
- *	   FileManager_AccessDenied
- *	   FileManager_FolderAlreadyExists
- *	   FileManager_InvalidDirectory
- *	   FileManager_UnknownError
+ *  returns: OSFileError_NoError
+ *	   OSFileError_PathNotFound
+ *	   OSFileError_AccessDenied
+ *	   OSFileError_FolderAlreadyExists
+ *	   OSFileError_InvalidDirectory
+ *	   OSFileError_UnknownError
  */
-FileManagerErrorCode FM_DirCreate(char* directory);
+OSFileError OSDirectoryCreate(char* directory);
 
 /*
- * Function:  FM_DirFullCreate
+ * Function:  OSDirectoryFullCreate
  * --------------------
  * Creates Folder hierarchy
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_PathNotFound
- *	   FileManager_CallocWentWrong
- *	   FileManager_AccessDenied
- *	   FileManager_FolderAlreadyExists
- *	   FileManager_InvalidDirectory
- *	   FileManager_UnknownError
+ *  returns: OSFileError_NoError
+ *	   OSFileError_PathNotFound
+ *	   OSFileError_CallocWentWrong
+ *	   OSFileError_AccessDenied
+ *	   OSFileError_FolderAlreadyExists
+ *	   OSFileError_InvalidDirectory
+ *	   OSFileError_UnknownError
  */
-FileManagerErrorCode FM_DirFullCreate(char* directory);
+OSFileError OSDirectoryFullCreate(char* directory);
 
 /*
- * Function:  FM_DirDelete
+ * Function:  OSDirectoryDelete
  * --------------------
  * Deletes a empty directory
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_DirectoryNotEmpty
- *	   FileManager_AccessDenied
- *	   FileManager_InvalidDirectory
- *	   FileManager_PathNotFound
- *	   FileManager_UnknownError
+ *  returns: OSFileError_NoError
+ *	   OSFileError_DirectoryNotEmpty
+ *	   OSFileError_AccessDenied
+ *	   OSFileError_InvalidDirectory
+ *	   OSFileError_PathNotFound
+ *	   OSFileError_UnknownError
  */
-FileManagerErrorCode FM_DirDelete(char* directory);
+OSFileError OSDirectoryDelete(char* directory);
 
 /*
- * Function:  FM_DirForceDelete
+ * Function:  OSDirectoryForceDelete
  * --------------------
  * Deletes the directory and all Content in it
  * --------------------
- *  returns: FileManager_NoError
- *	   FileManager_DirectoryNotEmpty
- *	   FileManager_AccessDenied
- *	   FileManager_InvalidDirectory
- *	   FileManager_PathNotFound
- *	   FileManager_FileIsCurrentlyInUse
- *	   FileManager_UnknownError
+ *  returns: OSFileError_NoError
+ *	   OSFileError_DirectoryNotEmpty
+ *	   OSFileError_AccessDenied
+ *	   OSFileError_InvalidDirectory
+ *	   OSFileError_PathNotFound
+ *	   OSFileError_FileIsCurrentlyInUse
+ *	   OSFileError_UnknownError
  */
-FileManagerErrorCode FM_DirForceDelete(char* directory);
+OSFileError OSDirectoryForceDelete(char* directory);
 
 /*
- * Function:  FM_ListAllFiles
+ * Function:  OSListAllFiles
  * --------------------
  * Puts all directories and file names in pathList
  * --------------------
@@ -171,12 +193,12 @@ FileManagerErrorCode FM_DirForceDelete(char* directory);
  *		eg: PathListDestruction(&pathList);
  * 
  */
-void FM_ListAllFiles(List* pathList, char* directory);
+void OSListAllFiles(List* pathList, char* directory);
 
 #ifdef OSWindows
 static wchar_t* stringToWString(char* string);
 
-static FileManagerErrorCode WindowsErrorToFileManagerError(unsigned long rawError);
+static OSFileError WindowsErrorToOSFileError(unsigned long rawError);
 #endif
 
 #endif

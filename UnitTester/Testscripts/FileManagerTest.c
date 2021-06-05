@@ -5,9 +5,9 @@
 #include "../Tester.h"
 
 
-void test_fileManager(FileManagerErrorCode expectedInput, FileManagerErrorCode input, char* name)
+void test_fileManager(OSFileError expectedInput, OSFileError input, char* name)
 {
-	testPrint((expectedInput == input), FileManagerErrorCodeToString(expectedInput), FileManagerErrorCodeToString(input), "FileManagerErrorCode", name);
+	testPrint((expectedInput == input), OSFileErrorToString(expectedInput), OSFileErrorToString(input), "OSFileError", name);
 }
 
 
@@ -18,55 +18,57 @@ void fileManager_test(char execute)
 		return;
 	
 	//Folder test
-	FileManagerErrorCode returnCode;
+	OSFileError returnCode;
 
-	returnCode = FM_DirExists("TestFileManagerFolder/Test");
-	test_fileManager(FileManager_NoError, returnCode, "FolderExistTest 1");
+	testPrintHeader("FileManager-Tests");
 	
-	returnCode = FM_DirExists("TestFileManagerFolder/Test/A");
-	if (!(returnCode == FileManager_FolderNotFound))
+	returnCode = OSDirectoryExists("TestOSFileFolder/Test");
+	test_fileManager(OSFileError_NoError, returnCode, "FolderExistTest 1");
+	
+	returnCode = OSDirectoryExists("TestOSFileFolder/Test/A");
+	if (!(returnCode == OSFileError_FolderNotFound))
 	{
-		returnCode = FM_DirDelete("TestFileManagerFolder/Test/A");
-		test_fileManager(FileManager_NoError, returnCode, "FolderDeleteTest 2.5");
+		returnCode = OSDirectoryDelete("TestOSFileFolder/Test/A");
+		test_fileManager(OSFileError_NoError, returnCode, "FolderDeleteTest 2.5");
 	}
 		
-	returnCode = FM_DirCreate("TestFileManagerFolder/Test/A");
-	test_fileManager(FileManager_NoError, returnCode, "FolderCreateTest 2");
+	returnCode = OSDirectoryCreate("TestOSFileFolder/Test/A");
+	test_fileManager(OSFileError_NoError, returnCode, "FolderCreateTest 2");
 
-	returnCode = FM_DirDelete("TestFileManagerFolder/Test/A");
-	test_fileManager(FileManager_NoError, returnCode, "FolderDeleteTest 3");
+	returnCode = OSDirectoryDelete("TestOSFileFolder/Test/A");
+	test_fileManager(OSFileError_NoError, returnCode, "FolderDeleteTest 3");
 
 	//Folder Full Test
 
 
-	returnCode = FM_DirExists("TestFileManagerFolder/Test/B/B");
-	if (!(returnCode == FileManager_FolderNotFound))
+	returnCode = OSDirectoryExists("TestOSFileFolder/Test/B/B");
+	if (!(returnCode == OSFileError_FolderNotFound))
 	{
-		returnCode = FM_DirForceDelete("TestFileManagerFolder/Test/B");
-		test_fileManager(FileManager_NoError, returnCode, "FolderForceDeleteTest 3.5");
+		returnCode = OSDirectoryForceDelete("TestOSFileFolder/Test/B");
+		test_fileManager(OSFileError_NoError, returnCode, "FolderForceDeleteTest 3.5");
 	}
 
-	returnCode = FM_DirFullCreate("TestFileManagerFolder/Test/B/B");
-	test_fileManager(FileManager_NoError, returnCode, "FolderCreateTest 4");
+	returnCode = OSDirectoryFullCreate("TestOSFileFolder/Test/B/B");
+	test_fileManager(OSFileError_NoError, returnCode, "FolderCreateTest 4");
 	
-	returnCode = FM_DirForceDelete("TestFileManagerFolder/Test/B");
-	test_fileManager(FileManager_NoError, returnCode, "FolderForceDeleteTest 5");
+	returnCode = OSDirectoryForceDelete("TestOSFileFolder/Test/B");
+	test_fileManager(OSFileError_NoError, returnCode, "FolderForceDeleteTest 5");
 
 	//File test
 
-	returnCode = FM_FileExists("TestFileManagerFolder/dontDelete.txt");
-	test_fileManager(FileManager_NoError, returnCode, "FileExistTest 6");
+	returnCode = OSFileExists("TestOSFileFolder/dontDelete.txt");
+	test_fileManager(OSFileError_NoError, returnCode, "FileExistTest 6");
 	
-	returnCode = FM_FileExists("TestFileManagerFolder/test.txt");
-	if (!(returnCode == FileManager_FileNotFound))
+	returnCode = OSFileExists("TestOSFileFolder/test.txt");
+	if (!(returnCode == OSFileError_FileNotFound))
 	{
-		returnCode = FM_FileDelete("TestFileManagerFolder/test.txt");
-		test_fileManager(FileManager_NoError, returnCode, "FileDeleteTest 6.5");
+		returnCode = OSFileDelete("TestOSFileFolder/test.txt");
+		test_fileManager(OSFileError_NoError, returnCode, "FileDeleteTest 6.5");
 	}
 
-	returnCode = FM_FileCreate("TestFileManagerFolder/test.txt");
-	test_fileManager(FileManager_NoError, returnCode, "FileCreateTest 7");
+	returnCode = OSFileCreate("TestOSFileFolder/test.txt");
+	test_fileManager(OSFileError_NoError, returnCode, "FileCreateTest 7");
 
-	returnCode = FM_FileDelete("TestFileManagerFolder/test.txt");
-	test_fileManager(FileManager_NoError, returnCode, "FileDeleteTest 8");	
+	returnCode = OSFileDelete("TestOSFileFolder/test.txt");
+	test_fileManager(OSFileError_NoError, returnCode, "FileDeleteTest 8");	
 }

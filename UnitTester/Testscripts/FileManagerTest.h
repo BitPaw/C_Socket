@@ -1,8 +1,8 @@
 #pragma once
 
 
-#ifndef FileManagerTestInclude
-#define FileManagerTestInclude
+#ifndef OSFileTestInclude
+#define OSFileTestInclude
 
 void fileManager_test(char execute);
 

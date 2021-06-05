@@ -28,7 +28,7 @@ typedef struct Path_
 }Path;
 
 
-void PathInitialize(Path* path, char* stringPath);
+void PathInitialize(Path* EmptyPath, char* stringPath);
 
 void PathDestruction(Path* path);
 

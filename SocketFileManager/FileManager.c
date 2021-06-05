@@ -18,11 +18,11 @@
 #include "PathList.h"
 
 
-FileManagerErrorCode FM_FileExists_split(char* directory, const char* filePath)
+OSFileError OSFileExists_splitParameter(char* directory, const char* filePath)
 {
 	
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 		
 	
@@ -30,15 +30,15 @@ FileManagerErrorCode FM_FileExists_split(char* directory, const char* filePath)
 	int length = 0;
 	while (filePath[length] != '.')
 		if (filePath[++length] == '\0')
-			return FileManager_NoFileExtension;
+			return OSFileError_NoFileExtension;
 
 	//checks if more then 0 char before .
 	if (length < 1)
-		return FileManager_ExtensionToShort;
+		return OSFileError_ExtensionToShort;
 
 	//checks if more then 0 char after .
 	if(filePath[++length] == '\0')
-		return FileManager_ExtensionToShort;
+		return OSFileError_ExtensionToShort;
 
 	
 	//checks File exists
@@ -50,7 +50,7 @@ FileManagerErrorCode FM_FileExists_split(char* directory, const char* filePath)
 	{
 
 		if (stat(directory, &st) == -1)
-			return FileManager_FolderNotFound;
+			return OSFileError_FolderNotFound;
 
 
 		//checks File exists
@@ -69,121 +69,115 @@ FileManagerErrorCode FM_FileExists_split(char* directory, const char* filePath)
 
 		free(Path);
 		if (checkValue)
-			return FileManager_FileNotFound;
+			return OSFileError_FileNotFound;
 		
 	}else
 	{
 		Path = filePath;
 		
 		if (stat(Path, &st) == -1)
-			return FileManager_FileNotFound;
+			return OSFileError_FileNotFound;
 	}
 	
-	return FileManager_NoError;
+	return OSFileError_NoError;
 }
 
-FileManagerErrorCode FM_FileExists(char* path )
+OSFileError OSFileExists(char* path)
 {
-	char* tempPath = calloc(strlen(path)+1,sizeof(char));
-	strcpy_s(tempPath, strlen(path) + 1,path);
-		
-	int selector = 0;
-	int length = 0;	
-	while(tempPath[length] != '\0')
-	{		
-		if (tempPath[length] == '/')
-			selector = length;
-
-
-		length++;
-	}
 	
-	
-	char* file;
-	
-	if (selector == 0)
-	{
-		file = tempPath + selector;
-		tempPath = NULL;
-	}
-	else
-	{
-		file = tempPath + selector + 1;
-		tempPath[selector] = '\0';
-	}
-		
-		
-	FileManagerErrorCode returnValue = FM_FileExists_split(tempPath,file );
+	Path tempPath;
 
-	free(tempPath);
+	PathInitialize(&tempPath, path);
 
+	const OSFileError returnValue = OSFileExistsP(tempPath);
+
+	PathDestruction(&tempPath);
+	
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DirExists(char* directory)
+OSFileError OSFileExistsP(Path path)
+{
+	return OSFileExists_splitParameter(path.directory, path.file);
+}
+
+OSFileError OSDirectoryExists(char* directory)
 {
 
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 
 	if (directory == NULL)
-		return FileManager_ContentIsNull;
+		return OSFileError_ContentIsNull;
 	
 	struct stat st = { 0 };
 	char* Path;
 	
 	if (stat(directory, &st) == -1)
-		return FileManager_FolderNotFound;
+		return OSFileError_FolderNotFound;
 
-	return FileManager_NoError;
+	return OSFileError_NoError;
 }
 
-FileManagerErrorCode FM_FileWrite(Path* path, char* content)
+OSFileError OSFileWrite(char* path, char* content)
+{
+	Path tempPath;
+
+	PathInitialize(&tempPath, path);
+
+	const OSFileError returnValue = OSFileExistsP(tempPath);
+
+	PathDestruction(&tempPath);
+
+	return returnValue;
+}
+
+OSFileError OSFileWriteP(Path* path, char* content)
 {
 
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 	
 	if (content == NULL)
-		return FileManager_ContentIsNull;
+		return OSFileError_ContentIsNull;
 
-	const FileManagerErrorCode fileExistOutput = FM_FileExists_split(path->directory,path->file);
+	const OSFileError fileExistOutput = OSFileExists_splitParameter(path->directory,path->file);
 	
-	if(fileExistOutput != FileManager_NoError)
+	if(fileExistOutput != OSFileError_NoError)
 	{
 		switch (fileExistOutput)
 		{
-			case FileManager_FolderNotFound:
+			case OSFileError_FolderNotFound:
 			{
-				const FileManagerErrorCode errorCode = FM_DirFullCreate(path->directory);
+				const OSFileError errorCode = OSDirectoryFullCreate(path->directory);
 				
-				if (errorCode != FileManager_NoError)
+				if (errorCode != OSFileError_NoError)
 					return errorCode;
 
-				return FM_FileWrite(path, content);
+				return OSFileWriteP(path, content);
 			}
-			case FileManager_FileNotFound:
+			case OSFileError_FileNotFound:
 			{
-				const FileManagerErrorCode errorCode = FM_FileCreate(path->fullPath);
+				const OSFileError errorCode = OSFileCreate(path->fullPath);
 
-				if (errorCode != FileManager_NoError)
+				if (errorCode != OSFileError_NoError)
 					return errorCode;
 					
-				return FM_FileWrite(path, content);
+				return OSFileWriteP(path, content);
 			}
-			case FileManager_NoFileExtension: 
-			case FileManager_ExtensionToShort:
-			case FileManager_CallocWentWrong:
-			case FileManager_AccessDenied:
-			case FileManager_PathNotFound:
+			case OSFileError_NoFileExtension: 
+			case OSFileError_ExtensionToShort:
+			case OSFileError_CallocWentWrong:
+			case OSFileError_AccessDenied:
+			case OSFileError_PathNotFound:
 				return fileExistOutput;
 
 				//No Errors or impossible Errors 
-			case FileManager_NoError:
-			case FileManager_ContentIsNull:
-			case FileManager_FolderAlreadyExists:
+			case OSFileError_NoError:
+			case OSFileError_ContentIsNull:
+			case OSFileError_FolderAlreadyExists:
 				break;			
 		}
 
@@ -193,12 +187,12 @@ FileManagerErrorCode FM_FileWrite(Path* path, char* content)
 		
 	}
 	
-	return FileManager_NoError;
+	return OSFileError_NoError;
 }
 
-FileManagerErrorCode FM_FileWriteBase(char* path, char* content)
+OSFileError OSFileWriteBase(char* path, char* content)
 {
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 
 	BOOL bErrorFlag = FALSE;
 	DWORD dwBytesToWrite = (DWORD)strlen(content);
@@ -209,7 +203,7 @@ FileManagerErrorCode FM_FileWriteBase(char* path, char* content)
 	{
 		const DWORD lastError = GetLastError();
 		CloseHandle(h_File);
-		return WindowsErrorToFileManagerError(lastError);
+		return WindowsErrorToOSFileError(lastError);
 	}
 
 	bErrorFlag = WriteFile(h_File, content, dwBytesToWrite, &dwBytesWritten, NULL);
@@ -217,7 +211,7 @@ FileManagerErrorCode FM_FileWriteBase(char* path, char* content)
 	if (FALSE == bErrorFlag)
 	{
 		const DWORD lastError = GetLastError();
-		returnValue = WindowsErrorToFileManagerError(lastError);
+		returnValue = WindowsErrorToOSFileError(lastError);
 	}
 	else
 	{
@@ -226,7 +220,7 @@ FileManagerErrorCode FM_FileWriteBase(char* path, char* content)
 		// requested. This would not necessarily be the case for
 		// asynchronous writes.
 		if (dwBytesWritten != dwBytesToWrite)
-			returnValue = FileManager_WrittenContentIsCorrupted;
+			returnValue = OSFileError_WrittenContentIsCorrupted;
 	}
 
 	CloseHandle(h_File);
@@ -234,14 +228,14 @@ FileManagerErrorCode FM_FileWriteBase(char* path, char* content)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_FileCreate(char* path)
+OSFileError OSFileCreate(char* path)
 {
 
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 	
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 
 	#ifdef OSWindows
 	
@@ -255,12 +249,12 @@ FileManagerErrorCode FM_FileCreate(char* path)
 	if (h_file == INVALID_HANDLE_VALUE)
 	{
 		const DWORD lastError = GetLastError();
-		returnValue = WindowsErrorToFileManagerError(lastError);
+		returnValue = WindowsErrorToOSFileError(lastError);
 	}
 
 	
 	if (CloseHandle(h_file) == 0)
-		returnValue = FileManager_UnknownError;
+		returnValue = OSFileError_UnknownError;
 
 	free(w_path);
 	
@@ -269,22 +263,22 @@ FileManagerErrorCode FM_FileCreate(char* path)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_FileDelete(char* path)
+OSFileError OSFileDelete(char* path)
 {
 
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 
 	
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 
 	wchar_t* w_path = stringToWString(path);
 	
 	if (DeleteFile(w_path) == 0)
 	{
 		const DWORD lastError = GetLastError();
-		returnValue = WindowsErrorToFileManagerError(lastError);		
+		returnValue = WindowsErrorToOSFileError(lastError);		
 	}
 
 	free(w_path);
@@ -292,15 +286,15 @@ FileManagerErrorCode FM_FileDelete(char* path)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DirCreate(char* directory)
+OSFileError OSDirectoryCreate(char* directory)
 {
 
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 
 	
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 
 	
 	#ifdef OSWindows
@@ -313,7 +307,7 @@ FileManagerErrorCode FM_DirCreate(char* directory)
 	if(returnValue != 0)
 	{
 		const DWORD lastError = GetLastError();
-		returnValue = WindowsErrorToFileManagerError(lastError);
+		returnValue = WindowsErrorToOSFileError(lastError);
 	}
 	
 	free(w_directory);
@@ -325,20 +319,20 @@ FileManagerErrorCode FM_DirCreate(char* directory)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DirFullCreate(char* directory)
+OSFileError OSDirectoryFullCreate(char* directory)
 {
 
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 
 	
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 	
 	unsigned int counter = 0;
 
 	if (directory[counter] == '\0')
-		return FileManager_PathNotFound;
+		return OSFileError_PathNotFound;
 	
 	do
 	{
@@ -350,34 +344,34 @@ FileManagerErrorCode FM_DirFullCreate(char* directory)
 		char* partDirectory = calloc(counter+1, sizeof(char));
 
 		if (partDirectory == NULL)
-			return FileManager_CallocWentWrong;
+			return OSFileError_CallocWentWrong;
 		
 		memcpy(partDirectory, directory, (counter) * sizeof(char));
 
-		returnValue = FM_DirCreate(partDirectory);
+		returnValue = OSDirectoryCreate(partDirectory);
 		
 		free(partDirectory);
 				
-	} 	while (directory[counter++] != '\0' && (returnValue == FileManager_NoError || returnValue == FileManager_FolderAlreadyExists));
+	} 	while (directory[counter++] != '\0' && (returnValue == OSFileError_NoError || returnValue == OSFileError_FolderAlreadyExists));
 
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DirDelete(char* directory)
+OSFileError OSDirectoryDelete(char* directory)
 {
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 
 	
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 	
 	wchar_t* w_directory = stringToWString(directory);
 	
 	if (RemoveDirectory(w_directory) == 0)
 	{
 		const DWORD lastError = GetLastError();
-		returnValue = WindowsErrorToFileManagerError(lastError);
+		returnValue = WindowsErrorToOSFileError(lastError);
 	}
 
 	free(w_directory);
@@ -385,17 +379,17 @@ FileManagerErrorCode FM_DirDelete(char* directory)
 	return returnValue;
 }
 
-FileManagerErrorCode FM_DirForceDelete(char* directory)
+OSFileError OSDirectoryForceDelete(char* directory)
 {
 	#ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 	#endif
 	
-	FileManagerErrorCode returnValue = FileManager_NoError;
+	OSFileError returnValue = OSFileError_NoError;
 	
 	List dirContent = EMPTYLIST;
 	
-	FM_ListAllFiles(&dirContent,directory);
+	OSListAllFiles(&dirContent,directory);
 	
 	if(dirContent.size > 0)
 	{
@@ -403,21 +397,21 @@ FileManagerErrorCode FM_DirForceDelete(char* directory)
 		{
 			Path* tempPath = PathListItemGet(&dirContent, i);
 
-			if(returnValue != FileManager_NoError)
+			if(returnValue != OSFileError_NoError)
 				continue;
 			
 			if (tempPath != NULL)
 			{
 				if(tempPath->hasFile == 1)
-					returnValue = FM_FileDelete(tempPath->fullPath);
+					returnValue = OSFileDelete(tempPath->fullPath);
 				else
 				{
-					const FileManagerErrorCode tempErrorCode = FM_DirDelete(tempPath->fullPath);
+					const OSFileError tempErrorCode = OSDirectoryDelete(tempPath->fullPath);
 
-					if (tempErrorCode == FileManager_DirectoryNotEmpty)
-						returnValue = FM_DirForceDelete(tempPath->fullPath);
+					if (tempErrorCode == OSFileError_DirectoryNotEmpty)
+						returnValue = OSDirectoryForceDelete(tempPath->fullPath);
 					else
-						if (tempErrorCode != FileManager_NoError)
+						if (tempErrorCode != OSFileError_NoError)
 							returnValue = tempErrorCode;
 					
 				}
@@ -427,16 +421,16 @@ FileManagerErrorCode FM_DirForceDelete(char* directory)
 	
 	PathListDestruction(&dirContent);
 
-	if (returnValue == FileManager_NoError)
-		returnValue = FM_DirDelete(directory);
+	if (returnValue == OSFileError_NoError)
+		returnValue = OSDirectoryDelete(directory);
 	
 	return returnValue;
 }
 
-void FM_ListAllFiles(List* pathList,char * directory)
+void OSListAllFiles(List* pathList,char * directory)
 {
 #ifdef OSUnix
-	return FileManager_NotImplemented;
+	return OSFileError_NotImplemented;
 #endif
 	
 
@@ -531,30 +525,30 @@ static wchar_t* stringToWString(char* string)
 	return w_path;
 }
 
-static FileManagerErrorCode WindowsErrorToFileManagerError(unsigned long rawError)
+static OSFileError WindowsErrorToOSFileError(unsigned long rawError)
 {
 	switch (rawError)
 	{
 	case ERROR_ACCESS_DENIED:
-		return FileManager_AccessDenied;
+		return OSFileError_AccessDenied;
 	case ERROR_ALREADY_EXISTS:
-		return FileManager_FolderAlreadyExists;
+		return OSFileError_FolderAlreadyExists;
 	case ERROR_DIRECTORY:
-		return FileManager_InvalidDirectory;
+		return OSFileError_InvalidDirectory;
 	case ERROR_DIR_NOT_EMPTY:
-		return FileManager_DirectoryNotEmpty;
+		return OSFileError_DirectoryNotEmpty;
 	case ERROR_FILE_NOT_FOUND:
-		return FileManager_FileNotFound;
+		return OSFileError_FileNotFound;
 	case ERROR_FILE_EXISTS:
-		return FileManager_FileAlreadyExists;
+		return OSFileError_FileAlreadyExists;
 	case ERROR_INVALID_NAME:
-		return FileManager_InvalidDirectory;
+		return OSFileError_InvalidDirectory;
 	case ERROR_PATH_NOT_FOUND:
-		return FileManager_PathNotFound;
+		return OSFileError_PathNotFound;
 	case ERROR_SHARING_VIOLATION:
-		return FileManager_FileIsCurrentlyInUse;
+		return OSFileError_FileIsCurrentlyInUse;
 	default:
-		return FileManager_UnknownError;
+		return OSFileError_UnknownError;
 	}
 }
 #endif
