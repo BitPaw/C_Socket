@@ -165,9 +165,14 @@ FileManagerErrorCode FM_FileWrite(Path* path, char* content)
 				return FM_FileWrite(path, content);
 			}
 			case FileManager_FileNotFound:
-				//TODO: Write in File 
-				break;
-				
+			{
+				const FileManagerErrorCode errorCode = FM_FileCreate(path->fullPath);
+
+				if (errorCode != FileManager_NoError)
+					return errorCode;
+					
+				return FM_FileWrite(path, content);
+			}
 			case FileManager_NoFileExtension: 
 			case FileManager_ExtensionToShort:
 			case FileManager_CallocWentWrong:
@@ -181,9 +186,52 @@ FileManagerErrorCode FM_FileWrite(Path* path, char* content)
 			case FileManager_FolderAlreadyExists:
 				break;			
 		}
+
+		//if directory and File exists
+
+		
+		
 	}
 	
 	return FileManager_NoError;
+}
+
+FileManagerErrorCode FM_FileWriteBase(char* path, char* content)
+{
+	FileManagerErrorCode returnValue = FileManager_NoError;
+
+	BOOL bErrorFlag = FALSE;
+	DWORD dwBytesToWrite = (DWORD)strlen(content);
+	DWORD dwBytesWritten = 0;
+	HANDLE h_File = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (h_File == INVALID_HANDLE_VALUE)
+	{
+		const DWORD lastError = GetLastError();
+		CloseHandle(h_File);
+		return WindowsErrorToFileManagerError(lastError);
+	}
+
+	bErrorFlag = WriteFile(h_File, content, dwBytesToWrite, &dwBytesWritten, NULL);
+
+	if (FALSE == bErrorFlag)
+	{
+		const DWORD lastError = GetLastError();
+		returnValue = WindowsErrorToFileManagerError(lastError);
+	}
+	else
+	{
+		// This is an error because a synchronous write that results in
+		// success (WriteFile returns TRUE) should write all data as
+		// requested. This would not necessarily be the case for
+		// asynchronous writes.
+		if (dwBytesWritten != dwBytesToWrite)
+			returnValue = FileManager_WrittenContentIsCorrupted;
+	}
+
+	CloseHandle(h_File);
+
+	return returnValue;
 }
 
 FileManagerErrorCode FM_FileCreate(char* path)
@@ -385,7 +433,7 @@ FileManagerErrorCode FM_DirForceDelete(char* directory)
 	return returnValue;
 }
 
-void FM_ListAllFiles(List* emptyList,char * directory)
+void FM_ListAllFiles(List* pathList,char * directory)
 {
 #ifdef OSUnix
 	return FileManager_NotImplemented;
@@ -427,7 +475,7 @@ void FM_ListAllFiles(List* emptyList,char * directory)
 		}
 	
 
-		PathListInitialize(emptyList, fileCount);
+		PathListInitialize(pathList, fileCount);
 
 		if(fileCount == 0)
 		{
@@ -458,7 +506,7 @@ void FM_ListAllFiles(List* emptyList,char * directory)
 				
 				Path* newPath = calloc(1,sizeof(Path));
 				PathInitialize(newPath, stringPath);
-				PathListItemAdd(emptyList, newPath);
+				PathListItemAdd(pathList, newPath);
 
 				free(stringPath);
 			}

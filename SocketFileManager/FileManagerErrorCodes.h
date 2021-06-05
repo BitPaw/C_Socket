@@ -30,6 +30,8 @@ typedef enum FileManagerErrorCode_
 	
 	FileManager_ContentIsNull,
 
+	FileManager_WrittenContentIsCorrupted,
+
 	FileManager_UnknownError,
 
 	FileManager_NotImplemented

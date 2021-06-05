@@ -40,11 +40,13 @@ const char* FileManagerErrorCodeToString(FileManagerErrorCode state)
         return "FolderAccessDenied";
     case FileManager_CallocWentWrong: 
         return "CallocWentWrong";
+    case FileManager_WrittenContentIsCorrupted:
+        return "WrittenContentIsCorrupted";
     case FileManager_UnknownError:
         return "UnknownError";
     case FileManager_NotImplemented:
         return "NotImplemented";
 
-        
+
     }
 }
