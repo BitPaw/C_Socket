@@ -18,10 +18,10 @@
     <ClCompile Include="FileManager.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="OSFileError.h">
+    <ClCompile Include="OSError.h">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="OSFileError.c">
+    <ClCompile Include="OSError.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Path.c">

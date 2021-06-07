@@ -10,176 +10,284 @@
 
 #include <wchar.h>
 
-#include "OSFileError.h"
+#include "OSError.h"
 #include "Path.h"
 #include "../List/List.h"
 
 #ifndef FileManagerInclude
 #define FileManagerInclude
 
+#define WriteMode_Overwrite 0
+#define WriteMode_AddToEnd 1
+
 /*
  * Function:  OSFileExists_splitParameter
  * --------------------
  * checks if combined(directory + filePath) exists
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_NoFileExtension
- *	   OSFileError_ExtensionToShort
- *	   OSFileError_FolderNotFound
- *	   OSFileError_FileNotFound
+ *  returns: OSError_NoError
+ *	   OSError_NoFileExtension
+ *	   OSError_ExtensionToShort
+ *	   OSError_FolderNotFound
+ *	   OSError_FileNotFound
  */
-OSFileError OSFileExists_splitParameter(char* directory, char* filePath);
+OSError OSFileExists_splitParameter(char* directory, char* filePath);
 
 /*
  * Function:  OSFileExists
  * --------------------
  * checks if path exists
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_NoFileExtension
- *	   OSFileError_ExtensionToShort
- *	   OSFileError_FolderNotFound
- *	   OSFileError_FileNotFound
+ *  returns: OSError_NoError
+ *	   OSError_NoFileExtension
+ *	   OSError_ExtensionToShort
+ *	   OSError_FolderNotFound
+ *	   OSError_FileNotFound
  */
-OSFileError OSFileExists(char* path);
+OSError OSFileExists(char* path);
 
 /*
  * Function:  OSFileExistsP
  * --------------------
  * checks if path exists
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_NoFileExtension
- *	   OSFileError_ExtensionToShort
- *	   OSFileError_FolderNotFound
- *	   OSFileError_FileNotFound
+ *  returns: OSError_NoError
+ *	   OSError_NoFileExtension
+ *	   OSError_ExtensionToShort
+ *	   OSError_FolderNotFound
+ *	   OSError_FileNotFound
  */
-OSFileError OSFileExistsP(Path path);
+OSError OSFileExistsP(Path* path);
 
 /*
  * Function:  OSDirectoryExists
  * --------------------
  * checks if directory exists
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_ContentIsNull
- *	   OSFileError_FolderNotFound
+ *  returns: OSError_NoError
+ *	   OSError_ContentIsNull
+ *	   OSError_FolderNotFound
  */
-OSFileError OSDirectoryExists(char* directory);
+OSError OSDirectoryExists(char* directory);
 
 /*
- * Function:  OSFileWriteP
+ * Function:  OSDirectoryExistsP
  * --------------------
- * writes content in path
+ * checks if path->directory exists
  * --------------------
- *  returns: OSFileError_NoError
- *	  OSFileError_ContentIsNull
- *	  OSFileError_FolderNotFound
- *	  OSFileError_NoFileExtension
- *	  OSFileError_ExtensionToShort
+ *  returns: OSError_NoError
+ *	   OSError_ContentIsNull
+ *	   OSError_FolderNotFound
  */
-OSFileError OSFileWriteP(Path* path, char* content);
+OSError OSDirectoryExistsP(Path* path);
 
 /*
- * Function:  OSFileWrite
+ * Function:  OSFileForceWrite
  * --------------------
- * writes content in path
+ * writes content in path, if file or directory doesn't exists, they will be created
  * --------------------
- *  returns: OSFileError_NoError
- *	  OSFileError_ContentIsNull
- *	  OSFileError_FolderNotFound
- *	  OSFileError_NoFileExtension
- *	  OSFileError_ExtensionToShort
+ *  returns: OSError_NoError
+ *	  OSError_ContentIsNull
+ *	  OSError_FolderNotFound
+ *	  OSError_NoFileExtension
+ *	  OSError_ExtensionToShort
+ *	  OSError_UnknownError
  */
-OSFileError OSFileWrite(char* path, char* content);
+OSError OSFileForceWrite(char* path, char* content);
 
-OSFileError OSFileWriteBase(char* path, char* content);
+/*
+ * Function:  OSFileForceWriteP
+ * --------------------
+ * writes content in path, if file or directory doesn't exists, they will be created
+ * --------------------
+ *  returns: OSError_NoError
+ *	  OSError_ContentIsNull
+ *	  OSError_FolderNotFound
+ *	  OSError_NoFileExtension
+ *	  OSError_ExtensionToShort
+ *	  OSError_UnknownError
+ */
+OSError OSFileForceWriteP(Path* path, char* content);
+
+OSError OSFileWriteBase(char* path, char* content, char writeMode);
+
+OSError OSFileWriteBaseP(Path* path, char* content, char writeMode);
+
+OSError OSFileRead(char* path, char** readContent);
+
+OSError OSFileReadP(Path* path, char** readContent);
 
 /*
  * Function:  OSFileCreate
  * --------------------
  * Creates a File. If the File exists, it wont be overwritten
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_FileAlreadyExists
- *	   OSFileError_AccessDenied
- *	   OSFileError_InvalidDirectory
- *	   OSFileError_PathNotFound
- *	   OSFileError_UnknownError
+ *  returns: OSError_NoError
+ *	   OSError_FileAlreadyExists
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_UnknownError
  */
-OSFileError OSFileCreate(char* path);
+OSError OSFileCreate(char* path);
+
+/*
+ * Function:  OSFileCreateP
+ * --------------------
+ * Creates a File. If the File exists, it wont be overwritten
+ * --------------------
+ *  returns: OSError_NoError
+ *	   OSError_FileAlreadyExists
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_UnknownError
+ */
+OSError OSFileCreateP(Path* path);
 
 /*
  * Function:  OSFileDelete
  * --------------------
  * Deletes File
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_AccessDenied
- *	   OSFileError_InvalidDirectory
- *	   OSFileError_PathNotFound
- *	   OSFileError_FileIsCurrentlyInUse
- *	   OSFileError_UnknownError
+ *  returns: OSError_NoError
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_FileIsCurrentlyInUse
+ *	   OSError_UnknownError
  */
-OSFileError OSFileDelete(char* path);
+OSError OSFileDelete(char* path);
+
+/*
+ * Function:  OSFileDeleteP
+ * --------------------
+ * Deletes File
+ * --------------------
+ *  returns: OSError_NoError
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_FileIsCurrentlyInUse
+ *	   OSError_UnknownError
+ */
+OSError OSFileDeleteP(Path* path);
 
 /*
  * Function:  OSDirectoryCreate
  * --------------------
  * Creates Folder
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_PathNotFound
- *	   OSFileError_AccessDenied
- *	   OSFileError_FolderAlreadyExists
- *	   OSFileError_InvalidDirectory
- *	   OSFileError_UnknownError
- */
-OSFileError OSDirectoryCreate(char* directory);
+ *  returns: OSError_NoError
+ *	   OSError_PathNotFound
+ *	   OSError_AccessDenied
+ *	   OSError_FolderAlreadyExists
+ *	   OSError_DirectoryInvalid
+ *	   OSError_UnknownError
+*/
+OSError OSDirectoryCreate(char* directory);
+
+/*
+ * Function:  OSDirectoryCreate
+ * --------------------
+ * Creates Folder
+ * --------------------
+ *  returns: OSError_NoError
+ *	   OSError_PathNotFound
+ *	   OSError_AccessDenied
+ *	   OSError_FolderAlreadyExists
+ *	   OSError_DirectoryInvalid
+ *	   OSError_UnknownError
+*/
+OSError OSDirectoryCreateP(Path* path);
 
 /*
  * Function:  OSDirectoryFullCreate
  * --------------------
  * Creates Folder hierarchy
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_PathNotFound
- *	   OSFileError_CallocWentWrong
- *	   OSFileError_AccessDenied
- *	   OSFileError_FolderAlreadyExists
- *	   OSFileError_InvalidDirectory
- *	   OSFileError_UnknownError
+ *  returns: OSError_NoError
+ *	   OSError_PathNotFound
+ *	   OSError_CallocWentWrong
+ *	   OSError_AccessDenied
+ *	   OSError_FolderAlreadyExists
+ *	   OSError_DirectoryInvalid
+ *	   OSError_UnknownError
  */
-OSFileError OSDirectoryFullCreate(char* directory);
+OSError OSDirectoryFullCreate(char* directory);
+
+/*
+ * Function:  OSDirectoryFullCreateP
+ * --------------------
+ * Creates Folder hierarchy
+ * --------------------
+ *  returns: OSError_NoError
+ *	   OSError_PathNotFound
+ *	   OSError_CallocWentWrong
+ *	   OSError_AccessDenied
+ *	   OSError_FolderAlreadyExists
+ *	   OSError_DirectoryInvalid
+ *	   OSError_UnknownError
+ */
+OSError OSDirectoryFullCreateP(Path* path);
 
 /*
  * Function:  OSDirectoryDelete
  * --------------------
  * Deletes a empty directory
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_DirectoryNotEmpty
- *	   OSFileError_AccessDenied
- *	   OSFileError_InvalidDirectory
- *	   OSFileError_PathNotFound
- *	   OSFileError_UnknownError
+ *  returns: OSError_NoError
+ *	   OSError_DirectoryNotEmpty
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_UnknownError
  */
-OSFileError OSDirectoryDelete(char* directory);
+OSError OSDirectoryDelete(char* directory);
+
+/*
+ * Function:  OSDirectoryDeleteP
+ * --------------------
+ * Deletes a empty directory
+ * --------------------
+ *  returns: OSError_NoError
+ *	   OSError_DirectoryNotEmpty
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_UnknownError
+ */
+OSError OSDirectoryDeleteP(Path* path);
 
 /*
  * Function:  OSDirectoryForceDelete
  * --------------------
  * Deletes the directory and all Content in it
  * --------------------
- *  returns: OSFileError_NoError
- *	   OSFileError_DirectoryNotEmpty
- *	   OSFileError_AccessDenied
- *	   OSFileError_InvalidDirectory
- *	   OSFileError_PathNotFound
- *	   OSFileError_FileIsCurrentlyInUse
- *	   OSFileError_UnknownError
+ *  returns: OSError_NoError
+ *	   OSError_DirectoryNotEmpty
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_FileIsCurrentlyInUse
+ *	   OSError_UnknownError
  */
-OSFileError OSDirectoryForceDelete(char* directory);
+OSError OSDirectoryForceDelete(char* directory);
+
+/*
+ * Function:  OSDirectoryForceDeleteP
+ * --------------------
+ * Deletes the directory and all Content in it
+ * --------------------
+ *  returns: OSError_NoError
+ *	   OSError_DirectoryNotEmpty
+ *	   OSError_AccessDenied
+ *	   OSError_DirectoryInvalid
+ *	   OSError_PathNotFound
+ *	   OSError_FileIsCurrentlyInUse
+ *	   OSError_UnknownError
+ */
+OSError OSDirectoryForceDeleteP(Path* path);
 
 /*
  * Function:  OSListAllFiles
@@ -195,10 +303,12 @@ OSFileError OSDirectoryForceDelete(char* directory);
  */
 void OSListAllFiles(List* pathList, char* directory);
 
+static OSError ErrnoErrorToOSError(unsigned int errnoAsInt);
+
 #ifdef OSWindows
 static wchar_t* stringToWString(char* string);
 
-static OSFileError WindowsErrorToOSFileError(unsigned long rawError);
+static OSError windowsErrorToOSError(unsigned long rawError);
 #endif
 
 #endif
