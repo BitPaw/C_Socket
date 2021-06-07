@@ -1,7 +1,7 @@
 #include "IOSocket.h"
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
+
 
 char SocketIsCurrentlyUsed(IOSocket* socket)
 {

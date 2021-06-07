@@ -1,3 +1,4 @@
+#include <sys/semaphore.h>
 #include "AsyncLock.h"
 
 int AsyncLockCreate(AsyncLock* asyncLock)
