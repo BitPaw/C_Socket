@@ -165,7 +165,7 @@ int colorPrintf(char * _Format, ...) {
 				
 		va_list argptr;
 		va_start(argptr, _Format);
-		returnValue = vfprintf(stderr, format, argptr);
+		returnValue = vprintf(format, argptr);
 		va_end(argptr);
 
 		free(format);
