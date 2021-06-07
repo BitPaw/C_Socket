@@ -1,7 +1,6 @@
-#include <semaphore.h>
 #include "AsyncLock.h"
 
-int SemaphoreCreate(AsyncLock* asyncLock)
+int AsyncLockCreate(AsyncLock* asyncLock)
 {
 	int createResult = -1;
 
@@ -17,46 +16,46 @@ int SemaphoreCreate(AsyncLock* asyncLock)
 	LPCWSTR lpName = 0;
 
 	createResult = 0;
-	semaphore->HandleID = CreateSemaphore(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
+	asyncLock->HandleID = CreateSemaphore(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName);
 #endif 
 
 	return createResult;
 }
 
-int SemaphoreDelete(AsyncLock* asyncLock)
+int AsyncLockDelete(AsyncLock* asyncLock)
 {
 	int closingResult = -1;
 
 #ifdef OSUnix
 	closingResult = sem_destroy(&asyncLock->HandleID);
 #elif defined(OSWindows)
-	closingResult = CloseHandle(semaphore->HandleID);
+	closingResult = CloseHandle(asyncLock->HandleID);
 #endif 
 
 	return closingResult;
 }
 
-int SemaphoreLock(AsyncLock* asyncLock)
+int AsyncLockLock(AsyncLock* asyncLock)
 {
 	int lockResult = -1;
 
 #ifdef OSUnix
 	lockResult = sem_wait(&asyncLock->HandleID);
 #elif defined(OSWindows)
-	lockResult = WaitForSingleObject(semaphore->HandleID, INFINITE);
+	lockResult = WaitForSingleObject(asyncLock->HandleID, INFINITE);
 #endif 
 
 	return lockResult;	
 }
 
-int SemaphoreRelease(AsyncLock* asyncLock)
+int AsyncLockRelease(AsyncLock* asyncLock)
 {
 	int releaseResult = -1;
 
 #ifdef OSUnix
 	releaseResult = sem_post(&asyncLock->HandleID);
 #elif defined(OSWindows)
-	releaseResult = ReleaseSemaphore(semaphore->HandleID, 1, 0);
+	releaseResult = ReleseSemaphore(asyncLock->HandleID, 1, 0);
 #endif 
 
 	return releaseResult;

@@ -57,5 +57,7 @@ const char* SocketErrorToString(SocketError socketError)
 
 		case	SocketIsBlocking:
 			return "Windows: SocketIsBlocking";
+		default:
+			return "Illegeal command";
 	}
 }

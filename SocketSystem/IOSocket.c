@@ -50,10 +50,10 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
         {
 #ifdef OSUnix
             struct addrinfo adressIPv6Hint;
-            struct addrinfo* adressIPv6HintPointer = &adressIPv6Hint;
+            struct addrinfo* adressIPv6HintPointer;
 #elif defined(OSWindows)
             ADDRINFO adressIPv6Hint;
-            ADDRINFO adressIPv6HintPointer = adressIPv6Hint;
+            ADDRINFO* adressIPv6HintPointer;
 #endif
 
             char portString[10];
@@ -61,6 +61,8 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
 
             sprintf(portString, "%i", port);
             memset(&adressIPv6Hint, 0, sizeof(adressIPv6Hint));
+
+            adressIPv6HintPointer = &adressIPv6Hint;
 
             adressIPv6Hint.ai_family = adressFamily; //    AF_INET / AF_INET6:
             adressIPv6Hint.ai_socktype = SOCK_STREAM;
@@ -138,6 +140,7 @@ SocketError SocketOpen(IOSocket* serverSocket, IPVersion ipVersion, unsigned sho
 
         switch (serverSocket->IPMode)
         {
+            default:
             case IPVersion4:
             {
                 adressFamily = serverSocket->AdressIPv4.sin_family;
@@ -175,7 +178,7 @@ SocketError SocketOpen(IOSocket* serverSocket, IPVersion ipVersion, unsigned sho
 
 #ifdef OSUnix
         const int optionName = SO_REUSEADDR;      // Do not use SO_REUSEADDR, else the port can be hacked. SO_REUSEPORT
-#elif defined(OSWIndows)
+#elif defined(OSWindows)
         const int optionName = SO_EXCLUSIVEADDRUSE;
 #endif
         int opval = 1;

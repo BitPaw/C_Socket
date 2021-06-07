@@ -1,11 +1,10 @@
 #ifndef AsyncLockIncluded
 #define AsyncLockIncluded
 
-
 #include "OSDefine.h"
 
 #ifdef OSUnix
-#include <semaphore.h>
+#include <AsyncLock.h>
 #elif defined(OSWindows)
 #include <Windows.h>
 #include <process.h>
@@ -22,7 +21,7 @@ typedef struct AsyncLock_
 }AsyncLock;
 
 int AsyncLockCreate(AsyncLock* asyncLock);
-int AsyncLockelete(AsyncLock* asyncLock);
+int AsyncLockDelete(AsyncLock* asyncLock);
 int AsyncLockLock(AsyncLock* asyncLock);
 int AsyncLockRelease(AsyncLock* asyncLock);
 

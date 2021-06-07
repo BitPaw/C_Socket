@@ -27,13 +27,13 @@
     <ClCompile Include="Thread.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Semaphore.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="SocketError.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="IPVersion.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncLock.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,9 +50,6 @@
     <ClInclude Include="Thread.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="Semaphore.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="SocketError.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -60,6 +57,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="OSDefine.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncLock.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
