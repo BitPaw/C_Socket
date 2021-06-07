@@ -14,12 +14,11 @@ void PathInitialize(Path* EmptyPath, char* stringPath)
 	EmptyPath->fullPathLength = strlen(stringPath);
 	
 	EmptyPath->fullPath = calloc(EmptyPath->fullPathLength + 1, sizeof(char));
-	strcpy_s(EmptyPath->fullPath, EmptyPath->fullPathLength + 1, stringPath);
-
+    memcpy(EmptyPath->fullPath,stringPath,EmptyPath->fullPathLength * sizeof(char));
 
 	EmptyPath->directory = calloc(EmptyPath->fullPathLength + 1, sizeof(char));
-	strcpy_s(EmptyPath->directory, EmptyPath->fullPathLength + 1, EmptyPath->fullPath);
-	
+    memcpy(EmptyPath->directory,EmptyPath->fullPath,EmptyPath->fullPathLength * sizeof(char));
+
 	int selector = 0;
 	int length = 0;
 	char hasFile = 0;

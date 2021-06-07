@@ -58,7 +58,8 @@ void PathListToString(List* pathList, char* buffer)
 		if(PathAsString != NULL)
 		{
 			const int pathStringLength = strlen(PathAsString);
-			strcpy_s(buffer + length, (pathStringLength + 1)*sizeof(char), PathAsString);
+            memcpy(buffer + length,PathAsString,pathStringLength + 1 * sizeof(char));
+
 			length += pathStringLength;
 			buffer[length++] = '\n';
 		}	

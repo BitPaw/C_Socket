@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void ListInitialize(List* list, size_t count, size_t sizeOfObject)
+void ListInitialize(List* list, unsigned int count, unsigned int sizeOfObject)
 {
 	if(list->size != 0 || list->content != 0 || list->sizeOfObject != 0)
 		return;
@@ -37,7 +37,7 @@ void ListDestruction(List* list)
 	list->content = NULL;
 }
 
-int ListItemInsertAt(List* list, int indexValue, void* value)
+int ListItemInsertAt(List* list, unsigned int indexValue, void* value)
 {
 	if(list == NULL)
 		return -1;
@@ -77,6 +77,7 @@ int ListItemAdd(List* list, void* value)
 		const unsigned int oldSize = list->size;
 		
 		list->size = (int)(1.5 * (list->size + 1));
+
 
 		void* reallocOutput = realloc(list->content, list->size * list->sizeOfObject) ;
 

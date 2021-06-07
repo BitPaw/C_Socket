@@ -14,18 +14,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <errno.h>
+#include <unistd.h>
 
 #include "PathList.h"
 
 
-OSError OSFileExists_splitParameter(char* directory, const char* filePath)
+OSError OSFileExists_splitParameter(char* directory, char* filePath)
 {
-	
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-		
-	
+
 	//checks if '.' is in file
 	int length = 0;
 	while (filePath[length] != '.')
@@ -103,16 +100,11 @@ OSError OSFileExistsP(Path* path)
 OSError OSDirectoryExists(char* directory)
 {
 
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-
 	if (directory == NULL)
 		return OSError_ContentIsNull;
 	
 	struct stat st = { 0 };
-	char* Path;
-	
+
 	if (stat(directory, &st) == -1)
 		return OSError_DirectoryNotFound;
 
@@ -140,10 +132,6 @@ OSError OSFileForceWrite(char* path, char* content, char writeMode)
 OSError OSFileForceWriteP(Path* path, char* content, char writeMode)
 {
 
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-	
 	if (content == NULL)
 		return OSError_ContentIsNull;
 
@@ -319,11 +307,6 @@ OSError OSFileCreate(char* path)
 
 OSError OSFileCreateP(Path* path)
 {
-
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-
 	if (path == NULL)
 		return OSError_ParameterIsNull;
 	
@@ -348,11 +331,6 @@ OSError OSFileCreateP(Path* path)
 
 OSError OSFileDelete(char* path)
 {
-
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-
 	errno = 0;
 
 	if(remove(path)!= 0)
@@ -361,7 +339,6 @@ OSError OSFileDelete(char* path)
 	}
 	
 	return OSError_NoError;
-	
 }
 
 OSError OSFileDeleteP(Path* path)
@@ -371,17 +348,25 @@ OSError OSFileDeleteP(Path* path)
 
 OSError OSDirectoryCreate(char* directory)
 {
+	if(!directory)
+        return OSError_ParameterIsNull;
 
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-
-	
 	OSError returnValue = OSError_NoError;
 
-	
+    #ifdef OSUnix
+
+    errno = 0;
+
+    if(mkdir(directory,0777) != 0){
+        return ErrnoErrorToOSError(errno);
+    }
+
+    return returnValue;
+
+
+    #endif
+
 	#ifdef OSWindows
-	
 	
 	returnValue = CreateDirectoryA(directory,NULL)? 0 : -1;
 
@@ -406,11 +391,6 @@ OSError OSDirectoryCreateP(Path* path)
 OSError OSDirectoryFullCreate(char* directory)
 {
 
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-
-	
 	OSError returnValue = OSError_NoError;
 	
 	unsigned int counter = 0;
@@ -432,11 +412,13 @@ OSError OSDirectoryFullCreate(char* directory)
 		
 		memcpy(partDirectory, directory, (counter) * sizeof(char));
 
-		returnValue = OSDirectoryCreate(partDirectory);
+
+        if(memcmp(partDirectory,"..", 3 * sizeof(char)) != 0 && memcmp(partDirectory,".", 2 * sizeof(char)))
+		    returnValue = OSDirectoryCreate(partDirectory);
 		
 		free(partDirectory);
 				
-	} 	while (directory[counter++] != '\0' && (returnValue == OSError_NoError || returnValue == OSError_FolderAlreadyExists));
+	} 	while (directory[counter++] != '\0' && (returnValue == OSError_NoError || returnValue == OSError_FolderAlreadyExists || returnValue == OSError_FileAlreadyExists));
 
 	return returnValue;
 }
@@ -448,12 +430,21 @@ OSError OSDirectoryFullCreateP(Path* path)
 
 OSError OSDirectoryDelete(char* directory)
 {
+    OSError returnValue = OSError_NoError;
+
 #ifdef OSUnix
-	return OSError_NotImplemented;
+    errno = 0;
+
+    if(rmdir(directory) != 0)
+    {
+        return ErrnoErrorToOSError(errno);
+    }
+
+    return returnValue;
 #endif
 
-	
-	OSError returnValue = OSError_NoError;
+#ifdef OSWindows
+
 	
 	wchar_t* w_directory = stringToWString(directory);
 	
@@ -466,6 +457,7 @@ OSError OSDirectoryDelete(char* directory)
 	free(w_directory);
 	
 	return returnValue;
+#endif
 }
 
 OSError OSDirectoryDeleteP(Path* path)
@@ -476,8 +468,11 @@ OSError OSDirectoryDeleteP(Path* path)
 OSError OSDirectoryForceDelete(char* directory)
 {
 	#ifdef OSUnix
-	return OSError_NotImplemented;
-	#endif
+
+
+    return OSError_NotImplemented;
+
+    #endif
 	
 	OSError returnValue = OSError_NoError;
 	
@@ -534,7 +529,7 @@ OSError OSListAllFiles(List* pathList,char* directory)
 #ifdef OSUnix
 	return OSError_NotImplemented;
 #endif
-	
+#ifdef OSWindows
 
 	int selector = 0;
 	const int directoryLength = strlen(directory);
@@ -621,6 +616,7 @@ OSError OSListAllFiles(List* pathList,char* directory)
 	FindClose(hFind);
 
 	return OSError_NoError;
+#endif
 }
 
 
@@ -628,20 +624,22 @@ static OSError ErrnoErrorToOSError(unsigned int errnoAsInt)
 {
 	switch (errnoAsInt)
 	{
-	case ENOENT:
-		return OSError_DirectoryNotFound;
-	case EAGAIN:
-		return OSError_CallocWentWrong;
-	case EACCES:
-		return OSError_AccessDenied;
-	case EISDIR:
+        case ENOENT:
+            return OSError_DirectoryNotFound;
+        case EAGAIN:
+            return OSError_CallocWentWrong;
+        case EACCES:
+            return OSError_AccessDenied;
+	    case EEXIST:
+            return OSError_FileAlreadyExists;
+        case EISDIR:
 		return OSError_ParameterInvalid;
-	case EINVAL:
-		return OSError_FileNameInvalid;
-	case EFBIG:
-		return OSError_FileToBig;
-	case ENAMETOOLONG:
-		return OSError_FileNameToLong;
+        case EINVAL:
+            return OSError_FileNameInvalid;
+        case EFBIG:
+            return OSError_FileToBig;
+        case ENAMETOOLONG:
+            return OSError_FileNameToLong;
 
 	default:
 		printf("errno: %i", errnoAsInt);

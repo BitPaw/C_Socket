@@ -67,8 +67,8 @@ void path_test(char execute)
 	//Test 6: Memcopy
 
 	char* stringPath = calloc(27,sizeof(char));
-	strcpy_s(stringPath,27 , "/Users/Test/Desktop/a.txt");
-	
+    memcpy(stringPath,"/Users/Test/Desktop/a.txt",26);
+
 	path2 = (Path){ strlen("/Users/Test/Desktop/a.txt") ,"/Users/Test/Desktop/a.txt", "/Users/Test/Desktop", "a.txt","a","txt" };
 	PathInitialize(&path1, stringPath);
 

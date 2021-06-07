@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 void list_test(char execute)
@@ -22,13 +23,13 @@ void list_test(char execute)
 	ListInitialize(&a, 3, sizeof(char*));
 
 	char* testChar1 = calloc(2,sizeof(char));
-	strcpy_s(testChar1, 2, "a");
+    memcpy(testChar1,"a",1 * sizeof(char));
 	
 	char* testChar2 = calloc(4, sizeof(char));
-	strcpy_s(testChar2,4, "bbb");
+    memcpy(testChar2,"bbb",3 * sizeof(char));
 	
 	char* testChar3 = calloc(2, sizeof(char));
-	strcpy_s(testChar3, 2, "c");
+    memcpy(testChar3,"c",1 * sizeof(char));
 	
 	ListItemInsertAt(&a, 0, testChar1);
 	ListItemInsertAt(&a, 2, testChar2);
@@ -94,9 +95,10 @@ void list_test(char execute)
 	ListDestruction(&c);
 	
 	// Test: 4 Remove an Clear[int]
+
 	b = EMPTYLIST;
 	
-	ListInitialize(&b, 2, sizeof(int));
+	ListInitialize(&b, 2, sizeof(int*));
 	
 	int* testInt6 = calloc(1, sizeof(int));
 	*testInt6 = 44;

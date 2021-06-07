@@ -1,4 +1,3 @@
-#pragma once
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
 #endif
@@ -53,14 +52,13 @@ int main()
 
 	//printColorTable();
 
-
 	path_test(1);
 
 	list_test(1);
 
 	fileManager_test(1);
 	
-	path_ListAllFiles_test(1);
+	path_ListAllFiles_test(0);
 	
 	testPrintSummery();
 	
@@ -69,4 +67,5 @@ system("pause");
 #else
 printf("Terminated\n");
 #endif
+    return 0;
 }
