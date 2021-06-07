@@ -7,6 +7,12 @@
 #include "../../SocketFileManager/PathList.h"
 #include "../../SocketFileManager/FileManager.h"
 
+#ifdef OSUnix
+#define FolderStructure(Path) "../" Path
+#elif defined(OSWindows)
+#define FolderStructure(Path) Path
+#endif
+
 void test_path(Path* expectedInput, Path* input, char* name)
 {
 	testPrint(PathCompare(expectedInput, input) == 0,PathToString(expectedInput),PathToString(input),"Path",name);
@@ -93,12 +99,12 @@ void path_ListAllFiles_test(char execute)
 	
 	//List all Files
 
-	OSListAllFiles(&test, "TestOSFileFolder/*");
+	OSListAllFiles(&test, FolderStructure("TestOSFileFolder/*"));
 
 	test_int(2, test.size, "ListAllFiles-Test 1 [SizeOfList]");
 
-	PathInitialize(&testPath1, "TestOSFileFolder/Test");
-	PathInitialize(&testPath2, "TestOSFileFolder/dontDelete.txt");
+	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
+	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
 	
 	if(test.size == 2)
 	{
@@ -115,12 +121,12 @@ void path_ListAllFiles_test(char execute)
 
 	test = EMPTYLIST;
 	
-	OSListAllFiles(&test, "TestOSFileFolder");
+	OSListAllFiles(&test, FolderStructure("TestOSFileFolder"));
 
 	test_int(2, test.size, "ListAllFiles-Test 4 [SizeOfList]");
 
-	PathInitialize(&testPath1, "TestOSFileFolder/Test");
-	PathInitialize(&testPath2, "TestOSFileFolder/dontDelete.txt");
+	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
+	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
 
 	if (test.size == 2)
 	{
@@ -136,12 +142,15 @@ void path_ListAllFiles_test(char execute)
 	// Test Empty dic
 
 	test = EMPTYLIST;
+
+	OSDirectoryCreate(FolderStructure("TestOSFileFolder/Temp"));
 	
-	OSListAllFiles(&test, "TestOSFileFolder/Test");
+	OSListAllFiles(&test, FolderStructure("TestOSFileFolder/Temp"));
 
 	test_int(0, test.size, "ListAllFiles-Test 7 [Empty Folder]");
 
 	PathListDestruction(&test);
-
+	
+	OSDirectoryDelete(FolderStructure("TestOSFileFolder/Temp"));
 	
 }

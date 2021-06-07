@@ -3,11 +3,11 @@
 
 #include "FileManager.h"
 
-
-#ifdef OSWindows
+#ifdef OSUnix
+#include <unistd.h>
+#elif defined(OSWindows)
 #include <windows.h>
 #include <fileapi.h>
-
 #endif
 
 #include <stdio.h>
@@ -15,7 +15,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <unistd.h>
 
 #include "PathList.h"
 
