@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include <stdlib.h>
+
 #include "../../SocketFileManager/FileManager.h"
 #include "../Tester.h"
 
@@ -26,7 +28,7 @@ void fileManager_test(char execute)
 	test_fileManager(OSError_NoError, returnCode, "FolderExistTest 1");
 	
 	returnCode = OSDirectoryExists("TestOSFileFolder/Test/A");
-	if (!(returnCode == OSError_FolderNotFound))
+	if (!(returnCode == OSError_DirectoryNotFound))
 	{
 		returnCode = OSDirectoryDelete("TestOSFileFolder/Test/A");
 		test_fileManager(OSError_NoError, returnCode, "FolderDeleteTest 2.5");
@@ -42,7 +44,7 @@ void fileManager_test(char execute)
 
 
 	returnCode = OSDirectoryExists("TestOSFileFolder/Test/B/B");
-	if (!(returnCode == OSError_FolderNotFound))
+	if (!(returnCode == OSError_DirectoryNotFound))
 	{
 		returnCode = OSDirectoryForceDelete("TestOSFileFolder/Test/B");
 		test_fileManager(OSError_NoError, returnCode, "FolderForceDeleteTest 3.5");
@@ -70,5 +72,32 @@ void fileManager_test(char execute)
 	test_fileManager(OSError_NoError, returnCode, "FileCreateTest 7");
 
 	returnCode = OSFileDelete("TestOSFileFolder/test.txt");
-	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 8");	
+	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 8");
+
+	//File write /read
+	
+	returnCode = OSFileForceWrite("TestOSFileFolder/A/B/C/a.txt", "Hallo Dennis??!$55&778", WriteMode_Overwrite);
+	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 9");
+
+
+	char* content = 0;
+
+	returnCode = OSFileRead("TestOSFileFolder/A/B/C/a.txt", &content);
+	test_string("Hallo Dennis??!$55&778", content, "FileDeleteTest 10");
+	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 11");
+
+	free(content);
+
+	returnCode = OSDirectoryForceDelete("TestOSFileFolder/A");
+	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 12");
+
+	returnCode = OSDirectoryForceDelete("TestOSFileFolder/A");
+	test_fileManager(OSError_FileNotFound, returnCode, "FileDeleteTest 13");
+
+	//
+
+	content = 0;
+
+	returnCode = OSFileRead("TestOSFileFolder/DontExists/a.txt", &content);
+	test_fileManager(OSError_DirectoryNotFound, returnCode, "FileDeleteTest 14");
 }

@@ -28,7 +28,7 @@
  *  returns: OSError_NoError
  *	   OSError_NoFileExtension
  *	   OSError_ExtensionToShort
- *	   OSError_FolderNotFound
+ *	   OSError_DirectoryNotFound
  *	   OSError_FileNotFound
  */
 OSError OSFileExists_splitParameter(char* directory, char* filePath);
@@ -41,7 +41,7 @@ OSError OSFileExists_splitParameter(char* directory, char* filePath);
  *  returns: OSError_NoError
  *	   OSError_NoFileExtension
  *	   OSError_ExtensionToShort
- *	   OSError_FolderNotFound
+ *	   OSError_DirectoryNotFound
  *	   OSError_FileNotFound
  */
 OSError OSFileExists(char* path);
@@ -54,7 +54,7 @@ OSError OSFileExists(char* path);
  *  returns: OSError_NoError
  *	   OSError_NoFileExtension
  *	   OSError_ExtensionToShort
- *	   OSError_FolderNotFound
+ *	   OSError_DirectoryNotFound
  *	   OSError_FileNotFound
  */
 OSError OSFileExistsP(Path* path);
@@ -66,7 +66,7 @@ OSError OSFileExistsP(Path* path);
  * --------------------
  *  returns: OSError_NoError
  *	   OSError_ContentIsNull
- *	   OSError_FolderNotFound
+ *	   OSError_DirectoryNotFound
  */
 OSError OSDirectoryExists(char* directory);
 
@@ -77,7 +77,7 @@ OSError OSDirectoryExists(char* directory);
  * --------------------
  *  returns: OSError_NoError
  *	   OSError_ContentIsNull
- *	   OSError_FolderNotFound
+ *	   OSError_DirectoryNotFound
  */
 OSError OSDirectoryExistsP(Path* path);
 
@@ -85,36 +85,122 @@ OSError OSDirectoryExistsP(Path* path);
  * Function:  OSFileForceWrite
  * --------------------
  * writes content in path, if file or directory doesn't exists, they will be created
+ *
+ * writeMode = [WriteMode_Overwrite | WriteMode_AddToEnd]
  * --------------------
  *  returns: OSError_NoError
+ *    OSError_ParameterIsNull
+ *	  OSError_ParameterInvalid
  *	  OSError_ContentIsNull
- *	  OSError_FolderNotFound
+ *	  OSError_DirectoryNotFound
+ *	  OSError_CallocWentWrong
+ *	  OSError_AccessDenied
+ *	  OSError_FileToBig
+ *	  OSError_FileNameInvalid
+ *	  OSError_FileNameToLong
  *	  OSError_NoFileExtension
  *	  OSError_ExtensionToShort
  *	  OSError_UnknownError
  */
-OSError OSFileForceWrite(char* path, char* content);
+OSError OSFileForceWrite(char* path, char* content, char writeMode);
 
 /*
  * Function:  OSFileForceWriteP
  * --------------------
  * writes content in path, if file or directory doesn't exists, they will be created
+ *
+ * writeMode = [WriteMode_Overwrite | WriteMode_AddToEnd] 
  * --------------------
  *  returns: OSError_NoError
+ *    OSError_ParameterIsNull
+ *	  OSError_ParameterInvalid
  *	  OSError_ContentIsNull
- *	  OSError_FolderNotFound
+ *	  OSError_DirectoryNotFound
+ *	  OSError_CallocWentWrong
+ *	  OSError_AccessDenied
+ *	  OSError_FileToBig
+ *	  OSError_FileNameInvalid
+ *	  OSError_FileNameToLong
  *	  OSError_NoFileExtension
  *	  OSError_ExtensionToShort
  *	  OSError_UnknownError
  */
-OSError OSFileForceWriteP(Path* path, char* content);
+OSError OSFileForceWriteP(Path* path, char* content, char writeMode);
 
+/*
+ * Function:  OSFileWriteBase
+ * --------------------
+ * Writes in a existing/non existing File. Directory must exist. (Better use OSFileForceWrite)
+ * --------------------
+ *  returns: OSError_NoError
+ *    OSError_ParameterIsNull
+ *	  OSError_ParameterInvalid
+ *	  OSError_ContentIsNull
+ *	  OSError_DirectoryNotFound
+ *	  OSError_CallocWentWrong
+ *	  OSError_AccessDenied
+ *	  OSError_FileToBig
+ *	  OSError_FileNameInvalid
+ *	  OSError_FileNameToLong
+ *	  OSError_NoFileExtension
+ *	  OSError_ExtensionToShort
+ *	  OSError_UnknownError
+ */
 OSError OSFileWriteBase(char* path, char* content, char writeMode);
 
+/*
+ * Function:  OSFileWriteBaseP
+ * --------------------
+ * Writes in a existing/non existing File. Directory must exist. (Better use OSFileForceWriteP)
+ * --------------------
+ *  returns: OSError_NoError
+ *    OSError_ParameterIsNull
+ *	  OSError_ParameterInvalid
+ *	  OSError_ContentIsNull
+ *	  OSError_DirectoryNotFound
+ *	  OSError_CallocWentWrong
+ *	  OSError_AccessDenied
+ *	  OSError_FileToBig
+ *	  OSError_FileNameInvalid
+ *	  OSError_FileNameToLong
+ *	  OSError_NoFileExtension
+ *	  OSError_ExtensionToShort
+ *	  OSError_UnknownError
+ */
 OSError OSFileWriteBaseP(Path* path, char* content, char writeMode);
 
+/*
+ * Function:  OSFileRead
+ * --------------------
+ * Will read content in the pathFile. Don't forget to free readContent, if this function returned OSError_NoError  
+ * --------------------
+ *  returns: OSError_NoError
+ *    OSError_ParameterIsNull
+ *	  OSError_ParameterInvalid
+ *	  OSError_DirectoryNotFound
+ *	  OSError_CallocWentWrong
+ *	  OSError_AccessDenied
+ *	  OSError_NoFileExtension
+ *	  OSError_ExtensionToShort
+ *	  OSError_UnknownError
+ */
 OSError OSFileRead(char* path, char** readContent);
 
+/*
+ * Function:  OSFileReadP
+ * --------------------
+ * Will read content in the pathFile. Don't forget to free readContent, if this function returned OSError_NoError
+ * --------------------
+ *  returns: OSError_NoError
+ *    OSError_ParameterIsNull
+ *	  OSError_ParameterInvalid
+ *	  OSError_DirectoryNotFound
+ *	  OSError_CallocWentWrong
+ *	  OSError_AccessDenied
+ *	  OSError_NoFileExtension
+ *	  OSError_ExtensionToShort
+ *	  OSError_UnknownError
+ */
 OSError OSFileReadP(Path* path, char** readContent);
 
 /*
@@ -301,7 +387,7 @@ OSError OSDirectoryForceDeleteP(Path* path);
  *		eg: PathListDestruction(&pathList);
  * 
  */
-void OSListAllFiles(List* pathList, char* directory);
+OSError OSListAllFiles(List* pathList, char* directory);
 
 static OSError ErrnoErrorToOSError(unsigned int errnoAsInt);
 

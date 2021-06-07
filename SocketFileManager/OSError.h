@@ -9,7 +9,7 @@ typedef enum OSError_
 {
 	OSError_NoError,
 
-	OSError_FolderNotFound,
+	OSError_DirectoryNotFound,
 	OSError_FolderAlreadyExists,
 
 	OSError_FileIsCurrentlyInUse,

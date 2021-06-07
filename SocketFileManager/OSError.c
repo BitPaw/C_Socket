@@ -28,7 +28,7 @@ const char* OSErrorToString(OSError state)
     case OSError_NoFileExtension:
         return "NoFileExtension";
     	
-    case OSError_FolderNotFound:
+    case OSError_DirectoryNotFound:
         return "FolderNotFound";
     case OSError_DirectoryNotEmpty:
         return "DirectoryNotEmpty";

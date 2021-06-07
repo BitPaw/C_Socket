@@ -50,7 +50,7 @@ OSError OSFileExists_splitParameter(char* directory, const char* filePath)
 	{
 
 		if (stat(directory, &st) == -1)
-			return OSError_FolderNotFound;
+			return OSError_DirectoryNotFound;
 
 
 		//checks File exists
@@ -114,7 +114,7 @@ OSError OSDirectoryExists(char* directory)
 	char* Path;
 	
 	if (stat(directory, &st) == -1)
-		return OSError_FolderNotFound;
+		return OSError_DirectoryNotFound;
 
 	return OSError_NoError;
 }
@@ -124,20 +124,20 @@ OSError OSDirectoryExistsP(Path* path)
 	return OSDirectoryExists(path->directory);
 }
 
-OSError OSFileForceWrite(char* path, char* content)
+OSError OSFileForceWrite(char* path, char* content, char writeMode)
 {
 	Path tempPath;
 
 	PathInitialize(&tempPath, path);
 
-	const OSError returnValue = OSFileForceWriteP(&tempPath,content);
+	const OSError returnValue = OSFileForceWriteP(&tempPath, content, writeMode);
 
 	PathDestruction(&tempPath);
 
 	return returnValue;
 }
 
-OSError OSFileForceWriteP(Path* path, char* content)
+OSError OSFileForceWriteP(Path* path, char* content, char writeMode)
 {
 
 #ifdef OSUnix
@@ -153,14 +153,14 @@ OSError OSFileForceWriteP(Path* path, char* content)
 	{
 		switch (fileExistOutput)
 		{
-			case OSError_FolderNotFound:
+			case OSError_DirectoryNotFound:
 			{
 				const OSError errorCode = OSDirectoryFullCreate(path->directory);
 				
 				if (errorCode != OSError_NoError)
 					return errorCode;
 
-				return OSFileForceWriteP(path, content);
+				return OSFileForceWriteP(path, content, writeMode);
 			}
 			case OSError_FileNotFound:
 			{
@@ -169,7 +169,7 @@ OSError OSFileForceWriteP(Path* path, char* content)
 				if (errorCode != OSError_NoError)
 					return errorCode;
 					
-				return OSFileForceWriteP(path, content);
+				return OSFileForceWriteP(path, content, writeMode);
 			}
 			case OSError_NoFileExtension:
 			case OSError_ExtensionToShort:
@@ -185,25 +185,22 @@ OSError OSFileForceWriteP(Path* path, char* content)
 			case OSError_UnknownError:
 			case OSError_ParameterIsNull:
 			case OSError_ParameterInvalid:
-				
 
 				//No Errors or impossible Errors 
-			case OSError_NoError:
 			case OSError_ContentIsNull:
 			case OSError_FolderAlreadyExists:
 			case OSError_FileAlreadyExists:
 			case OSError_DirectoryNotEmpty:
 			case OSError_NotImplemented:
+			case OSError_NoError:
 			default:
 				return fileExistOutput;
 			
-		}
 
-		//if directory and File exists
-		
+		}
 	}
 	
-	return OSError_NoError;
+	return OSFileWriteBaseP(path,content,writeMode);
 }
 
 OSError OSFileWriteBase(char* path, char* content, char writeMode)
@@ -283,9 +280,6 @@ OSError OSFileReadP(Path* path, char** readContent)
 	errno = 0;
 	FILE* file = fopen(path->fullPath, "r");
 
-	if (file == NULL)
-		return OSError_FileNotFound;
-
 	if (errno != 0)
 	{
 		return ErrnoErrorToOSError(errno);
@@ -312,42 +306,44 @@ OSError OSFileReadP(Path* path, char** readContent)
 
 OSError OSFileCreate(char* path)
 {
+	Path tempPath;
 
-#ifdef OSUnix
-	return OSError_NotImplemented;
-#endif
-	
-	OSError returnValue = OSError_NoError;
+	PathInitialize(&tempPath, path);
 
-	#ifdef OSWindows
-	
-	wchar_t* w_path = stringToWString(path);
+	const OSError returnValue = OSFileCreateP(&tempPath);
 
-	//file to be opened //open for writing //share for writing //default security //Creates file if not exists //archive and impersonate client //no attribute template
-	const HANDLE h_file = CreateFile(w_path, GENERIC_READ, FILE_SHARE_READ, NULL, CREATE_NEW,FILE_ATTRIBUTE_ARCHIVE | SECURITY_IMPERSONATION, NULL); 
-	
-	// Check the handle, then open...
+	PathDestruction(&tempPath);
 
-	if (h_file == INVALID_HANDLE_VALUE)
-	{
-		const DWORD lastError = GetLastError();
-		returnValue = windowsErrorToOSError(lastError);
-	}
-
-	
-	if (CloseHandle(h_file) == 0)
-		returnValue = OSError_UnknownError;
-
-	free(w_path);
-	
-	#endif
-	
 	return returnValue;
 }
 
 OSError OSFileCreateP(Path* path)
 {
-	return OSFileCreate(path->fullPath);
+
+#ifdef OSUnix
+	return OSError_NotImplemented;
+#endif
+
+	if (path == NULL)
+		return OSError_ParameterIsNull;
+	
+	OSError returnValue = OSError_NoError;
+
+	errno = 0;
+	
+	FILE* file = fopen(path->fullPath, "a");
+
+	if (errno != 0)
+	{
+		return ErrnoErrorToOSError(errno);
+	}
+
+	if (file == NULL)
+		return OSError_UnknownError;
+
+	fclose(file);
+		
+	return returnValue;
 }
 
 OSError OSFileDelete(char* path)
@@ -357,20 +353,15 @@ OSError OSFileDelete(char* path)
 	return OSError_NotImplemented;
 #endif
 
-	
-	OSError returnValue = OSError_NoError;
+	errno = 0;
 
-	wchar_t* w_path = stringToWString(path);
-	
-	if (DeleteFile(w_path) == 0)
+	if(remove(path)!= 0)
 	{
-		const DWORD lastError = GetLastError();
-		returnValue = windowsErrorToOSError(lastError);		
+		return ErrnoErrorToOSError(errno);
 	}
-
-	free(w_path);
 	
-	return returnValue;
+	return OSError_NoError;
+	
 }
 
 OSError OSFileDeleteP(Path* path)
@@ -391,18 +382,14 @@ OSError OSDirectoryCreate(char* directory)
 	
 	#ifdef OSWindows
 	
-	wchar_t* w_directory = stringToWString(directory);
-
 	
-	returnValue = CreateDirectory(w_directory,NULL)? 0 : -1;
+	returnValue = CreateDirectoryA(directory,NULL)? 0 : -1;
 
 	if(returnValue != 0)
 	{
 		const DWORD lastError = GetLastError();
 		returnValue = windowsErrorToOSError(lastError);
 	}
-	
-	free(w_directory);
 	
 	#endif
 	
@@ -539,8 +526,11 @@ OSError OSDirectoryForceDeleteP(Path* path)
 	return OSDirectoryForceDelete(path->directory);
 }
 
-void OSListAllFiles(List* pathList,char * directory)
+OSError OSListAllFiles(List* pathList,char* directory)
 {
+	if (!pathList || !directory)
+		return OSError_ParameterIsNull;
+	
 #ifdef OSUnix
 	return OSError_NotImplemented;
 #endif
@@ -563,6 +553,9 @@ void OSListAllFiles(List* pathList,char * directory)
 	else
 	{
 		tempDirectory = calloc(directoryLength + 3, sizeof(char));
+		if (tempDirectory == NULL)
+			return OSError_CallocWentWrong;
+		
 		strcpy_s(tempDirectory, (directoryLength + 1) * sizeof(char), directory);
 		strcpy_s(tempDirectory + directoryLength, (3) * sizeof(char), "/*");
 	}
@@ -607,6 +600,9 @@ void OSListAllFiles(List* pathList,char * directory)
 				const unsigned int FileNameLength = strlen(fileName);
 				
 				char* stringPath = calloc(directoryLength + FileNameLength +1,sizeof(char));
+				if (stringPath == NULL)
+					return OSError_CallocWentWrong;
+				
 				memcpy(stringPath, tempDirectory, directoryLength * sizeof(char));
 				memcpy(stringPath + directoryLength -1, fileName, FileNameLength * sizeof(char));
 				
@@ -623,6 +619,8 @@ void OSListAllFiles(List* pathList,char * directory)
 		free(tempDirectory);
 
 	FindClose(hFind);
+
+	return OSError_NoError;
 }
 
 
@@ -631,7 +629,7 @@ static OSError ErrnoErrorToOSError(unsigned int errnoAsInt)
 	switch (errnoAsInt)
 	{
 	case ENOENT:
-		return OSError_FolderNotFound;
+		return OSError_DirectoryNotFound;
 	case EAGAIN:
 		return OSError_CallocWentWrong;
 	case EACCES:

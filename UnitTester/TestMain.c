@@ -23,8 +23,7 @@
 
 int main()
 {
-	
-	
+
 	// Example Tests:
 	/*
 	// -- Test Int
@@ -51,28 +50,19 @@ int main()
 	*/
 
 	printColors = 1;
-	
+
 	//printColorTable();
 
-	path_test(0);
 
-	list_test(0);
+	path_test(1);
 
-	fileManager_test(0);
+	list_test(1);
 
-	path_ListAllFiles_test(0);
-		
-	testPrintSummery();
-
-	printf("- %s\n",OSErrorToString(OSFileWriteBase("C:/Users/Merdo/Desktop/A/a.txt", "Hallo Dennis", WriteMode_AddToEnd)));
-
-	char* content = 0;
+	fileManager_test(1);
 	
-	printf("- %s\n", OSErrorToString(OSFileRead("C:/Users/Merdo/Desktop/A/a.txt", &content)));
-
-	printf("%s\n", content);
-
-	free(content);
+	path_ListAllFiles_test(1);
+	
+	testPrintSummery();
 	
 #ifdef OSWindows
 system("pause");
