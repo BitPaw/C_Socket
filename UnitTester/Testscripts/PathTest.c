@@ -123,10 +123,16 @@ void path_ListAllFiles_test(char execute)
 	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
 	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
 	
-	if(test.size == 2)
+	if(test.size == 3)
 	{
-		test_path(&testPath1, test.content[1], "ListAllFiles-Test 2 Path1");
-		test_path(&testPath2, test.content[0], "ListAllFiles-Test 3 Path2");
+	    if(testPath1.fullPath == test.content[1]){
+            test_path(&testPath1, test.content[1], "ListAllFiles-Test 2 Path1");
+            test_path(&testPath2, test.content[0], "ListAllFiles-Test 3 Path2");
+	    }else{
+            test_path(&testPath1, test.content[0], "ListAllFiles-Test 2 Path1");
+            test_path(&testPath2, test.content[1], "ListAllFiles-Test 3 Path2");
+	    }
+
 	}
 	
 	PathDestruction(&testPath1);
@@ -145,10 +151,17 @@ void path_ListAllFiles_test(char execute)
 	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
 	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
 
-	if (test.size == 2)
+	if (test.size == 3)
 	{
-		test_path(&testPath1, test.content[1], "ListAllFiles-Test 5 Path1");
-		test_path(&testPath2, test.content[0], "ListAllFiles-Test 6 Path2");
+        if(testPath1.fullPath == test.content[1]){
+            test_path(&testPath1, test.content[1], "ListAllFiles-Test 5 Path1");
+            test_path(&testPath2, test.content[0], "ListAllFiles-Test 6 Path2");
+        }
+        else{
+            test_path(&testPath1, test.content[0], "ListAllFiles-Test 5 Path1");
+            test_path(&testPath2, test.content[1], "ListAllFiles-Test 6 Path2");
+        }
+
 	}
 
 	PathDestruction(&testPath1);

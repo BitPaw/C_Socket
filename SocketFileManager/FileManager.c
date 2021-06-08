@@ -535,7 +535,7 @@ OSError OSListAllFiles(List* pathList,char* directory)
                 const unsigned int directoryLength = strlen(directory);
                 const unsigned int FileNameLength = strlen(dir->d_name);
 
-                char* stringPath = calloc(directoryLength + FileNameLength +1,sizeof(char));
+                char* stringPath = calloc(directoryLength + FileNameLength +2,sizeof(char));
                 if (stringPath == NULL)
                     return OSError_CallocWentWrong;
 
