@@ -4,7 +4,8 @@
 #include "OSDefine.h"
 
 #ifdef OSUnix
-#include <semaphore.h>
+#include <semaphore.h> // Works on Linux
+#include <sys/semaphore.h> // need to use for Apple?
 #elif defined(OSWindows)
 #include <Windows.h>
 #include <process.h>

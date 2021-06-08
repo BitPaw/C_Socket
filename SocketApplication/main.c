@@ -94,7 +94,7 @@ FileError FileLoad(char* filePath, char* content)
     return FileNoError;
 }
 
-FileError FileLoadHTML(char* filePath, char* content)
+FileError FileLoadHTML(char* filePath, char** content)
 {
     FILE* file = fopen(filePath, "r");
     int fileLength = -1;
@@ -103,22 +103,22 @@ FileError FileLoadHTML(char* filePath, char* content)
 
     if (file == NULL)
     {
-        return 0; // File does not exist
+        return FileDoesNotExist; // File does not exist
     }
 
     fseek(file, 0, SEEK_END);
     fileLength = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    content = calloc(fileLength + htmlResponseTag + 1, sizeof(char));
+    *content = calloc(fileLength + htmlResponseTag + 1, sizeof(char));
 
-    if (!content)
+    if (!*content)
     {
         return 0; // calloc failed
     }
 
-    memcpy(content, htmlResponseTag, htmlResponselength);
-    fread(content + htmlResponselength, 1, fileLength, file);
+    memcpy(*content, htmlResponseTag, htmlResponselength);
+    fread(*content + htmlResponselength, 1, fileLength, file);
 
     fclose(file);
 
@@ -696,8 +696,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             printf(IncommingCommandHTTPRequestMessage, socketID);
 
             char* htmlFile = 0;
+            char* htmlFileName = "index.html";
 
-            fileError = FileLoadHTML(commandToken.Key, htmlFile); // <.. has to be ** not *
+            fileError = FileLoadHTML(htmlFileName, &htmlFile); // <.. has to be ** not *
 
             if (fileError == FileNoError)
             {
@@ -706,8 +707,11 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             }
             else
             {
-                ServerSendToClient(&_server, commandToken.ClientSocketID, "Error NO");
-            }                   
+                //ServerSendToClient(&_server, commandToken.ClientSocketID, "Error NO");
+                printf("[Error] HTML file not found <%s>.\n", htmlFileName);
+            }      
+
+            ServerKickClient(&_server, commandToken.ClientSocketID);
 
             break;
         }
