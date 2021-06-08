@@ -56,7 +56,7 @@ int AsyncLockRelease(AsyncLock* asyncLock)
 #ifdef OSUnix
 	releaseResult = sem_post(&asyncLock->HandleID);
 #elif defined(OSWindows)
-	releaseResult = ReleseSemaphore(asyncLock->HandleID, 1, 0);
+	releaseResult = ReleaseSemaphore(asyncLock->HandleID, 1, 0);
 #endif 
 
 	return releaseResult;

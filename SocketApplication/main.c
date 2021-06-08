@@ -602,7 +602,7 @@ int main(int numberOfArguments, char* arguments[])
 
 void OnRemoteServerMessageRecieved(int socketID, char* message)
 {
-    printf("[Server] %s\n", message);
+    printf(ClientMessageRead, message);
 }
 
 void OnRemoteClientMessageRecieved(int socketID, char* message)
@@ -697,7 +697,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
             char* htmlFile = 0;
 
-            fileError = FileLoadHTML(commandToken.Key, htmlFile);
+            fileError = FileLoadHTML(commandToken.Key, htmlFile); // <.. has to be ** not *
 
             if (fileError == FileNoError)
             {
@@ -727,14 +727,14 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
 void OnRemoteServerDisconnect(int socketID)
 {
-    printf("[!][Server] Server closed connection.\n");
+    printf(ClientServerDisconnected);
 
     StateChange(StateClientDisconnecting);
 }
 
 void OnRemoteClientDisconnect(int socketID)
 {
-    printf("[-][Client:%i] Disconnected.\n", socketID);
+    printf(ServerClientDisconnected, socketID);
 }
 
 void OnRemoteServerConnect(int socketID)
@@ -744,7 +744,7 @@ void OnRemoteServerConnect(int socketID)
 
 void OnRemoteClientConnect(int socketID)
 {
-    printf("[+][Client:%i] New client connected.\n", socketID);
+    printf(ServerClientConnection, socketID);
 
 #if 0
     // RensResponse

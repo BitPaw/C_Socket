@@ -4,7 +4,7 @@
 #include "OSDefine.h"
 
 #ifdef OSUnix
-#include <AsyncLock.h>
+#include <semaphore.h>
 #elif defined(OSWindows)
 #include <Windows.h>
 #include <process.h>
