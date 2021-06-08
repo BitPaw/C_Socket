@@ -84,7 +84,24 @@ void path_test(char execute)
 
 	PathDestruction(&path1);
 
-	
+	//Test 7: Test ../a.txt
+
+    path2 = (Path){ strlen("../a.txt"),"../a.txt", ".." ,"a.txt","a","txt" };
+    PathInitialize(&path1, "../a.txt");
+
+    test_path(&path1, &path2, "Path Test 7 [../a.txt Directory]");
+
+    PathDestruction(&path1);
+
+    //Test 8: Test ../Test
+
+    path2 = (Path){ strlen("../Test"),"../Test", "../Test" ,NULL,NULL,NULL };
+    PathInitialize(&path1, "../Test");
+
+    test_path(&path1, &path2, "Path Test 8 [../Test Directory]");
+
+    PathDestruction(&path1);
+
 }
 
 void path_ListAllFiles_test(char execute)
@@ -99,9 +116,9 @@ void path_ListAllFiles_test(char execute)
 	
 	//List all Files
 
-	OSListAllFiles(&test, FolderStructure("TestOSFileFolder/*"));
+	OSListAllFiles(&test, FolderStructure("TestOSFileFolder"));
 
-	test_int(2, test.size, "ListAllFiles-Test 1 [SizeOfList]");
+	test_int(3, test.size, "ListAllFiles-Test 1 [SizeOfList]");
 
 	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
 	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
@@ -123,7 +140,7 @@ void path_ListAllFiles_test(char execute)
 	
 	OSListAllFiles(&test, FolderStructure("TestOSFileFolder"));
 
-	test_int(2, test.size, "ListAllFiles-Test 4 [SizeOfList]");
+	test_int(3, test.size, "ListAllFiles-Test 4 [SizeOfList]");
 
 	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
 	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));

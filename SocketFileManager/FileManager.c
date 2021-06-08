@@ -15,6 +15,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <dirent.h>
 
 #include "PathList.h"
 
@@ -46,7 +47,7 @@ OSError OSFileExists_splitParameter(char* directory, char* filePath)
 	{
 
 		if (stat(directory, &st) == -1)
-			return OSError_DirectoryNotFound;
+			return OSError_DirectoryOrFileNotFound;
 
 
 		//checks File exists
@@ -65,14 +66,14 @@ OSError OSFileExists_splitParameter(char* directory, char* filePath)
 
 		free(Path);
 		if (checkValue)
-			return OSError_FileNotFound;
+			return OSError_DirectoryOrFileNotFound;
 		
 	}else
 	{
 		Path = filePath;
 		
 		if (stat(Path, &st) == -1)
-			return OSError_FileNotFound;
+			return OSError_DirectoryOrFileNotFound;
 	}
 	
 	return OSError_NoError;
@@ -105,7 +106,7 @@ OSError OSDirectoryExists(char* directory)
 	struct stat st = { 0 };
 
 	if (stat(directory, &st) == -1)
-		return OSError_DirectoryNotFound;
+		return OSError_DirectoryOrFileNotFound;
 
 	return OSError_NoError;
 }
@@ -134,28 +135,19 @@ OSError OSFileForceWriteP(Path* path, char* content, char writeMode)
 	if (content == NULL)
 		return OSError_ContentIsNull;
 
-	const OSError fileExistOutput = OSFileExists_splitParameter(path->directory,path->file);
+	const OSError fileExistOutput = OSDirectoryExists(path->directory);
 	
 	if(fileExistOutput != OSError_NoError)
 	{
 		switch (fileExistOutput)
 		{
-			case OSError_DirectoryNotFound:
+			case OSError_DirectoryOrFileNotFound:
 			{
 				const OSError errorCode = OSDirectoryFullCreate(path->directory);
 				
 				if (errorCode != OSError_NoError)
 					return errorCode;
 
-				return OSFileForceWriteP(path, content, writeMode);
-			}
-			case OSError_FileNotFound:
-			{
-				const OSError errorCode = OSFileCreate(path->fullPath);
-
-				if (errorCode != OSError_NoError)
-					return errorCode;
-					
 				return OSFileForceWriteP(path, content, writeMode);
 			}
 			case OSError_NoFileExtension:
@@ -179,12 +171,19 @@ OSError OSFileForceWriteP(Path* path, char* content, char writeMode)
 			case OSError_FileAlreadyExists:
 			case OSError_DirectoryNotEmpty:
 			case OSError_NotImplemented:
-			case OSError_NoError:
 			default:
 				return fileExistOutput;
-			
+
+            case OSError_NoError:
+                break;
 
 		}
+        const OSError errorCode = OSFileCreate(path->fullPath);
+
+        if (errorCode != OSError_NoError)
+            return errorCode;
+
+        return OSFileForceWriteP(path, content, writeMode);
 	}
 	
 	return OSFileWriteBaseP(path,content,writeMode);
@@ -443,8 +442,6 @@ OSError OSDirectoryDelete(char* directory)
 #endif
 
 #ifdef OSWindows
-
-	
 	wchar_t* w_directory = stringToWString(directory);
 	
 	if (RemoveDirectory(w_directory) == 0)
@@ -466,13 +463,7 @@ OSError OSDirectoryDeleteP(Path* path)
 
 OSError OSDirectoryForceDelete(char* directory)
 {
-	#ifdef OSUnix
 
-
-    return OSError_NotImplemented;
-
-    #endif
-	
 	OSError returnValue = OSError_NoError;
 	
 	List dirContent = EMPTYLIST;
@@ -524,9 +515,53 @@ OSError OSListAllFiles(List* pathList,char* directory)
 {
 	if (!pathList || !directory)
 		return OSError_ParameterIsNull;
-	
+
 #ifdef OSUnix
-	return OSError_NotImplemented;
+
+	OSError pathExistsError = OSDirectoryExists(directory);
+
+	if(pathExistsError != OSError_NoError)
+        return pathExistsError;
+
+    PathListInitialize(pathList, 0);
+
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(directory);
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if (memcmp(dir->d_name, ".", 2 * sizeof(char)) != 0 && memcmp(dir->d_name, "..", 3 * sizeof(char)) != 0)
+            {
+                const unsigned int directoryLength = strlen(directory);
+                const unsigned int FileNameLength = strlen(dir->d_name);
+
+                char* stringPath = calloc(directoryLength + FileNameLength +1,sizeof(char));
+                if (stringPath == NULL)
+                    return OSError_CallocWentWrong;
+
+                memcpy(stringPath, directory, directoryLength * sizeof(char));
+
+                //checks if last chat is '/'
+                if(directory[directoryLength] != '/'){
+                    stringPath[directoryLength] = '/';
+                    memcpy(stringPath + directoryLength + 1, dir->d_name, FileNameLength * sizeof(char));
+                }else
+                {
+                    memcpy(stringPath + directoryLength, dir->d_name, FileNameLength * sizeof(char));
+                }
+
+                Path* newPath = calloc(1,sizeof(Path));
+                PathInitialize(newPath, stringPath);
+                PathListItemAdd(pathList, newPath);
+
+                free(stringPath);
+            }
+        }
+        closedir(d);
+    }
+
+    return OSError_NoError;
+
 #endif
 #ifdef OSWindows
 
@@ -624,7 +659,7 @@ static OSError ErrnoErrorToOSError(unsigned int errnoAsInt)
 	switch (errnoAsInt)
 	{
         case ENOENT:
-            return OSError_DirectoryNotFound;
+            return OSError_DirectoryOrFileNotFound;
         case EAGAIN:
             return OSError_CallocWentWrong;
         case EACCES:
@@ -639,6 +674,8 @@ static OSError ErrnoErrorToOSError(unsigned int errnoAsInt)
             return OSError_FileToBig;
         case ENAMETOOLONG:
             return OSError_FileNameToLong;
+	    case ENOTEMPTY:
+            return OSError_DirectoryNotEmpty;
 
 	default:
 		printf("errno: %i", errnoAsInt);

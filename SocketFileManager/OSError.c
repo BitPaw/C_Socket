@@ -15,8 +15,8 @@ const char* OSErrorToString(OSError state)
         return "DirectoryInvalid";
     case OSError_FileAlreadyExists:
         return "FileAlreadyExists";
-    case OSError_FileNotFound:
-        return "FileNotFound";
+    case OSError_DirectoryOrFileNotFound:
+        return "DirectoryOrFileNotFound";
     case OSError_FileToBig:
         return "FileToBig";
     case OSError_FileNameToLong: 
@@ -27,9 +27,7 @@ const char* OSErrorToString(OSError state)
     	
     case OSError_NoFileExtension:
         return "NoFileExtension";
-    	
-    case OSError_DirectoryNotFound:
-        return "FolderNotFound";
+
     case OSError_DirectoryNotEmpty:
         return "DirectoryNotEmpty";
  	

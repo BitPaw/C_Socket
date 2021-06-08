@@ -19,7 +19,7 @@ void PathInitialize(Path* EmptyPath, char* stringPath)
 	EmptyPath->directory = calloc(EmptyPath->fullPathLength + 1, sizeof(char));
     memcpy(EmptyPath->directory,EmptyPath->fullPath,EmptyPath->fullPathLength * sizeof(char));
 
-	int selector = 0;
+	int selector = -1;
 	int length = 0;
 	char hasFile = 0;
 	while (EmptyPath->directory[length] != '\0')
@@ -27,9 +27,13 @@ void PathInitialize(Path* EmptyPath, char* stringPath)
 		if (EmptyPath->directory[length] == '/')
 			selector = length;
 
-		if(EmptyPath->directory[length] == '.')
-			hasFile = 1;
-		
+		//if checks if file is a hidden File
+        if(selector + 1  != length)
+            if(EmptyPath->directory[length] == '.')
+                if(EmptyPath->directory[length+1] != '.')
+                    if(EmptyPath->directory[length-1] != '.')
+                        hasFile = 1;
+
 		length++;
 	}
 
@@ -37,11 +41,12 @@ void PathInitialize(Path* EmptyPath, char* stringPath)
 	{
 		EmptyPath->hasFile = 1;
 		
-		if (selector == 0)
+		if (selector == -1)
 		{
+
 			EmptyPath->hasDirectory = 0;
 			
-			EmptyPath->file = EmptyPath->fullPath + selector;
+			EmptyPath->file = EmptyPath->fullPath;
 			free(EmptyPath->directory);
 			EmptyPath->directory = NULL;
 			
@@ -164,5 +169,8 @@ char PathCompare(Path* path0, Path* path1)
 
 char* PathToString(Path* path)
 {
-	return path->fullPath;
+    if(path)
+	    return path->fullPath;
+    else
+        return NULL;
 }

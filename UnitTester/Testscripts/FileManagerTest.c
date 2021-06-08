@@ -34,7 +34,7 @@ void fileManager_test(char execute)
 	test_fileManager(OSError_NoError, returnCode, "FolderExistTest 1");
 	
 	returnCode = OSDirectoryExists(FolderStructure("TestOSFileFolder/Test/A"));
-	if (!(returnCode == OSError_DirectoryNotFound))
+	if (!(returnCode == OSError_DirectoryOrFileNotFound))
 	{
 		returnCode = OSDirectoryDelete(FolderStructure("TestOSFileFolder/Test/A"));
 		test_fileManager(OSError_NoError, returnCode, "FolderDeleteTest 2.5");
@@ -50,7 +50,7 @@ void fileManager_test(char execute)
 
 
 	returnCode = OSDirectoryExists(FolderStructure("TestOSFileFolder/Test/B/B"));
-	if (!(returnCode == OSError_DirectoryNotFound))
+	if (!(returnCode == OSError_DirectoryOrFileNotFound))
 	{
 		returnCode = OSDirectoryForceDelete(FolderStructure("TestOSFileFolder/Test/B"));
 		test_fileManager(OSError_NoError, returnCode, "FolderForceDeleteTest 3.5");
@@ -68,7 +68,7 @@ void fileManager_test(char execute)
 	test_fileManager(OSError_NoError, returnCode, "FileExistTest 6");
 	
 	returnCode = OSFileExists(FolderStructure("TestOSFileFolder/test.txt"));
-	if (!(returnCode == OSError_FileNotFound))
+	if (!(returnCode == OSError_DirectoryOrFileNotFound))
 	{
 		returnCode = OSFileDelete(FolderStructure("TestOSFileFolder/test.txt"));
 		test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 6.5");
@@ -83,14 +83,14 @@ void fileManager_test(char execute)
 	//File write /read
 	
 	returnCode = OSFileForceWrite(FolderStructure("TestOSFileFolder/A/B/C/a.txt"), "Hallo Dennis??!$55&778", WriteMode_Overwrite);
-	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 9");
+	test_fileManager(OSError_NoError, returnCode, "FileForceWrite 9");
 
 
 	char* content = 0;
 
 	returnCode = OSFileRead(FolderStructure("TestOSFileFolder/A/B/C/a.txt"), &content);
-	test_string("Hallo Dennis??!$55&778", content, "FileDeleteTest 10");
-	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 11");
+	test_string("Hallo Dennis??!$55&778", content, "FileRead 10");
+	test_fileManager(OSError_NoError, returnCode, "FileRead 11");
 
 	free(content);
 
@@ -98,12 +98,12 @@ void fileManager_test(char execute)
 	test_fileManager(OSError_NoError, returnCode, "FileDeleteTest 12");
 
 	returnCode = OSDirectoryForceDelete(FolderStructure("TestOSFileFolder/A"));
-	test_fileManager(OSError_FileNotFound, returnCode, "FileDeleteTest 13");
+	test_fileManager(OSError_DirectoryOrFileNotFound, returnCode, "FileDeleteTest 13");
 
 	//
 
 	content = 0;
 
 	returnCode = OSFileRead(FolderStructure("TestOSFileFolder/DontExists/a.txt"), &content);
-	test_fileManager(OSError_DirectoryNotFound, returnCode, "FileDeleteTest 14");
+	test_fileManager(OSError_DirectoryOrFileNotFound, returnCode, "FileDeleteTest 14");
 }

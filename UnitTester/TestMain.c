@@ -52,16 +52,17 @@ int main()
 
 	//printColorTable();
 
-	path_test(1);
+    path_test(1);
 
-	list_test(1);
+    list_test(1);
 
-	fileManager_test(1);
-	
-	path_ListAllFiles_test(0);
+    fileManager_test(1);
+
+    path_ListAllFiles_test(1);
+
 	
 	testPrintSummery();
-	
+
 #ifdef OSWindows
 system("pause");
 #else
