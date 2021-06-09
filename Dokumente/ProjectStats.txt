@@ -1,0 +1,9 @@
+Code gesamt: 5052 Zeilen
+--------------------------------
+ColorPrinter	  :  223 Zeilen
+List       		  :  212 Zeilen
+UnitTester  	  :  531 Zeilen
+SocketApplication : 1019 Zeilen
+SocketFielManager : 1342 Zeilen
+SocketSystem	  : 1096 Zeilen
+--------------------------------

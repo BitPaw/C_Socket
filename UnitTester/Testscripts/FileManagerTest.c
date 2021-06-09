@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "../../SocketFileManager/FileManager.h"
+#include "../../SocketFileManager/OSError.h"
 #include "../Tester.h"
 
 #ifdef OSUnix
