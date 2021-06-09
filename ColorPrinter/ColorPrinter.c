@@ -46,7 +46,7 @@ int colorPrintf(char * _Format, ...) {
 			i++;
 		}
 		
-		const int newFormatLength = (formatLength - countSymbols * 2) + (colorLength * countSymbols) + colorResetLength +1;
+		const unsigned int newFormatLength = (formatLength - countSymbols * 2) + (colorLength * countSymbols) + colorResetLength +1;
 
 		char* format = calloc(newFormatLength, sizeof(char));
 
@@ -136,7 +136,7 @@ int colorPrintf(char * _Format, ...) {
 		
 		va_list argptr;
 		va_start(argptr, _Format);
-		returnValue = vfprintf(stderr, format, argptr);
+		returnValue = vprintf(format, argptr);
 		va_end(argptr);
 
 		free(format);
@@ -165,7 +165,7 @@ int colorPrintf(char * _Format, ...) {
 				
 		va_list argptr;
 		va_start(argptr, _Format);
-		returnValue = vfprintf(stderr, format, argptr);
+		returnValue = vprintf(format, argptr);
 		va_end(argptr);
 
 		free(format);

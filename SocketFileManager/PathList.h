@@ -1,41 +1,26 @@
 #pragma once
 
-#if defined(_WIN32) || defined(_WIN64)
-#define OSWindows
-#endif
-
-#if defined(linux) || defined(__APPLE__)
-#define OSUnix
-#endif
+#include "../List/List.h"
+#include "Path.h"
 
 
-#ifndef ListInclude
-#define ListInclude
-
-#define EMPTYLIST (List){0}
-
-typedef struct List_
-{
-	void** content;
-	unsigned int size;
-	//Don`t Touch
-	unsigned int sizeOfObject;
-}List;
+#ifndef PathListInclude
+#define PathListInclude
 
 /*
- * Function:  ListInitialize
+ * Function:  PathListInitialize
  * --------------------
  * Acts like a constructor
  * ! A list must be set to EMPTYLIST before each initialization
  * eg: 'List a = EMPTYLIST;'
  * --------------------
  */
-void ListInitialize(List* list, unsigned int count, unsigned int sizeOfObject);
+void PathListInitialize(List* pathList, unsigned int count);
 
-void ListDestruction(List* path);
+void PathListDestruction(List* pathList);
 
 /*
- * Function:  ListItemInsertAt
+ * Function:  PathListItemInsertAt
  * --------------------
  * adds parameter value to index in parameter list->content
  * --------------------
@@ -43,10 +28,10 @@ void ListDestruction(List* path);
  *	  -1 List is NULL
  *	  -2 Out of bounds
  */
-int ListItemInsertAt(List* list, unsigned int indexValue, void* value);
+int PathListItemInsertAt(List* pathList, unsigned int indexValue, Path* value);
 
 /*
- * Function:  ListItemGet
+ * Function:  PathListItemGet
  * --------------------
  * adds parameter value to index in parameter list->content
  * --------------------
@@ -54,10 +39,10 @@ int ListItemInsertAt(List* list, unsigned int indexValue, void* value);
  *	  NULL List is NULL
  *	  NULL Out of bounds
  */
-void* ListItemGet(List* list, unsigned int index);
+Path* PathListItemGet(List* pathList, unsigned int index);
 
 /*
- * Function:  ListItemAdd
+ * Function:  PathListItemAdd
  * --------------------
  * adds parameter value to next free value in parameter list->content
  * --------------------
@@ -69,10 +54,10 @@ void* ListItemGet(List* list, unsigned int index);
  *	  -2 Out of bounds
  *	  -9 Calloc failed
  */
-int ListItemAdd(List* list, void* value);
+int PathListItemAdd(List* pathList, Path* value);
 
 /*
- * Function:  ListItemRemove
+ * Function:  PathListItemRemove
  * --------------------
  * adds parameter value to index in parameter list->content
  * --------------------
@@ -81,19 +66,13 @@ int ListItemAdd(List* list, void* value);
  *	  -1 List is NULL
  *	  -2 Out of bounds
  */
-int ListItemRemove(List* list, unsigned int index);
+int PathListItemRemove(List* pathList, unsigned int index);
 
-/*
- * Function:  ListClear
- * --------------------
- * sets all values in list->content = 0
- * --------------------
- *  returns: 0 if successful
- *	  -1 List is NULL
- */
-int ListClear(List* list);
+void PathListToString(List* pathList, char* buffer);
 
-void ListPrint_string(List* list);
 
-void ListPrint_int(List* list);
+
 #endif
+
+
+

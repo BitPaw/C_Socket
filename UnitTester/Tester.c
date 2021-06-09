@@ -31,7 +31,7 @@ void testPrint(char result, char* expectedInputAsString, char* inputAsString, ch
 		colorPrintf("    &2Test completed:&r -Input '%s', '%s'\n", inputAsString, expectedInputAsString);
 	else
 	{
-		colorPrintf("    &1Test failed:&r\n      -Expected input '&b%s&r', actual '&b%s&r'\n", expectedInputAsString, inputAsString);
+		colorPrintf("    &1Test failed:&r\n      -Expected input '&5%s&r', actual '&5%s&r'\n", expectedInputAsString, inputAsString);
 		testFailedCount++;
 	}
 

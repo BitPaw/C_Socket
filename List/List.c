@@ -4,8 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-void ListInitialize(List* list, size_t count, size_t sizeOfObject)
+void ListInitialize(List* list, unsigned int count, unsigned int sizeOfObject)
 {
+	if( list->content != NULL || list->sizeOfObject != 0)
+		return;
+	
 	list->content = calloc(count, sizeOfObject);
 	list->size = count;
 	list->sizeOfObject = sizeOfObject;
@@ -13,10 +16,28 @@ void ListInitialize(List* list, size_t count, size_t sizeOfObject)
 
 void ListDestruction(List* list)
 {
+	if(list == NULL) // Parameter NULL
+		return;
+
+	if (list->content == NULL) // No data to delete
+		return;
+	
+	for (int i = 0; i < list->size; ++i)
+	{
+		void* element = list->content[i];
+		
+		if(element != NULL)
+		{
+			free(element);
+			list->content[i] = NULL;
+		}
+	}
+		
 	free(list->content);
+	list->content = NULL;
 }
 
-int ListItemInsertAt(List* list, int indexValue, void* value)
+int ListItemInsertAt(List* list, unsigned int indexValue, void* value)
 {
 	if(list == NULL)
 		return -1;
@@ -57,6 +78,7 @@ int ListItemAdd(List* list, void* value)
 		
 		list->size = (int)(1.5 * (list->size + 1));
 
+
 		void* reallocOutput = realloc(list->content, list->size * list->sizeOfObject) ;
 
 		if(reallocOutput == NULL)
@@ -83,7 +105,13 @@ int ListItemRemove(List* list, unsigned int index)
 	if (list->content[index] == NULL)
 		return 1;
 
-	list->content[index] = NULL;
+	if(list->content[index] != NULL)
+	{
+		free(list->content[index]);
+		list->content[index] = NULL;
+	}
+	
+	
 	
 	return 0;
 }
@@ -94,7 +122,7 @@ int ListClear(List* list)
 		return -1;
 
 	for (int i = 0; i < list->size; ++i)
-		list->content[i] = NULL;
+		ListItemRemove(list, i);
 
 	return 0;
 }
