@@ -19,4 +19,7 @@
   <ItemGroup>
     <ResourceCompile Include="SocketApplication.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="index.html" />
+  </ItemGroup>
 </Project>

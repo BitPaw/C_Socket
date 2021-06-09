@@ -403,3 +403,11 @@ build/**/*
 include/*
 lib/*
 bin/*
+/SocketFileManager/PathList.h
+/SocketFileManager/PathList.c
+/SocketFileManager/OSError.h
+/SocketFileManager/OSError.c
+/UnitTester/Testscripts
+/UnitTester
+/Dokumente
+/.idea/.name
