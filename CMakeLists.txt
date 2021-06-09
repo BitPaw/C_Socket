@@ -29,6 +29,8 @@ add_executable(BS1_Praktikum
         SocketSystem/IPVersion.c
         SocketSystem/IOSocket.h
         SocketSystem/IOSocket.c
+        ColorPrinter/ColorPrinter.h
+        ColorPrinter/ColorPrinter.c
 
 
 )
