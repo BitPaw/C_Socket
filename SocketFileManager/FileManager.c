@@ -5,6 +5,7 @@
 
 #ifdef OSUnix
 #include <unistd.h>
+#include <dirent.h>
 #elif defined(OSWindows)
 #include <windows.h>
 #include <fileapi.h>
@@ -15,7 +16,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <dirent.h>
+
 
 #include "PathList.h"
 
@@ -612,7 +613,7 @@ OSError OSListAllFiles(List* pathList,char* directory)
 			if (hasRightEnding == 0)
 				free(tempDirectory);
 			
-			return;
+			return OSError_NoError;
 		}
 
 		FindClose(hFind);
@@ -709,7 +710,7 @@ static OSError windowsErrorToOSError(unsigned long rawError)
 	case ERROR_DIR_NOT_EMPTY:
 		return OSError_DirectoryNotEmpty;
 	case ERROR_FILE_NOT_FOUND:
-		return OSError_FileNotFound;
+		return OSError_DirectoryOrFileNotFound;
 	case ERROR_FILE_EXISTS:
 		return OSError_FileAlreadyExists;
 	case ERROR_INVALID_NAME:

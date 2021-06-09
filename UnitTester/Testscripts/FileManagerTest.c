@@ -15,7 +15,7 @@
 
 void test_fileManager(OSError expectedInput, OSError input, char* name)
 {
-	testPrint((expectedInput == input), OSErrorToString(expectedInput), OSErrorToString(input), "OSError", name);
+	testPrint((expectedInput == input), OSSErrorToString(expectedInput), OSSErrorToString(input), "OSError", name);
 }
 
 

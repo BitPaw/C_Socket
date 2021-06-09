@@ -32,19 +32,20 @@ void PathInitialize(Path* EmptyPath, char* stringPath);
 
 void PathDestruction(Path* path);
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="path0"></param>
-/// <param name="path1"></param>
-/// <returns>
-///	-1: lengthIsNotMatching
-///	-2: fullPathIsNotMatching
-///	-3: directoryIsNotMatching
-///	-4: fileIsNotMatching
-///	-5: fileNameIsNotMatching
-///	-6: fileTypeIsNotMatching
-/// </returns>
+
+/*
+* Function:  PathCompare
+* --------------------
+* compares path0 to path1
+* --------------------
+*  returns: 0: Equal
+*	 -1: lengthIsNotMatching
+*	 -2: fullPathIsNotMatching
+*	 -3: directoryIsNotMatching
+*	 -4: fileIsNotMatching
+*	 -5: fileNameIsNotMatching
+*	 -6: fileTypeIsNotMatching
+ */
 char PathCompare(Path* path0, Path* path1);
 
 

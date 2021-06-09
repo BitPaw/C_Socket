@@ -108,6 +108,13 @@ void path_ListAllFiles_test(char execute)
 {
 	if (execute == 0)
 		return;
+
+#ifdef OSUnix
+	unsigned int returnCount = 3;
+#elif defined(OSWindows)
+	unsigned int returnCount = 2;
+#endif
+	
 	
 	testPrintHeader("ListAllFiles-Tests");
 	
@@ -118,14 +125,14 @@ void path_ListAllFiles_test(char execute)
 
 	OSListAllFiles(&test, FolderStructure("TestOSFileFolder"));
 
-	test_int(3, test.size, "ListAllFiles-Test 1 [SizeOfList]");
+	test_int(returnCount, test.size, "ListAllFiles-Test 1 [SizeOfList]");
 
 	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
 	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
 	
-	if(test.size == 3)
+	if(test.size == returnCount)
 	{
-	    if(testPath1.fullPath == test.content[1]){
+	    if(PathCompare(&testPath1, test.content[1]) == 0){
             test_path(&testPath1, test.content[1], "ListAllFiles-Test 2 Path1");
             test_path(&testPath2, test.content[0], "ListAllFiles-Test 3 Path2");
 	    }else{
@@ -146,14 +153,15 @@ void path_ListAllFiles_test(char execute)
 	
 	OSListAllFiles(&test, FolderStructure("TestOSFileFolder"));
 
-	test_int(3, test.size, "ListAllFiles-Test 4 [SizeOfList]");
+
+	test_int(returnCount, test.size, "ListAllFiles-Test 4 [SizeOfList]");
 
 	PathInitialize(&testPath1, FolderStructure("TestOSFileFolder/Test"));
 	PathInitialize(&testPath2, FolderStructure("TestOSFileFolder/dontDelete.txt"));
 
-	if (test.size == 3)
+	if (test.size == returnCount)
 	{
-        if(testPath1.fullPath == test.content[1]){
+        if(PathCompare(&testPath1, test.content[1]) == 0){
             test_path(&testPath1, test.content[1], "ListAllFiles-Test 5 Path1");
             test_path(&testPath2, test.content[0], "ListAllFiles-Test 6 Path2");
         }
