@@ -9,6 +9,8 @@
 #include "ApplicationState.h"
 #include "../SocketSystem/OSDefine.h"
 
+
+
 char DoesFileExist(char* path)
 {
     FILE* file = fopen(path, "r");
@@ -152,7 +154,7 @@ void StateChange(ApplicationState newState)
 
     _currentApplicationState = newState;
 
-    printf(BannerGeneral, ApplicationStateToString(newState));
+    colorPrintf(BannerGeneral, ApplicationStateToString(newState));
 
 #if 0 // Debug
     printf
@@ -174,12 +176,14 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
+    printColors = 1;
+
     _currentApplicationState = StateNeutralIDLE;
 
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    printf(ASCIIArtLogo);
+    colorPrintf(ASCIIArtLogo);
 
     //system("color 0B");
 
@@ -199,7 +203,7 @@ int main(int numberOfArguments, char* arguments[])
 
             if (port == 0)
             {
-                printf("[Error] Invalid port");
+                colorPrintf("[Error] Invalid port");
                 return -1;
             }
 
@@ -216,7 +220,7 @@ int main(int numberOfArguments, char* arguments[])
 
             if (!isFirstLetterComma)
             {
-                printf("[Error] Invalid Parameters");
+                colorPrintf("[Error] Invalid Parameters");
                 return -1;
             }
 
@@ -235,7 +239,7 @@ int main(int numberOfArguments, char* arguments[])
 
                     if (!isValidIP)
                     {
-                        printf("Invalid IP.");
+                        colorPrintf("Invalid IP.");
                         return -1;
                     }
 
@@ -263,7 +267,7 @@ int main(int numberOfArguments, char* arguments[])
                         }
                         default:
                         {
-                            printf("[Error] Invalid IP Mode. 4 or 6 only");
+                            colorPrintf("[Error] Invalid IP Mode. 4 or 6 only");
                             return -1;
                         }
                     }
@@ -274,7 +278,7 @@ int main(int numberOfArguments, char* arguments[])
                 }
                 default:
                 {
-                    printf("[Error] Invalid operation mode");
+                    colorPrintf("[Error] Invalid operation mode");
                     return -1;
                 }
             }
@@ -283,7 +287,7 @@ int main(int numberOfArguments, char* arguments[])
         }
         default:
         {
-            printf("[Error] Invalid Parameters");
+            colorPrintf("[Error] Invalid Parameters");
             return -1;
         }
     } 
@@ -294,7 +298,7 @@ int main(int numberOfArguments, char* arguments[])
         {
             case StateSelectMode:
             {
-                printf(MenuMode); 
+                colorPrintf(MenuMode); 
 
                 int result = scanf(ScanfInputTag, inputBuffer);
                 char inputCharacter = inputBuffer[0];
@@ -316,7 +320,7 @@ int main(int numberOfArguments, char* arguments[])
                     default:
                     {
                         mode = ModeInvalid;
-                        printf(ErrorInvalidModeInput);
+                        colorPrintf(ErrorInvalidModeInput);
                         break;
                     }
                 }                
@@ -328,7 +332,7 @@ int main(int numberOfArguments, char* arguments[])
                 char ipInput = -1;
                 char scanResult = 0;
 
-                printf(InputIPVersion);
+                colorPrintf(InputIPVersion);
 
                 scanResult = scanf(ScanfInputTag, &ipInput);
 
@@ -362,7 +366,7 @@ int main(int numberOfArguments, char* arguments[])
             }
             case StateSelectingSpecificPort:
             {
-                printf(InputSpecifyPort);
+                colorPrintf(InputSpecifyPort);
 
                 int result = scanf(ScanfInputTag, inputBuffer);
                 int convertedNumber = atoi(inputBuffer);              
@@ -374,7 +378,7 @@ int main(int numberOfArguments, char* arguments[])
                 }  
                 else
                 {
-                    printf(ErrorInvalidPort);
+                    colorPrintf(ErrorInvalidPort);
                 }
 
                 break;
@@ -384,7 +388,7 @@ int main(int numberOfArguments, char* arguments[])
                 char useDefaultPort = 0;
                 int result;
 
-                printf(InputUseDefaultPort, DefaultPort);
+                colorPrintf(InputUseDefaultPort, DefaultPort);
 
                 result = scanf(ScanfInputTag, inputBuffer);
                 useDefaultPort = inputBuffer[0];
@@ -406,7 +410,7 @@ int main(int numberOfArguments, char* arguments[])
                     }
                     default:
                     {
-                        printf(ErrorInvalidInput);
+                        colorPrintf(ErrorInvalidInput);
                         break;
                     }
                 }
@@ -415,7 +419,7 @@ int main(int numberOfArguments, char* arguments[])
             }
             case StateClientSelectingIP:
             {
-                printf(BannerClientSelectIPHeader);
+                colorPrintf(BannerClientSelectIPHeader);
 
                 int scanResult = scanf(ScanfInputTag, &inputBuffer);
 
@@ -431,12 +435,12 @@ int main(int numberOfArguments, char* arguments[])
                     }
                     else
                     {
-                        printf(ErrorInvalidIPInput);
+                        colorPrintf(ErrorInvalidIPInput);
                     }
                 }
                 else
                 {
-                    printf(InfoNoIPSelected);
+                    colorPrintf(InfoNoIPSelected);
                     memcpy(inputBuffer, "127.0.0.1", 10);
                     StateChange(StateClientConnecting);
                 }                
@@ -453,7 +457,7 @@ int main(int numberOfArguments, char* arguments[])
                     _client.Socket.OnMessage = OnRemoteServerMessageRecieved;
                     _client.Socket.OnDisconnected = OnRemoteServerDisconnect;
 
-                    printf(ConnectionSuccesful);
+                    colorPrintf(ConnectionSuccesful);
 
                     StateChange(StateClientConnected);
 
@@ -461,7 +465,7 @@ int main(int numberOfArguments, char* arguments[])
                 }
                 else
                 {
-                    printf(ServerUnreachable);
+                    colorPrintf(ServerUnreachable);
                     StateChange(StateClientConnectionFailed);                             
                 }
 
@@ -470,7 +474,7 @@ int main(int numberOfArguments, char* arguments[])
            
             case StateClientConnectionFailed:
             {
-                printf(InputConnectionTryAgain);
+                colorPrintf(InputConnectionTryAgain);
 
                 char inputText[50];
                 int scanResult = scanf(ScanfInputTag, &inputText);
@@ -512,7 +516,7 @@ int main(int numberOfArguments, char* arguments[])
 
                 if (errorCode != SocketNoError)
                 {
-                    printf(ErrorSendingFailed, errorCode, SocketErrorToString(errorCode));
+                    colorPrintf(ErrorSendingFailed, errorCode, SocketErrorToString(errorCode));
 
                     StateChange(StateClientDisconnecting);
                 }
@@ -521,7 +525,7 @@ int main(int numberOfArguments, char* arguments[])
             }
             case StateServerStartFailed:
             {
-                printf(InputServerStartTryAgain);
+                colorPrintf(InputServerStartTryAgain);
 
                 char scanResult = scanf(ScanfInputTag, inputBuffer);
                 char answer = inputBuffer[0];
@@ -537,12 +541,12 @@ int main(int numberOfArguments, char* arguments[])
                     case 'N':
                     case 'n':
                     {
-                        printf(StateSelectMode);
+                        colorPrintf(StateSelectMode);
                         break;
                     }
                     default:
                     {
-                        printf(ErrorInvalidInput);
+                        colorPrintf(ErrorInvalidInput);
                         break;
                     }
                 }
@@ -563,7 +567,7 @@ int main(int numberOfArguments, char* arguments[])
                 }
                 else
                 {
-                    printf(ErrorServerPortBlocked);
+                    colorPrintf(ErrorServerPortBlocked);
                     StateChange(StateServerStartFailed);
                 }
 
@@ -602,7 +606,7 @@ int main(int numberOfArguments, char* arguments[])
 
 void OnRemoteServerMessageRecieved(int socketID, char* message)
 {
-    printf(ClientMessageRead, message);
+    colorPrintf(ClientMessageRead, message);
 }
 
 void OnRemoteClientMessageRecieved(int socketID, char* message)
@@ -621,7 +625,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
     {
         case CommandFileDataPut:
         {
-            printf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
+            colorPrintf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
 
             fileError = FileWriteToEnd(commandToken.Key, commandToken.Value);
 
@@ -629,7 +633,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandFileDataGet:
         {
-            printf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
 
             fileError = FileLoad(commandToken.Key, messageToSend);             
 
@@ -637,7 +641,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandFileDelete:
         {
-            printf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
+            colorPrintf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
 
             fileError = FileDelete(commandToken.Key);
 
@@ -645,7 +649,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandFileLock:
         {
-            printf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
 
            // fileError = FileLock(commandToken.Key);
 
@@ -653,7 +657,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandFileUnlock:
         {
-            printf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
 
             //fileError = FileUnlock(commandToken.Key);
 
@@ -661,7 +665,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandFileChangePublish:
         {
-            printf(IncommingCommandPublishMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandPublishMessage, socketID, commandToken.Key, commandToken.Value);
 
            // fileError = FileChangePublish(commandToken.Key);
 
@@ -669,7 +673,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandFileChangeSubscribe:
         {
-            printf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
 
             //fileError = FileChangeSubscribe(commandToken.Key);
 
@@ -677,7 +681,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandOpenProgram:
         {
-            printf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
 
            // fileError = ProgramOpen(commandToken.Key);
 
@@ -685,7 +689,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandQuit:
         {
-            printf(IncommingCommandQuitMessage, socketID);
+            colorPrintf(IncommingCommandQuitMessage, socketID);
 
             //ApplicationQuit();
 
@@ -693,7 +697,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
         case CommandHTTPRequest:
         {
-            printf(IncommingCommandHTTPRequestMessage, socketID);
+            colorPrintf(IncommingCommandHTTPRequestMessage, socketID);
 
             char* htmlFile = 0;
 
@@ -714,7 +718,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         case CommandInvalid:
         default:
         {
-            printf(IncommingCommandInvalidMessage, socketID, message);
+            colorPrintf(IncommingCommandInvalidMessage, socketID, message);
 
             ServerSendToClient(&_server, commandToken.ClientSocketID, "Invalid Command.Check your input.");
 
@@ -727,24 +731,24 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
 void OnRemoteServerDisconnect(int socketID)
 {
-    printf(ClientServerDisconnected);
+    colorPrintf(ClientServerDisconnected);
 
     StateChange(StateClientDisconnecting);
 }
 
 void OnRemoteClientDisconnect(int socketID)
 {
-    printf(ServerClientDisconnected, socketID);
+    colorPrintf(ServerClientDisconnected, socketID);
 }
 
 void OnRemoteServerConnect(int socketID)
 {
-    printf("[i][Server] Connected succesful!\n");
+    colorPrintf(ClientServerConnection);
 }
 
 void OnRemoteClientConnect(int socketID)
 {
-    printf(ServerClientConnection, socketID);
+    colorPrintf(ServerClientConnection, socketID);
 
 #if 0
     // RensResponse

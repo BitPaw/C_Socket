@@ -3,10 +3,8 @@
   <ItemGroup>
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="Test.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Test.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
     <ClInclude Include="FileError.h" />

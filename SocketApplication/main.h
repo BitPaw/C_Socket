@@ -1,43 +1,44 @@
 #include "ApplicationState.h"
 #include "../SocketSystem/Server.h"
 #include "../SocketSystem/Client.h"
+#include "../ColorPrinter/ColorPrinter.h"
 
 unsigned short DefaultPort = 5678u;
 const char TagNotSet[] = "NotSet";
-const char ConnectionSuccesful[] = "[i] Connection successful!\n";
+const char ConnectionSuccesful[] = "&i[&ri&i]&r Connection &ksuccessful&r!\n";
 
-const char InputSpecifyPort[] = "[?] Specify Port : ";
+const char InputSpecifyPort[] = "&i[&r?&i]&r Specify Port : ";
 
-const char InfoNoIPSelected[] = "[Info] No IP selected! Guessing localhost (127.0.0.1).\n";
+const char InfoNoIPSelected[] = "&i[&rInfo&i]&r No IP selected! Guessing localhost (127.0.0.1).\n";
 
-const char ErrorInvalidModeInput[] = "[x] Invalid Mode! Please select a valid option.\n";
-const char ErrorInvalidIPInput[] = "[x]\x1b[91m Invalid IP! Please check your input.\x1b[0m\n";
-const char ErrorServerPortBlocked[] = "[x]\x1b[91m Port seems to be blocked. Server can't be started.\x1b[0m\n";
+const char ErrorInvalidModeInput[] = "&i[&jx&i]&r Invalid Mode! Please select a valid option.\n";
+const char ErrorInvalidIPInput[] = "&i[&jx&i]&r Invalid IP! Please check your input.\n";
+const char ErrorServerPortBlocked[] = "&i[&jx&i]&r Port seems to be blocked. Server can't be started.\n";
 const char ErrorInvalidIPVersion[] = "Invalid IP Version! Check your input.\n";
-const char ErrorInvalidInput[] = "[x] Invalid input.\n";
-const char ErrorInvalidPort[] = "[x]\x1b[91m Invalid Port. Check your input.\x1b[0m\n";
-const char ErrorSendingFailed[] = "[x]\x1b[91m Sending failed. ErrorCode: <%i:%s>.\x1b[0m\n";
+const char ErrorInvalidInput[] = "&i[&jx&i]&r Invalid input.\n";
+const char ErrorInvalidPort[] = "&i[&jx&i]&r Invalid Port. Check your input.\n";
+const char ErrorSendingFailed[] = "&i[&jx&i]&r Sending failed. ErrorCode: <%i:%s>.\n";
 
-const char IncommingCommandPutMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] PUT KEY:%s Value:%s\n";
-const char IncommingCommandGetMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] GET KEY:%s Value:%s\n";
-const char IncommingCommandDeleteMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] DELETE KEY:%s\n";
-const char IncommingCommandLockMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] LockFile KEY:%s Value:%s\n";
-const char IncommingCommandUnlockFileMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] UnlockFile KEY:%s Value:%s\n";
-const char IncommingCommandPublishMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] Publish KEY:%s Value:%s\n";
-const char IncommingCommandSubscribeMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] Subscribe KEY:%s Value:%s\n";
-const char IncommingCommandOpenProgrammMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] OpenProgramm KEY:%s Value:%s\n";
-const char IncommingCommandQuitMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] QUIT\n";
-const char IncommingCommandHTTPRequestMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] HTTP Request\n";
-const char IncommingCommandInvalidMessage[] = "[\x1b[96m#\x1b[0m][Client:%i] Invalid command. Message:\x1b[97m%s\x1b[0m\n";
+const char IncommingCommandPutMessage[] = "&i[&o#&i][&oClient:%i&i] &rPUT KEY:%s Value:%s\n";
+const char IncommingCommandGetMessage[] = "&i[&o#&i][&oClient:%i&i] &rGET KEY:%s Value:%s\n";
+const char IncommingCommandDeleteMessage[] = "&i[&o#&i][&oClient:%i&i] &rDELETE KEY:%s\n";
+const char IncommingCommandLockMessage[] = "&i[&o#&i][&oClient:%i&i] &rLockFile KEY:%s Value:%s\n";
+const char IncommingCommandUnlockFileMessage[] = "&i[&o#&i][&oClient:%i&i] &rUnlockFile KEY:%s Value:%s\n";
+const char IncommingCommandPublishMessage[] = "&i[&o#&i][&oClient:%i&i] &rPublish KEY:%s Value:%s\n";
+const char IncommingCommandSubscribeMessage[] = "&i[&o#&i][&oClient:%i&i] &rSubscribe KEY:%s Value:%s\n";
+const char IncommingCommandOpenProgrammMessage[] = "&i[&o#&i][&oClient:%i&i] &rOpenProgramm KEY:%s Value:%s\n";
+const char IncommingCommandQuitMessage[] = "&i[&o#&i][&oClient:%i&i] &rQUIT\n";
+const char IncommingCommandHTTPRequestMessage[] = "&i[&o#&i][&oClient:%i&i] &rHTTP Request\n";
+const char IncommingCommandInvalidMessage[] = "&i[&o#&i][&oClient:%i&i] &rInvalid command. Message:%s\n";
 
 const char ASCIIArtLogo[] =
 "+---------------------------------------------------------+\n"
-"|   \x1b[96m      _____ \x1b[0m   \x1b[95m  _____            _        _         \x1b[0m |\n"
-"|   \x1b[96m     / ____|\x1b[0m    \x1b[95m/ ____|          | |      | |        \x1b[0m |\n"
-"|   \x1b[96m    | | \x1b[0m  _____\x1b[95m| (___   ___   ___| | _____| |_       \x1b[0m |\n"
-"|   \x1b[96m    | | \x1b[0m |______\x1b[95m\\___ \\ / _ \\ / __| |/ / _ \\ __|      \x1b[0m |\n"
-"|   \x1b[96m    | |____  \x1b[0m   \x1b[95m____) | (_) | (__|   <  __/ |_       \x1b[0m |\n"
-"|   \x1b[96m     \\_____| \x1b[0m  \x1b[95m|_____/ \\___/ \\___|_|\\_\\___|\\__|      \x1b[0m |\n";
+"|   &o      _____      &n  _____            _        _         &r |\n"
+"|   &o     / ____|      &n/ ____|          | |      | |        &r |\n"
+"|   &o    | | &p    _____&n| (___   ___   ___| | _____| |_       &r |\n"
+"|   &o    | | &p   |______&n\\___ \\ / _ \\ / __| |/ / _ \\ __|      &r |\n"
+"|   &o    | |___        &n____) | (_) | (__|   <  __/ |_       &r |\n"
+"|   &o     \\_____|     &n|_____/ \\___/ \\___|_|\\_\\___|\\__|      &r |\n";
 
 
 const char BannerFootter[] =
@@ -50,40 +51,41 @@ const char BannerGeneral[] =
 "+---------------------------------------------------------+\n";
 
 const char MenuMode[] =
-"| 0 : Client Mode                                         |\n"
-"| 1 : Server Mode                                         |\n"
+"| 0 : &oClient Mode&r                                         |\n"
+"| 1 : &lServer Mode&r                                         |\n"
 "+---------------------------------------------------------+\n"
-"| [Input] Operation mode : ";
+"| &i[&rInput&i]&r Operation mode : ";
 const char ServerUnreachable[] =
-"| [Info]  It seems that the server is unreachable\n"
+"| &i[&rInfo&i]&r  It seems that the server is &junreachable&r\n"
 "|         or even offline. Use another IP or try later.\n";
 
 const char BannerClientSelectIPHeader[] =
-"| [Input] IP   : ";
+"| &i[&rInput&i]&r IP   : ";
 
 const char InputUseDefaultPort[] =
-"| [?] Use default Port <%i>?\n"
+"| &i[&r?&i]&r Use default Port <%i>?\n"
 "|     <y/n> : ";
 
 const char InputIPVersion[] =
-"| [?] Which IP Version shall be used?\n"
+"| &i[&r?&i]&r Which IP Version shall be used?\n"
 "|     Select 4 or 6 : ";
 
 const char InputConnectionTryAgain[] =
-"| \x1b[91m[?] Connection failed.\x1b[0m\n"
+"| &i[&r?&i]&r Connection &jfailed.&r\n"
 "|     Do you want to try again?\n"
 "|     <y/n> : ";
 
 const char InputServerStartTryAgain[] =
-"| \x1b[91m[?] Server starting failed.\x1b[0m\n"
+"| &i[&r?&i]&r Server starting failed.\n"
 "|     Do you want to try again?\n"
 "|     <y/n> : ";
 
-const char ClientMessageRead[] = "[Server] %s\n";
-const char ClientServerDisconnected[] = "[!][Server] Server closed connection.\n";
+const char ClientMessageRead[] = "&i[&lServer&i]&r %s\n";
+const char ClientServerDisconnected[] = "&i[&r!&i][&lServer&i]&r Server closed connection.\n";
+const char ClientServerConnection[] = "&i[&ri&i][&lServer&i]&r Connected succesful!\n";
 
-const char ServerClientDisconnected[] = "[\x1b[91m-\x1b[0m][Client:%i] Disconnected.\n";
-const char ServerClientConnection[] = "[\x1b[92m+\x1b[0m][Client:%i] New client connected.\n";
+const char ServerClientDisconnected[] = "&i[&j-&i][&oClient:%i&i]&r Disconnected.\n";
+const char ServerClientConnection[] = "&i[&k+&i][&oClient:%i&i]&r New client connected.\n";
 
 #define ScanfInputTag " %50[^\n]"
 
