@@ -1,0 +1,3 @@
+/Users/dennis/Desktop/BS1_Praktikum_Socket/UnitTester/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/dennis/Desktop/BS1_Praktikum_Socket/UnitTester/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/dennis/Desktop/BS1_Praktikum_Socket/UnitTester/cmake-build-debug/CMakeFiles/UnitTester.dir
