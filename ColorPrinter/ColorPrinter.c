@@ -23,6 +23,16 @@
 #define BACK_COLOR_CYAN    "\x1b[46m"
 #define BACK_COLOR_WHITE   "\x1b[47m"
 
+#define ANSI_COLOR_GRAY   "\x1b[90m"
+#define ANSI_COLOR_BRIGHT_RED     "\x1b[91m"
+#define ANSI_COLOR_BRIGHT_GREEN   "\x1b[92m"
+#define ANSI_COLOR_BRIGHT_YELLOW  "\x1b[93m"
+#define ANSI_COLOR_BRIGHT_BLUE    "\x1b[94m"
+#define ANSI_COLOR_BRIGHT_MAGENTA "\x1b[95m"
+#define ANSI_COLOR_BRIGHT_CYAN    "\x1b[96m"
+#define ANSI_COLOR_BRIGHT_WHITE   "\x1b[97m"
+
+
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 const int colorLength = 5;
@@ -123,6 +133,32 @@ int colorPrintf(char * _Format, ...) {
 				case 'h':
 					memcpy(format + strlen(format), BACK_COLOR_WHITE, colorLength * sizeof(char));
 					break;
+
+					//Lighter Foreground Colors
+				case 'i':
+					memcpy(format + strlen(format), ANSI_COLOR_GRAY, colorLength * sizeof(char));
+					break;
+				case 'j':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_RED, colorLength * sizeof(char));
+					break;
+				case 'k':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_GREEN, colorLength * sizeof(char));
+					break;
+				case 'l':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_YELLOW, colorLength * sizeof(char));
+					break;
+				case 'm':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_BLUE, colorLength * sizeof(char));
+					break;
+				case 'n':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_MAGENTA, colorLength * sizeof(char));
+					break;
+				case 'o':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_CYAN, colorLength * sizeof(char));
+					break;
+				case 'p':
+					memcpy(format + strlen(format), ANSI_COLOR_BRIGHT_WHITE, colorLength * sizeof(char));
+					break;
 				}
 				
 				
@@ -181,7 +217,6 @@ void printColorTable()
 		printf("enable global variable \'printColors=1\'\n ");
 		return;
 	}
-
 	
 	printf("------------------------\n");
 	printf("-    ColorTable        -\n");
@@ -203,5 +238,14 @@ void printColorTable()
 	colorPrintf(" [f] B_MAGENTA:\t&fTest\n");
 	colorPrintf(" [g] B_CYAN   :\t&gTest\n");
 	colorPrintf(" [h] B_WHITE  :\t&0&hTest\n");
+	printf("------------------------\n");
+	colorPrintf(" [i] GRAY  :\t&a&iTest\n");
+	colorPrintf(" [j] BRIGHT RED  :\t&jTest\n");
+	colorPrintf(" [k] BRIGHT GREEN  :\t&kTest\n");
+	colorPrintf(" [l] BRIGHT YELLOW  :\t&lTest\n");
+	colorPrintf(" [m] BRIGHT BLUE  :\t&mTest\n");
+	colorPrintf(" [n] BRIGHT MAGENTA  :\t&nTest\n");
+	colorPrintf(" [o] BRIGHT CYAN  :\t&oTest\n");
+	colorPrintf(" [p] BRIGHT WHITE  :\t&pTest&r\n");
 	printf("------------------------\n");
 }
