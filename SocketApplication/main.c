@@ -351,7 +351,7 @@ int main(int numberOfArguments, char* arguments[])
                     default:
                     {
                         ipVersion = IPVersionInvalid;
-                        printf(ErrorInvalidIPVersion);
+                        colorPrintf(ErrorInvalidIPVersion);
                         break;
                     }
                 }
@@ -389,6 +389,7 @@ int main(int numberOfArguments, char* arguments[])
                 int result;
 
                 colorPrintf(InputUseDefaultPort, DefaultPort);
+                colorPrintf(InputYesNo);
 
                 result = scanf(ScanfInputTag, inputBuffer);
                 useDefaultPort = inputBuffer[0];
