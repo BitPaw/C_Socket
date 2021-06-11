@@ -141,11 +141,13 @@
   <ItemGroup>
     <ClCompile Include="Tester.c" />
     <ClCompile Include="TestMain.c" />
+    <ClCompile Include="Testscripts\FileManagerTest.c" />
     <ClCompile Include="Testscripts\ListTest.c" />
     <ClCompile Include="Testscripts\PathTest.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Tester.h" />
+    <ClInclude Include="Testscripts\FileManagerTest.h" />
     <ClInclude Include="Testscripts\ListTest.h" />
     <ClInclude Include="Testscripts\PathTest.h" />
   </ItemGroup>

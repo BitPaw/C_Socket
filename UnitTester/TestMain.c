@@ -1,4 +1,3 @@
-#pragma once
 #if defined(_WIN32) || defined(_WIN64)
 #define OSWindows
 #endif
@@ -6,6 +5,8 @@
 #if defined(linux) || defined(__APPLE__)
 #define OSUnix
 #endif
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,11 +14,15 @@
 
 #include "Testscripts/PathTest.h"
 #include "Testscripts/ListTest.h"
+#include "Testscripts/FileManagerTest.h"
 #include "../ColorPrinter/ColorPrinter.h"
 
+#include "../SocketFileManager/FileManager.h"
+#include "../SocketFileManager/PathList.h"
 
 int main()
-{		
+{
+
 	// Example Tests:
 	/*
 	// -- Test Int
@@ -44,18 +49,24 @@ int main()
 	*/
 
 	printColors = 1;
+
 	//printColorTable();
 
-	path_test(1);
+    path_test(1);
 
-	list_test(1);
+    list_test(1);
+
+    fileManager_test(1);
+
+    path_ListAllFiles_test(1);
+
 	
 	testPrintSummery();
 
-	
 #ifdef OSWindows
 system("pause");
 #else
 printf("Terminated\n");
 #endif
+    return 0;
 }
