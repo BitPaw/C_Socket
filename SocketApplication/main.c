@@ -7,140 +7,10 @@
 #include "CommandToken.h"
 #include "CommunicationRole.h"
 #include "ApplicationState.h"
+#include "../ColorPrinter/ColorPrinter.h"
 #include "../SocketSystem/OSDefine.h"
-
-
-
-char DoesFileExist(char* path)
-{
-    FILE* file = fopen(path, "r");
-    char doesDileExist = file != NULL;
-
-    fclose(file);
-
-    return doesDileExist;
-}
-
-FileError FileDelete(char* filePath)
-{
-    int removeResult = remove(filePath);
-
-    switch (removeResult)
-    {
-        default:
-        case 0:
-            return FileNoError;
-    }
-}
-
-FileError FileWriteToEnd(char* filePath, char* message)
-{
-    FILE* file = 0;
-    int contentLength = 0;
-
-    if (!filePath)
-        return FileEmptyFileName;
-
-    if (!message)
-        return FileEmptyMessage;
-
-    file = fopen(filePath, "w");
-
-    if (!file)
-        return FileDoesNotExist;
-
-    contentLength = strnlen(message, 2048);
-
-    fseek(file, 0, SEEK_END); // Move to file end
-
-    fwrite(message, sizeof(char), contentLength, file);
-
-    fclose(file);
-
-    return FileNoError;
-}
-
-FileError FileLoad(char* filePath, char* content)
-{
-    int fileLength = -1;
-    FILE* file = 0;
-
-    if (!filePath)
-        return FileEmptyFileName;
-
-    if (!content)
-        return FileEmptyMessage;
-
-    file = fopen(filePath, "r");
-
-    if (!file)
-        return FileDoesNotExist;
-
-
-    fseek(file, 0, SEEK_END); // Jump to end of file
-    fileLength = ftell(file); // Get length of file
-    fseek(file, 0, SEEK_SET); // jump to beginning
-
-    content = calloc(fileLength + 1, sizeof(char));
-
-    if (!content)
-    {
-        fclose(file);
-        return FileNotEnoghMemory;
-    }
-
-    int readSize = fread(content, sizeof(char), fileLength, file);
-
-    int closeResult = fclose(file);
-
-    return FileNoError;
-}
-
-FileError FileLoadHTML(char* filePath, char** content)
-{
-    FILE* file = fopen(filePath, "r");
-    int fileLength = -1;
-    const char* htmlResponseTag = "HTTP/1.0 200 OK\r\n\r\n";
-    const int htmlResponselength = 19;
-
-    if (file == NULL)
-    {
-        return FileDoesNotExist; // File does not exist
-    }
-
-    fseek(file, 0, SEEK_END);
-    fileLength = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    *content = calloc(fileLength + htmlResponseTag + 1, sizeof(char));
-
-    if (!*content)
-    {
-        return 0; // calloc failed
-    }
-
-    memcpy(*content, htmlResponseTag, htmlResponselength);
-    fread(*content + htmlResponselength, 1, fileLength, file);
-
-    fclose(file);
-
-    return FileNoError;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "../SocketFileManager/FileManager.h"
+#include "../List/List.h"
 
 void StateChange(ApplicationState newState)
 {
@@ -176,7 +46,7 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
-    printColors = 1;
+    printColors = 0;
 
     _currentApplicationState = StateNeutralIDLE;
 
@@ -604,7 +474,6 @@ int main(int numberOfArguments, char* arguments[])
     return 0;
 }
 
-
 void OnRemoteServerMessageRecieved(int socketID, char* message)
 {
     colorPrintf(ClientMessageRead, message);
@@ -612,15 +481,33 @@ void OnRemoteServerMessageRecieved(int socketID, char* message)
 
 void OnRemoteClientMessageRecieved(int socketID, char* message)
 {
-    FileError fileError = FileErrorNotSet;
+    OSError fileError = OSError_NotImplemented;
     CommandToken commandToken; 
     char messageBuffer[2048];
     char* messageToSend = 0;
 
+    char filePath[2048];
+    int keyLength = 0;
+
     CommandTokenInitialize(&commandToken);   
     CommandTokenParse(&commandToken, message);
-
     commandToken.ClientSocketID = socketID;    
+
+    memset(filePath, 0, 2048);
+
+    if (commandToken.Key != 0)
+    {
+        keyLength = strlen(commandToken.Key);
+
+        memcpy(filePath, "Data/", 5);
+        memcpy(filePath + 5, commandToken.Key, keyLength);
+
+        keyLength += 5;
+
+        memcpy(filePath + keyLength, ".txt", 4);
+
+        keyLength += 4;      
+    } 
 
     switch (commandToken.CommandType)
     {
@@ -628,15 +515,24 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
 
-            fileError = FileWriteToEnd(commandToken.Key, commandToken.Value);
+            fileError = OSFileForceWrite(filePath, commandToken.Value, WriteMode_Overwrite);
 
             break;
         }
         case CommandFileDataGet:
         {
-            colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
+            char* data = 0;
 
-            fileError = FileLoad(commandToken.Key, messageToSend);             
+            colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);          
+
+            fileError = OSFileRead(filePath, &data);
+
+            if (fileError == OSError_NoError)
+            {
+                ServerSendToClient(&_server, commandToken.ClientSocketID, data);
+
+                free(data);
+            }
 
             break;
         }
@@ -644,15 +540,17 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
 
-            fileError = FileDelete(commandToken.Key);
+            fileError = OSFileDelete(filePath);
 
             break;
         }
         case CommandFileLock:
         {
-            colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
+            colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);                    
 
-           // fileError = FileLock(commandToken.Key);
+            memcpy(filePath + keyLength - 3 , "lck", 3 * sizeof(char));
+
+            fileError = OSFileCreate(filePath);
 
             break;
         }
@@ -660,7 +558,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
 
-            //fileError = FileUnlock(commandToken.Key);
+            memcpy(filePath + keyLength - 3, "lck", 3 * sizeof(char));
+
+            fileError = OSFileDelete(filePath);
 
             break;
         }
@@ -668,7 +568,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandPublishMessage, socketID, commandToken.Key, commandToken.Value);
 
-           // fileError = FileChangePublish(commandToken.Key);
+            // ToDo: sent all changes to all subsribers
 
             break;
         }
@@ -676,7 +576,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
 
-            //fileError = FileChangeSubscribe(commandToken.Key);
+            // ToDo: register to a file
 
             break;
         }
@@ -684,7 +584,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
 
-           // fileError = ProgramOpen(commandToken.Key);
+            // ToDo: Open a programm somehow, sent that result to the user.           
 
             break;
         }
@@ -692,7 +592,10 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandQuitMessage, socketID);
 
-            //ApplicationQuit();
+            // ToDo: unlock files that the user has locket
+
+            ServerSendToClient(&_server, commandToken.ClientSocketID, "Goodbye!");
+            ServerKickClient(&_server, commandToken.ClientSocketID);
 
             break;
         }
@@ -725,13 +628,42 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandInvalidMessage, socketID, message);
 
-            ServerSendToClient(&_server, commandToken.ClientSocketID, "Invalid Command.Check your input.");
+            fileError = OSError_NotImplemented;
 
             break;
         }
     }
 
-    CommandTokenClear(&commandToken);
+    switch (fileError)
+    {
+        case OSError_NoError:
+            messageToSend = "OK: Command sucessful.";
+            break;
+
+        case OSError_DirectoryOrFileNotFound:
+            messageToSend = "Error: File not found";
+            break;
+
+        case OSError_FileIsCurrentlyInUse:
+            messageToSend = "Error: File is locked";
+            break;
+
+        case OSError_FileAlreadyExists:
+            messageToSend = "Error: File already exists";
+            break;
+
+        case OSError_NotImplemented:
+            messageToSend = "Invalid Command.Check your input.";
+            break;
+
+        default:
+            messageToSend = "Woups: Something went unexpectetly wrong.";
+            break;
+    }
+
+    ServerSendToClient(&_server, commandToken.ClientSocketID, messageToSend);
+
+    CommandTokenClear(&commandToken);  
 }
 
 void OnRemoteServerDisconnect(int socketID)
@@ -754,6 +686,8 @@ void OnRemoteServerConnect(int socketID)
 void OnRemoteClientConnect(int socketID)
 {
     colorPrintf(ServerClientConnection, socketID);
+
+    // maybe send if port is not 80?
 
 #if 0
     // RensResponse
@@ -787,4 +721,36 @@ void OnRemoteClientConnect(int socketID)
         }
     }
 #endif
+}
+
+
+FileError FileLoadHTML(char* filePath, char** content)
+{
+    FILE* file = fopen(filePath, "r");
+    int fileLength = -1;
+    const char* htmlResponseTag = "HTTP/1.0 200 OK\r\n\r\n";
+    const int htmlResponselength = 19;
+
+    if (file == NULL)
+    {
+        return FileDoesNotExist; // File does not exist
+    }
+
+    fseek(file, 0, SEEK_END);
+    fileLength = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    *content = calloc(fileLength + htmlResponseTag + 1, sizeof(char));
+
+    if (!*content)
+    {
+        return 0; // calloc failed
+    }
+
+    memcpy(*content, htmlResponseTag, htmlResponselength);
+    fread(*content + htmlResponselength, 1, fileLength, file);
+
+    fclose(file);
+
+    return FileNoError;
 }

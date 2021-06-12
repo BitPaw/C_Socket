@@ -171,6 +171,9 @@
     <ProjectReference Include="..\ColorPrinter\ColorPrinter.vcxproj">
       <Project>{d019098a-692b-4348-86f7-e68d734955f2}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\List\List.vcxproj">
+      <Project>{1eb493eb-1280-4997-ad99-52f72c588781}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\SocketFileManager\SocketFileManager.vcxproj">
       <Project>{32907af9-1f95-49e1-ae7c-0d26239a75c4}</Project>
     </ProjectReference>
