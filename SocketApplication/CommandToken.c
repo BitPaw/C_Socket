@@ -119,14 +119,11 @@ Command ParseCommand(char* command)
     if (memcmp("DEL;", command, 4) == 0)
         return CommandFileDelete;
 
-    if (memcmp("ULC;", command, 4) == 0) 
+    if (memcmp("BEG;", command, 4) == 0)
         return CommandFileLock;
 
-    if (memcmp("LCK;", command, 4) == 0)
+    if (memcmp("END;", command, 4) == 0)
         return CommandFileUnlock;
-
-    if (memcmp("PUB;", command, 4) == 0)
-        return CommandFileChangePublish;
 
     if (memcmp("SUB;", command, 4) == 0)         
         return CommandFileChangeSubscribe;

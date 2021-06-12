@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CommandInclude
 #define CommandInclude
 
@@ -7,20 +5,21 @@ typedef enum Command_
 {
     CommandInvalid,
 
-    CommandFileDataPut,
-    CommandFileDataGet,
-    CommandFileDelete,
+    CommandFileDataPut, // PUT
+    CommandFileDataGet, // GET
+    CommandFileDelete, // DEL
 
-    CommandFileLock,
-    CommandFileUnlock,
+    CommandFileLock, // BEG
+    CommandFileUnlock, // END
+      
+    CommandFileChangeSubscribe, // SUB
+    //CommandFileChangeUnSubscribe // No requirement to imlement
 
-    CommandFileChangePublish,
-    CommandFileChangeSubscribe,
+    CommandOpenProgram, // OP
 
-    CommandOpenProgram,
+    CommandQuit, // QUIT
 
-    CommandQuit,
-
+    // fun features
     CommandHTTPRequest,
     CommandMinecraftServerList
 }Command;

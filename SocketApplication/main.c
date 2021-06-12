@@ -11,6 +11,8 @@
 #include "../SocketSystem/OSDefine.h"
 #include "../SocketFileManager/FileManager.h"
 #include "../List/List.h"
+#include "CommandError.h"
+#include "UserSytem.h"
 
 void StateChange(ApplicationState newState)
 {
@@ -479,34 +481,37 @@ void OnRemoteServerMessageRecieved(int socketID, char* message)
     colorPrintf(ClientMessageRead, message);
 }
 
+
+
 void OnRemoteClientMessageRecieved(int socketID, char* message)
 {
     OSError fileError = OSError_NotImplemented;
+    CommandError commandError = CommandErrorNotSet;
     CommandToken commandToken; 
     char messageBuffer[2048];
     char* messageToSend = 0;
 
-    char filePath[2048];
-    int keyLength = 0;
+    char filePathText[255];
+    memset(filePathText, 0, 255);
 
     CommandTokenInitialize(&commandToken);   
     CommandTokenParse(&commandToken, message);
     commandToken.ClientSocketID = socketID;    
 
-    memset(filePath, 0, 2048);
 
     if (commandToken.Key != 0)
     {
+        char* fileExtensionText = ".txt";
+        int keyLength = 0;
+
         keyLength = strlen(commandToken.Key);
 
-        memcpy(filePath, "Data/", 5);
-        memcpy(filePath + 5, commandToken.Key, keyLength);
+        memcpy(filePathText, "Data/", 5);
+        memcpy(filePathText + 5, commandToken.Key, keyLength);
 
         keyLength += 5;
 
-        memcpy(filePath + keyLength, ".txt", 4);
-
-        keyLength += 4;      
+        memcpy(filePathText + keyLength, fileExtensionText, 4);
     } 
 
     switch (commandToken.CommandType)
@@ -515,7 +520,32 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
 
-            fileError = OSFileForceWrite(filePath, commandToken.Value, WriteMode_Overwrite);
+            commandError = UserWriteInFile(socketID, filePathText, commandToken.Value);
+
+            // Send change to all subscribers
+            if(commandError == CommandErrorSuccessful)
+            {
+                int amoutntOfSubscribers = -1;
+                int* subscriberSocketIDs = 0;
+
+                UserGetAllSubscribers(socketID, filePathText, &subscriberSocketIDs, &amoutntOfSubscribers);
+
+                for (unsigned int i = 0; i < amoutntOfSubscribers; i++)
+                {
+                    int subscriberSocketID = subscriberSocketIDs[0];
+
+                    sprintf
+                    (
+                        messageBuffer,
+                        "[Client:%i] Changed file at %s.\nChange:%s\n",
+                        socketID,
+                        filePathText,
+                        commandToken.Value
+                    );
+
+                    ServerSendToClient(&_server, subscriberSocketID, messageBuffer);
+                }
+            }       
 
             break;
         }
@@ -523,16 +553,16 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             char* data = 0;
 
-            colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);          
+            colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
 
-            fileError = OSFileRead(filePath, &data);
+            commandError = UserReadFromFile(socketID, filePathText, &data);                      
 
-            if (fileError == OSError_NoError)
+            if (data != 0)
             {
                 ServerSendToClient(&_server, commandToken.ClientSocketID, data);
 
                 free(data);
-            }
+            }             
 
             break;
         }
@@ -540,17 +570,15 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
 
-            fileError = OSFileDelete(filePath);
+            commandError = UserDeleteFile(socketID, filePathText);
 
             break;
         }
         case CommandFileLock:
         {
-            colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);                    
+            colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
 
-            memcpy(filePath + keyLength - 3 , "lck", 3 * sizeof(char));
-
-            fileError = OSFileCreate(filePath);
+            commandError = UserLockFile(socketID, filePathText);
 
             break;
         }
@@ -558,17 +586,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
 
-            memcpy(filePath + keyLength - 3, "lck", 3 * sizeof(char));
-
-            fileError = OSFileDelete(filePath);
-
-            break;
-        }
-        case CommandFileChangePublish:
-        {
-            colorPrintf(IncommingCommandPublishMessage, socketID, commandToken.Key, commandToken.Value);
-
-            // ToDo: sent all changes to all subsribers
+            commandError = UserUnlockFile(socketID, filePathText);
 
             break;
         }
@@ -576,7 +594,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
 
-            // ToDo: register to a file
+            commandError = UserSubscribeToFile(socketID, filePathText);
 
             break;
         }
@@ -584,7 +602,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
 
-            // ToDo: Open a programm somehow, sent that result to the user.           
+            commandError = UserOpenProgram(commandToken.Key);
 
             break;
         }
@@ -592,10 +610,12 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandQuitMessage, socketID);
 
-            // ToDo: unlock files that the user has locket
+            UserUnlockAllFiles(socketID);
 
             ServerSendToClient(&_server, commandToken.ClientSocketID, "Goodbye!");
             ServerKickClient(&_server, commandToken.ClientSocketID);
+
+            commandError = CommandErrorSuccessfulSilent;
 
             break;
         }
@@ -621,6 +641,8 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
             ServerKickClient(&_server, commandToken.ClientSocketID);
 
+            commandError = CommandErrorSuccessfulSilent;
+
             break;
         }
         case CommandInvalid:
@@ -628,32 +650,37 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandInvalidMessage, socketID, message);
 
-            fileError = OSError_NotImplemented;
+            commandError = CommandErrorUnsupportedCommand;
 
             break;
         }
     }
 
-    switch (fileError)
+    switch (commandError)
     {
-        case OSError_NoError:
+        case CommandErrorSuccessfulSilent:
+        case CommandErrorSuccessful:
             messageToSend = "OK: Command sucessful.";
             break;
 
-        case OSError_DirectoryOrFileNotFound:
+        case CommandErrorFileDoesNotExist:
             messageToSend = "Error: File not found";
             break;
 
-        case OSError_FileIsCurrentlyInUse:
-            messageToSend = "Error: File is locked";
+        case CommandErrorAccessLocked:
+            messageToSend = "Error: Access denyed: File is locked";
             break;
 
-        case OSError_FileAlreadyExists:
+        case CommandErrorFileAlreadyExists:
             messageToSend = "Error: File already exists";
             break;
 
-        case OSError_NotImplemented:
-            messageToSend = "Invalid Command.Check your input.";
+        case CommandErrorUnsupportedCommand:
+            messageToSend = "Invalid Command. Check your input.";
+            break;
+
+        case CommandErrorNotSet:
+            messageToSend = "Warning: Invalid state! This should not be possible.";
             break;
 
         default:
@@ -661,7 +688,10 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             break;
     }
 
-    ServerSendToClient(&_server, commandToken.ClientSocketID, messageToSend);
+    if (commandError != CommandErrorSuccessfulSilent)
+    {
+        ServerSendToClient(&_server, commandToken.ClientSocketID, messageToSend);
+    }
 
     CommandTokenClear(&commandToken);  
 }
@@ -685,12 +715,11 @@ void OnRemoteServerConnect(int socketID)
 
 void OnRemoteClientConnect(int socketID)
 {
+    char sendWelcomeMessage = _server.Socket.Port != 80;
+
     colorPrintf(ServerClientConnection, socketID);
 
-    // maybe send if port is not 80?
-
-#if 0
-    // RensResponse
+    if (sendWelcomeMessage)
     {
         char welcomeMessage[100];
 
@@ -713,14 +742,13 @@ void OnRemoteClientConnect(int socketID)
             socketID
         );
 
-        SocketErrorCode errorCode = ServerSendToClient(&_server, socketID, welcomeMessage);
+        SocketError socketError = ServerSendToClient(&_server, socketID, welcomeMessage);
 
-        if (errorCode != SocketNoError)
+        if (socketError != SocketNoError)
         {
-            printf("[Server][Error] Couldn't send welcome response. ErrorCode <%i>.\n", errorCode);
+            printf("[Server][Error] Couldn't send welcome response. ErrorCode <%i : %s>.\n", socketError, SocketErrorToString(socketError));
         }
     }
-#endif
 }
 
 

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="UserSytem.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Command.h" />
@@ -12,6 +13,8 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="ApplicationState.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="CommandError.h" />
+    <ClInclude Include="UserSytem.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Triangle_Blue_Down.ico" />

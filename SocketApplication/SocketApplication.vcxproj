@@ -149,15 +149,18 @@
   <ItemGroup>
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="UserSytem.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ApplicationState.h" />
+    <ClInclude Include="CommandError.h" />
     <ClInclude Include="CommunicationRole.h" />
     <ClInclude Include="FileError.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
+    <ClInclude Include="UserSytem.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Triangle_Blue_Down.ico">
