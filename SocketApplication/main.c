@@ -48,7 +48,7 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
-    printColors = 0;
+    printColors = 1;
 
     _currentApplicationState = StateNeutralIDLE;
 
@@ -344,7 +344,7 @@ int main(int numberOfArguments, char* arguments[])
 
                 break;
             }
-           
+        	
             case StateClientConnectionFailed:
             {
                 colorPrintf(InputConnectionTryAgain);
@@ -481,8 +481,6 @@ void OnRemoteServerMessageRecieved(int socketID, char* message)
     colorPrintf(ClientMessageRead, message);
 }
 
-
-
 void OnRemoteClientMessageRecieved(int socketID, char* message)
 {
     OSError fileError = OSError_NotImplemented;
@@ -602,8 +600,8 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
 
-            commandError = UserOpenProgram(commandToken.Key);
-
+            commandError = UserOpenProgram(filePathText, commandToken.Value);
+            
             break;
         }
         case CommandQuit:

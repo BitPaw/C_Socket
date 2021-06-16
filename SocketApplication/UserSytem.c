@@ -259,7 +259,38 @@ CommandError UserDeleteFile(int clientID, char* fileName)
     }
 }
 
-CommandError UserOpenProgram(char* programName)
+#ifdef OSWindows
+//Todo: Dennis
+static CommandError executeProgram(char* program, char** output)
 {
-    return 0;
+
+    output = "Hallo";
+    return CommandErrorSuccessful;
 }
+#endif
+
+#ifdef OSUnix
+//Todo: Jona 
+static CommandError executeProgram(char* program, char** output)
+{
+    output = "Hallo";
+    return CommandErrorSuccessful;
+}
+#endif
+
+//Todo: Dennis
+CommandError UserOpenProgram(char* filePath, char* programName)
+{
+    char* output;
+	
+    CommandError returnValue = executeProgram("Hallo", &output) == CommandErrorSuccessful;
+	
+    if (returnValue != CommandErrorSuccessful)
+        return returnValue;
+
+    //Todo: Output write in File
+
+	
+    return returnValue;
+}
+
