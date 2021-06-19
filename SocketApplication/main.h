@@ -2,6 +2,7 @@
 #include "../SocketSystem/Server.h"
 #include "../SocketSystem/Client.h"
 #include "../ColorPrinter/ColorPrinter.h"
+#include "../SocketSystem/AsyncLock.h"
 
 unsigned short DefaultPort = 5678u;
 const char TagNotSet[] = "NotSet";
@@ -94,6 +95,8 @@ static Server _server;
 static Client _client;
 
 static ApplicationState _currentApplicationState;
+
+AsyncLock _userInteractLock;
 
 int main(int numberOfArguments, char* arguments[]);
 static void OnRemoteServerMessageRecieved(int socketID, char* message);
