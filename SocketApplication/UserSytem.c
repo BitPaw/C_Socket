@@ -70,6 +70,8 @@ void UserUnlockAllFiles(int clientID)
     // ToDo, implement
 
     // Delete all files that the user used. So that he can not block others forever.
+    
+    // Look into all .lck files, delete the files that contain the given 'clientID'.
 }
 
 void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray, int* amountOfElements)
@@ -89,7 +91,7 @@ void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray,
     {
         OSError fileError = OSFileRead(fileName, &fileContent);
 
-        switch (fileError != OSError_NoError)
+        if (fileError != OSError_NoError)
         {
             return;
         }
@@ -157,7 +159,7 @@ CommandError UserLockFile(int clientID, char* fileName)
     char canModify = 0;
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
 
-    if (doesFileExist)
+    if (!doesFileExist)
     {
         return CommandErrorFileDoesNotExist;
     }

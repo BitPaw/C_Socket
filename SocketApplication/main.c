@@ -13,6 +13,7 @@
 #include "../List/List.h"
 #include "CommandError.h"
 #include "UserSytem.h"
+#include "../SocketSystem/AsyncLock.h"
 
 void StateChange(ApplicationState newState)
 {
@@ -48,9 +49,11 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
-    printColors = 1;
+    printColors = 0;
 
     _currentApplicationState = StateNeutralIDLE;
+
+    AsyncLockCreate(&_userInteractLock);
 
     ClientInitialize(&_client);
     ServerInitialize(&_server);
@@ -518,7 +521,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
 
+            AsyncLockLock(&_userInteractLock);
             commandError = UserWriteInFile(socketID, filePathText, commandToken.Value);
+            AsyncLockRelease(&_userInteractLock);
 
             // Send change to all subscribers
             if(commandError == CommandErrorSuccessful)
@@ -553,7 +558,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
             colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
 
-            commandError = UserReadFromFile(socketID, filePathText, &data);                      
+            AsyncLockLock(&_userInteractLock);
+            commandError = UserReadFromFile(socketID, filePathText, &data);
+            AsyncLockRelease(&_userInteractLock);
 
             if (data != 0)
             {
@@ -568,7 +575,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
 
+            AsyncLockLock(&_userInteractLock);
             commandError = UserDeleteFile(socketID, filePathText);
+            AsyncLockRelease(&_userInteractLock);
 
             break;
         }
@@ -576,7 +585,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
 
+            AsyncLockLock(&_userInteractLock);
             commandError = UserLockFile(socketID, filePathText);
+            AsyncLockRelease(&_userInteractLock);
 
             break;
         }
@@ -584,7 +595,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
 
+            AsyncLockLock(&_userInteractLock);
             commandError = UserUnlockFile(socketID, filePathText);
+            AsyncLockRelease(&_userInteractLock);
 
             break;
         }
@@ -592,16 +605,21 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
 
+            AsyncLockLock(&_userInteractLock);
             commandError = UserSubscribeToFile(socketID, filePathText);
+            AsyncLockRelease(&_userInteractLock);
 
             break;
         }
         case CommandOpenProgram:
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
-
             commandError = UserOpenProgram(socketID,commandToken.Value, filePathText);
             
+            AsyncLockLock(&_userInteractLock);
+            commandError = UserOpenProgram(filePathText, commandToken.Value);
+            AsyncLockRelease(&_userInteractLock);
+
             break;
         }
         case CommandQuit:
@@ -704,6 +722,8 @@ void OnRemoteServerDisconnect(int socketID)
 void OnRemoteClientDisconnect(int socketID)
 {
     colorPrintf(ServerClientDisconnected, socketID);
+
+    UserUnlockAllFiles(socketID);
 }
 
 void OnRemoteServerConnect(int socketID)
