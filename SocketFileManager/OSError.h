@@ -45,6 +45,6 @@ typedef enum OSError_
 
 }OSError;
 
-const char* OSErrorToString(OSError state);
+char* OSErrorToString(OSError state);
 
 #endif

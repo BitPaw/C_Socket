@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 char UserCanModifyFile(int clientID, char* fileName)
 {
     char lockFilePath[255];
@@ -260,11 +261,48 @@ CommandError UserDeleteFile(int clientID, char* fileName)
 }
 
 #ifdef OSWindows
-//Todo: Dennis
-static CommandError executeProgram(char* program, char** output)
-{
 
-    output = "Hallo";
+CommandError UserOpenProgram(int clientID, char* program, char* path)
+{
+    char psBuffer[256];
+    
+    FILE* pipe = _popen(program, "rt");
+
+    //Todo: Pipe ist NULL
+    if (!pipe)
+        return 0;
+
+    OSFileDelete(path);
+	
+    /* Read pipe until end of file, or an error occurs. */
+    while (fgets(psBuffer, 256, pipe))
+    {
+        if(UserCanModifyFile(clientID, path))
+        {
+	        const OSError returnError = OSFileForceWrite(path, psBuffer, WriteMode_AddToEnd);
+        	//Todo: OSError alle die da gelistet sind
+            if (returnError != OSError_NoError)
+                return -1;
+        }
+        else
+            return CommandErrorAccessLocked;
+    }
+
+    /* Close pipe and print return value of pPipe. */
+    if (feof(pipe))
+    {
+    	//Todo: infinty alle Programmfehlermeldugnen
+        int returnValue = _pclose(pipe);
+        if (returnValue != 0)
+            return -1;
+			
+    }
+    else
+    {
+        //Todo: Pipe konnte nicht bis zum ende lesen
+        return -1;
+    }
+
     return CommandErrorSuccessful;
 }
 #endif
@@ -273,24 +311,8 @@ static CommandError executeProgram(char* program, char** output)
 //Todo: Jona 
 static CommandError executeProgram(char* program, char** output)
 {
-    output = "Hallo";
+    *output = "Hallo";
     return CommandErrorSuccessful;
 }
 #endif
-
-//Todo: Dennis
-CommandError UserOpenProgram(char* filePath, char* programName)
-{
-    char* output;
-	
-    CommandError returnValue = executeProgram("Hallo", &output) == CommandErrorSuccessful;
-	
-    if (returnValue != CommandErrorSuccessful)
-        return returnValue;
-
-    //Todo: Output write in File
-
-	
-    return returnValue;
-}
 

@@ -1,6 +1,6 @@
 #include "OSError.h"
 
-const char* OSErrorToString(OSError state)
+char* OSErrorToString(OSError state)
 {
     switch (state)
     {

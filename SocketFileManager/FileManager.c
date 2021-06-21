@@ -133,61 +133,30 @@ OSError OSFileForceWrite(char* path, char* content, char writeMode)
 OSError OSFileForceWriteP(Path* path, char* content, char writeMode)
 {
 
-	if (content == NULL)
+	if (!content)
 		return OSError_ContentIsNull;
 
-	const OSError fileExistOutput = OSDirectoryExists(path->directory);
+	OSError fileExistOutput = OSError_NoError;
+
+	if (path->hasDirectory)
+		fileExistOutput = OSDirectoryExists(path->directory);
 	
-	if(fileExistOutput != OSError_NoError)
+	if (fileExistOutput == OSError_DirectoryOrFileNotFound)
 	{
-		switch (fileExistOutput)
-		{
-			case OSError_DirectoryOrFileNotFound:
-			{
-				const OSError errorCode = OSDirectoryFullCreate(path->directory);
-				
-				if (errorCode != OSError_NoError)
-					return errorCode;
 
-				return OSFileForceWriteP(path, content, writeMode);
-			}
-			case OSError_NoFileExtension:
-			case OSError_ExtensionToShort:
-			case OSError_CallocWentWrong:
-			case OSError_AccessDenied:
-			case OSError_PathNotFound:
-			case OSError_FileIsCurrentlyInUse:
-			case OSError_FileToBig:
-			case OSError_FileNameToLong:
-			case OSError_FileNameInvalid:
-			case OSError_DirectoryInvalid:
-			case OSError_WrittenContentIsCorrupted:
-			case OSError_UnknownError:
-			case OSError_ParameterIsNull:
-			case OSError_ParameterInvalid:
+		const OSError errorCode = OSDirectoryFullCreate(path->directory);
 
-				//No Errors or impossible Errors 
-			case OSError_ContentIsNull:
-			case OSError_FolderAlreadyExists:
-			case OSError_FileAlreadyExists:
-			case OSError_DirectoryNotEmpty:
-			case OSError_NotImplemented:
-			default:
-				return fileExistOutput;
+		if (errorCode != OSError_NoError)
+			return errorCode;
 
-            case OSError_NoError:
-                break;
-
-		}
-        const OSError errorCode = OSFileCreate(path->fullPath);
-
-        if (errorCode != OSError_NoError)
-            return errorCode;
-
-        return OSFileForceWriteP(path, content, writeMode);
+		return OSFileForceWriteP(path, content, writeMode);
+	}
+	if(fileExistOutput == OSError_NoError)
+	{
+		fileExistOutput = OSFileWriteBaseP(path,content,writeMode);
 	}
 	
-	return OSFileWriteBaseP(path,content,writeMode);
+	return fileExistOutput;
 }
 
 OSError OSFileWriteBase(char* path, char* content, char writeMode)

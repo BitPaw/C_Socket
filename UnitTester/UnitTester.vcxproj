@@ -84,9 +84,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -157,6 +157,9 @@
     </ProjectReference>
     <ProjectReference Include="..\List\List.vcxproj">
       <Project>{1eb493eb-1280-4997-ad99-52f72c588781}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketApplication\SocketApplication.vcxproj">
+      <Project>{bd6df275-cece-4b57-85e0-17b4820f68c0}</Project>
     </ProjectReference>
     <ProjectReference Include="..\SocketFileManager\SocketFileManager.vcxproj">
       <Project>{32907af9-1f95-49e1-ae7c-0d26239a75c4}</Project>

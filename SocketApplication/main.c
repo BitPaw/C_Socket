@@ -600,7 +600,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
 
-            commandError = UserOpenProgram(filePathText, commandToken.Value);
+            commandError = UserOpenProgram(socketID,commandToken.Value, filePathText);
             
             break;
         }
