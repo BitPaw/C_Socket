@@ -48,7 +48,12 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
+#ifdef OSWindows
+    printColors = 0;
+#elif defined(OSUnix)
     printColors = 1;
+#endif 
+
     //system("color 0B");
 
     _currentApplicationState = StateNeutralIDLE;
