@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/List/List.h
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/CommandError.h
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/UserSytem.c
+UserSytem.h
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/UserSytem.h
+../SocketFileManager/FileManager.h
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/FileManager.h
+string.h
+-
+stdio.h
+-
+stdlib.h
+-
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/UserSytem.h
+CommandError.h
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/CommandError.h
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/FileManager.h
+wchar.h
+-
+OSError.h
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/OSError.h
+Path.h
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/Path.h
+../List/List.h
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/List/List.h
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/OSError.h
+
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/Path.h
+

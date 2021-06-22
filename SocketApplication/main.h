@@ -3,6 +3,7 @@
 #include "../SocketSystem/Client.h"
 #include "../ColorPrinter/ColorPrinter.h"
 #include "../SocketSystem/AsyncLock.h"
+#include "FileError.h"
 
 unsigned short DefaultPort = 5678u;
 const char TagNotSet[] = "NotSet";
@@ -105,3 +106,4 @@ static void OnRemoteServerDisconnect(int socketID);
 static void OnRemoteClientDisconnect(int socketID);
 static void OnRemoteServerConnect(int socketID);
 static void OnRemoteClientConnect(int socketID);
+static FileError FileLoadHTML(char* filePath, char** content);

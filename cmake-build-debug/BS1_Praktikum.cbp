@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="BS1_Praktikum"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="BS1_Praktikum">
+				<Option output="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/BS1_Praktikum" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication"/>
+					<Add directory="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem"/>
+					<Add directory="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 BS1_Praktikum"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="BS1_Praktikum/fast">
+				<Option output="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/BS1_Praktikum" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication"/>
+					<Add directory="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem"/>
+					<Add directory="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 BS1_Praktikum/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/ColorPrinter/ColorPrinter.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/ColorPrinter/ColorPrinter.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/List/List.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/List/List.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/CommandToken.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/CommandToken.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/UserSytem.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/UserSytem.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/main.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketApplication/main.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/FileManager.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/FileManager.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/Path.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/Path.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/PathList.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketFileManager/PathList.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/AsyncLock.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/AsyncLock.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/Client.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/Client.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/IOSocket.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/IOSocket.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/IPVersion.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/IPVersion.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/OSDefine.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/Server.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/Server.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/SocketError.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/SocketError.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/Thread.c">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/SocketSystem/Thread.h">
+			<Option target="BS1_Praktikum"/>
+		</Unit>
+		<Unit filename="/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

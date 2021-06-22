@@ -269,8 +269,8 @@ CommandError UserOpenProgram(int clientID, char* program, char* path)
     char psBuffer[256];
     #ifdef OSWindows
     FILE* pipe = _popen(program, "rt");
-    #elif definde(OSUnix)
-    FILE* pipe = popen(program, "rt");
+    #elif defined(OSUnix)
+    FILE* pipe = popen(program, "r");
     #endif
 
     //Todo: Pipe ist NULL
@@ -299,7 +299,7 @@ CommandError UserOpenProgram(int clientID, char* program, char* path)
     	//Todo: infinty alle Programmfehlermeldugnen
     #ifdef OSWindows
         int returnValue = _pclose(pipe);
-    #elif definde(OSUnix)
+    #elif defined(OSUnix)
         int returnValue = pclose(pipe);
     #endif
         if (returnValue != 0)

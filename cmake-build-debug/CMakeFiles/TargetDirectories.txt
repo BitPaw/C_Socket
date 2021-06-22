@@ -1,0 +1,3 @@
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/jona/Schreibtisch/BSPraktikum/BS1_Praktikum_Socket/cmake-build-debug/CMakeFiles/BS1_Praktikum.dir

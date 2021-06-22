@@ -32,6 +32,18 @@ add_executable(BS1_Praktikum
         ColorPrinter/ColorPrinter.h
         ColorPrinter/ColorPrinter.c
 
+        SocketApplication/UserSytem.h
+        SocketApplication/UserSytem.c
+        SocketFileManager/FileManager.h
+        SocketFileManager/FileManager.c
+        SocketFileManager/PathList.h
+        SocketFileManager/PathList.c
+        SocketFileManager/Path.h
+        SocketFileManager/Path.c
+
+        List/List.h
+        List/List.c
+
 
 )
 
