@@ -262,13 +262,16 @@ CommandError UserDeleteFile(int clientID, char* fileName)
     }
 }
 
-#ifdef OSWindows
+
 
 CommandError UserOpenProgram(int clientID, char* program, char* path)
 {
     char psBuffer[256];
-    
+    #ifdef OSWindows
     FILE* pipe = _popen(program, "rt");
+    #elif definde(OSUnix)
+    FILE* pipe = popen(program, "rt");
+    #endif
 
     //Todo: Pipe ist NULL
     if (!pipe)
@@ -294,7 +297,11 @@ CommandError UserOpenProgram(int clientID, char* program, char* path)
     if (feof(pipe))
     {
     	//Todo: infinty alle Programmfehlermeldugnen
+    #ifdef OSWindows
         int returnValue = _pclose(pipe);
+    #elif definde(OSUnix)
+        int returnValue = pclose(pipe);
+    #endif
         if (returnValue != 0)
             return -1;
 			
@@ -307,14 +314,4 @@ CommandError UserOpenProgram(int clientID, char* program, char* path)
 
     return CommandErrorSuccessful;
 }
-#endif
-
-#ifdef OSUnix
-//Todo: Jona 
-static CommandError executeProgram(char* program, char** output)
-{
-    *output = "Hallo";
-    return CommandErrorSuccessful;
-}
-#endif
 

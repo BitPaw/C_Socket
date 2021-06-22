@@ -614,10 +614,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         case CommandOpenProgram:
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
-            commandError = UserOpenProgram(socketID,commandToken.Value, filePathText);
             
             AsyncLockLock(&_userInteractLock);
-            commandError = UserOpenProgram(filePathText, commandToken.Value);
+            commandError = UserOpenProgram(socketID, commandToken.Value, filePathText);
             AsyncLockRelease(&_userInteractLock);
 
             break;
