@@ -3,17 +3,23 @@
 
 typedef enum CommandError_
 {
-    CommandErrorNotSet,
+    CommandNotSet,
 
-    CommandErrorSuccessful,
-    CommandErrorSuccessfulSilent,
+    CommandSuccessful,
+    CommandSuccessfulSilent,
 
-    CommandErrorFileAlreadyExists,
-    CommandErrorFileDoesNotExist,
-    CommandErrorAlreadyLocked,
-    CommandErrorAccessLocked,
+    CommandFileAlreadyExists,
+    CommandFileDoesNotExist,
+    CommandAlreadyLocked,
+    CommandAccessLocked,
 
-    CommandErrorUnsupportedCommand
+    CommandPipeCreationFailure,
+    CommandFileWriteFailure,
+
+    CommandPipeClosingFailure,
+    CommandPipeReadError,
+
+    CommandUnsupportedCommand
 }CommandError;
 
 #endif

@@ -10,7 +10,7 @@
 char UserCanModifyFile(int clientID, char* fileName);
 CommandError UserSubscribeToFile(int clientID, char* fileName);
 CommandError UserUnSubscribeToFile(int clientID, char* fileName);
-CommandError UserOpenProgram(int clientID, char* program, char* path);
+CommandError UserOpenProgram(int clientID, char* fileName, char* programName);
 void UserUnlockAllFiles(int clientID);
 void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray, int* amountOfElements);
 

@@ -7,12 +7,12 @@
 #include "CommandToken.h"
 #include "CommunicationRole.h"
 #include "ApplicationState.h"
+#include "CommandError.h"
+#include "UserSytem.h"
 #include "../ColorPrinter/ColorPrinter.h"
 #include "../SocketSystem/OSDefine.h"
 #include "../SocketFileManager/FileManager.h"
 #include "../List/List.h"
-#include "CommandError.h"
-#include "UserSytem.h"
 #include "../SocketSystem/AsyncLock.h"
 
 void StateChange(ApplicationState newState)
@@ -36,8 +36,7 @@ void StateChange(ApplicationState newState)
         ApplicationStateToString(oldState),
         ApplicationStateToString(newState)
     );
-#endif
- 
+#endif 
 }
 
 int main(int numberOfArguments, char* arguments[])
@@ -49,7 +48,8 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
-    printColors = 0;
+    printColors = 1;
+    //system("color 0B");
 
     _currentApplicationState = StateNeutralIDLE;
 
@@ -58,9 +58,7 @@ int main(int numberOfArguments, char* arguments[])
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    colorPrintf(ASCIIArtLogo);
-
-    //system("color 0B");
+    colorPrintf(ASCIIArtLogo);  
 
     switch (numberOfArguments)
     {
@@ -427,7 +425,6 @@ int main(int numberOfArguments, char* arguments[])
                     }
                 }
 
-
                 break;
             }
 
@@ -487,7 +484,7 @@ void OnRemoteServerMessageRecieved(int socketID, char* message)
 void OnRemoteClientMessageRecieved(int socketID, char* message)
 {
     OSError fileError = OSError_NotImplemented;
-    CommandError commandError = CommandErrorNotSet;
+    CommandError commandError = CommandNotSet;
     CommandToken commandToken; 
     char messageBuffer[2048];
     char* messageToSend = 0;
@@ -526,7 +523,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             AsyncLockRelease(&_userInteractLock);
 
             // Send change to all subscribers
-            if(commandError == CommandErrorSuccessful)
+            if(commandError == CommandSuccessful)
             {
                 int amoutntOfSubscribers = -1;
                 int* subscriberSocketIDs = 0;
@@ -630,7 +627,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             ServerSendToClient(&_server, commandToken.ClientSocketID, "Goodbye!");
             ServerKickClient(&_server, commandToken.ClientSocketID);
 
-            commandError = CommandErrorSuccessfulSilent;
+            commandError = CommandSuccessfulSilent;
 
             break;
         }
@@ -656,7 +653,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
             ServerKickClient(&_server, commandToken.ClientSocketID);
 
-            commandError = CommandErrorSuccessfulSilent;
+            commandError = CommandSuccessfulSilent;
 
             break;
         }
@@ -665,7 +662,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandInvalidMessage, socketID, message);
 
-            commandError = CommandErrorUnsupportedCommand;
+            commandError = CommandUnsupportedCommand;
 
             break;
         }
@@ -673,28 +670,28 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
     switch (commandError)
     {
-        case CommandErrorSuccessfulSilent:
-        case CommandErrorSuccessful:
+        case CommandSuccessfulSilent:
+        case CommandSuccessful:
             messageToSend = "OK: Command sucessful.";
             break;
 
-        case CommandErrorFileDoesNotExist:
+        case CommandFileDoesNotExist:
             messageToSend = "Error: File not found";
             break;
 
-        case CommandErrorAccessLocked:
+        case CommandAccessLocked:
             messageToSend = "Error: Access denyed: File is locked";
             break;
 
-        case CommandErrorFileAlreadyExists:
+        case CommandFileAlreadyExists:
             messageToSend = "Error: File already exists";
             break;
 
-        case CommandErrorUnsupportedCommand:
+        case CommandUnsupportedCommand:
             messageToSend = "Invalid Command. Check your input.";
             break;
 
-        case CommandErrorNotSet:
+        case CommandNotSet:
             messageToSend = "Warning: Invalid state! This should not be possible.";
             break;
 
@@ -703,7 +700,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             break;
     }
 
-    if (commandError != CommandErrorSuccessfulSilent)
+    if (commandError != CommandSuccessfulSilent)
     {
         ServerSendToClient(&_server, commandToken.ClientSocketID, messageToSend);
     }

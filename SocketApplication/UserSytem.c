@@ -53,10 +53,10 @@ CommandError UserSubscribeToFile(int clientID, char* fileName)
     switch (fileError)
     {
         case OSError_NoError:
-            return CommandErrorSuccessful;
+            return CommandSuccessful;
 
         default:
-            return CommandErrorNotSet;
+            return CommandFileWriteFailure;
     }
 }
 
@@ -146,11 +146,11 @@ CommandError UserUnlockFile(int clientID, char* fileName)
     {
         OSError fileError = OSFileDelete(fileName);
 
-        return CommandErrorSuccessful;
+        return CommandSuccessful;
     }
     else
     {
-        return CommandErrorAccessLocked;
+        return CommandAccessLocked;
     }
 }
 
@@ -161,7 +161,7 @@ CommandError UserLockFile(int clientID, char* fileName)
 
     if (!doesFileExist)
     {
-        return CommandErrorFileDoesNotExist;
+        return CommandFileDoesNotExist;
     }
 
     canModify = UserCanModifyFile(clientID, fileName);
@@ -176,11 +176,11 @@ CommandError UserLockFile(int clientID, char* fileName)
 
         OSError fileError = OSFileForceWrite(fileName, dataBuffer, WriteMode_Overwrite);
 
-        return CommandErrorSuccessful;
+        return CommandSuccessful;
     }
     else
     {
-        return CommandErrorAccessLocked;
+        return CommandAccessLocked;
     }
 }
 
@@ -196,17 +196,17 @@ CommandError UserReadFromFile(int clientID, char* fileName, char** content)
         {
             case OSError_NoError:
             {
-                return CommandErrorSuccessful;
+                return CommandSuccessful;
             }
             case OSError_DirectoryOrFileNotFound:
             {
-                return CommandErrorFileDoesNotExist;
+                return CommandFileDoesNotExist;
             }
         }
     }
     else
     {
-        return CommandErrorAccessLocked;
+        return CommandAccessLocked;
     }
 }
 
@@ -222,13 +222,13 @@ CommandError UserWriteInFile(int clientID, char* fileName, char* content)
         {
             case OSError_NoError:
             {
-                return CommandErrorSuccessful;
+                return CommandSuccessful;
             }
         }
     }
     else
     {
-        return CommandErrorAccessLocked;
+        return CommandAccessLocked;
     }
 }
 
@@ -250,68 +250,75 @@ CommandError UserDeleteFile(int clientID, char* fileName)
         switch (fileError)
         {
             case OSError_NoError:
-                return CommandErrorSuccessful;
+                return CommandSuccessful;
 
             case OSError_DirectoryOrFileNotFound:
-                return CommandErrorFileDoesNotExist;
+                return CommandFileDoesNotExist;
         }
     }
     else
     {
-        return CommandErrorAccessLocked;
+        return CommandAccessLocked;
     }
 }
 
-
-
-CommandError UserOpenProgram(int clientID, char* program, char* path)
+CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
 {
     char psBuffer[256];
+
     #ifdef OSWindows
-    FILE* pipe = _popen(program, "rt");
+    FILE* pipe = _popen(programName, "rt");
     #elif defined(OSUnix)
-    FILE* pipe = popen(program, "r");
+    FILE* pipe = popen(programName, "r");
     #endif
 
-    //Todo: Pipe ist NULL
     if (!pipe)
-        return 0;
+    {
+        return CommandPipeCreationFailure;
+    }      
 
-    OSFileDelete(path);
+    OSFileDelete(fileName);
 	
     /* Read pipe until end of file, or an error occurs. */
     while (fgets(psBuffer, 256, pipe))
     {
-        if(UserCanModifyFile(clientID, path))
+        if(UserCanModifyFile(clientID, fileName))
         {
-	        const OSError returnError = OSFileForceWrite(path, psBuffer, WriteMode_AddToEnd);
-        	//Todo: OSError alle die da gelistet sind
-            if (returnError != OSError_NoError)
-                return -1;
+	        const OSError returnError = OSFileForceWrite(fileName, psBuffer, WriteMode_AddToEnd);
+
+            switch (returnError)
+            {
+                case OSError_NoError:
+                    return CommandSuccessful;
+
+                default:
+                    return CommandFileWriteFailure;
+            }        
         }
         else
-            return CommandErrorAccessLocked;
+        {
+            return CommandAccessLocked;
+        }           
     }
 
     /* Close pipe and print return value of pPipe. */
     if (feof(pipe))
-    {
-    	//Todo: infinty alle Programmfehlermeldugnen
+    { 
     #ifdef OSWindows
         int returnValue = _pclose(pipe);
     #elif defined(OSUnix)
         int returnValue = pclose(pipe);
     #endif
+
         if (returnValue != 0)
-            return -1;
-			
+        {
+            return CommandPipeClosingFailure;
+        }      
     }
     else
     {
-        //Todo: Pipe konnte nicht bis zum ende lesen
-        return -1;
+        return CommandPipeReadError;
     }
 
-    return CommandErrorSuccessful;
+    return CommandSuccessful;
 }
-
