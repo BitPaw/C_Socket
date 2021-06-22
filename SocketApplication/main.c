@@ -770,7 +770,6 @@ void OnRemoteClientConnect(int socketID)
     }
 }
 
-
 FileError FileLoadHTML(char* filePath, char** content)
 {
     FILE* file = fopen(filePath, "r");
@@ -787,14 +786,14 @@ FileError FileLoadHTML(char* filePath, char** content)
     fileLength = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    *content = calloc(fileLength + htmlResponseTag + 1, sizeof(char));
+    (*content) = calloc(fileLength + htmlResponselength + 1, sizeof(char));
 
-    if (!*content)
+    if (!(*content))
     {
         return 0; // calloc failed
     }
 
-    memcpy(*content, htmlResponseTag, htmlResponselength);
+    memcpy((*content), htmlResponseTag, htmlResponselength);
     fread(*content + htmlResponselength, 1, fileLength, file);
 
     fclose(file);

@@ -128,10 +128,10 @@ Command ParseCommand(char* command)
     if (memcmp("SUB;", command, 4) == 0)         
         return CommandFileChangeSubscribe;
 
-    if (memcmp("OPG;", command, 4) == 0)
+    if (memcmp("OP;", command, 3) == 0)
         return CommandOpenProgram;
 
-    if (memcmp("QUIT;", command, 5) == 0) 
+    if (memcmp("QUIT", command, 4) == 0) 
         return CommandQuit;
 
     return CommandInvalid;
