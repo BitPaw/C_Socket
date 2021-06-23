@@ -278,27 +278,19 @@ CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
     }      
 
     OSFileDelete(fileName);
+
+    if(!UserCanModifyFile(clientID, fileName))
+        return CommandAccessLocked;
 	
     /* Read pipe until end of file, or an error occurs. */
     while (fgets(psBuffer, 256, pipe))
     {
-        if(UserCanModifyFile(clientID, fileName))
-        {
-	        const OSError returnError = OSFileForceWrite(fileName, psBuffer, WriteMode_AddToEnd);
 
-            switch (returnError)
-            {
-                case OSError_NoError:
-                    return CommandSuccessful;
+        const OSError returnError = OSFileForceWrite(fileName, psBuffer, WriteMode_AddToEnd);
 
-                default:
-                    return CommandFileWriteFailure;
-            }        
-        }
-        else
-        {
-            return CommandAccessLocked;
-        }           
+		if(returnError != OSError_NoError)
+			return CommandFileWriteFailure;
+                 
     }
 
     /* Close pipe and print return value of pPipe. */

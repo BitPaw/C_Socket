@@ -1,9 +1,11 @@
 #include "Server.h"
 #include "Thread.h"
+#include "../ColorPrinter/ColorPrinter.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 void ServerInitialize(Server* server)
 {
@@ -110,21 +112,28 @@ Client* ServerGetClientViaID(Server* server, int socketID)
 
 void ServerPrint(Server* server)
 {
-    printf
+	
+    colorPrintf
     (
         "+--------------------+\n"
         "| Socket (Server)    |\n"
         "+--------------------+\n"
-        "| ID      : %8i |\n"
-        "| Mode    : %8s |\n"
-        "| Port    : %8i |\n"
-        "| State   : %8s |\n"
-        "| Clients : %8i |\n"
-        "+--------------------+\n",
+        "| ID      : &o%8i &r|\n"
+        "| Mode    : &o%8s &r|\n"
+        "| Port    : &o%8i &r|\n",         
         server->Socket.ID,
         server->Socket.IPMode == IPVersion4 ? "IPv4" : "IPv6",
-        server->Socket.Port,
-        SocketIsCurrentlyUsed(&server->Socket) ? "ONLINE" : "OFFLINE",
+        server->Socket.Port);
+	
+	if(SocketIsCurrentlyUsed(&server->Socket))
+        colorPrintf("| State   :   &kONLINE &r|\n");
+    else
+        colorPrintf("| State   :   &jOFFLINE &r|\n");
+	
+    colorPrintf
+    (
+        "| Clients : &o%8i &r|\n"
+        "+--------------------+\n",
         server->NumberOfConnectedClients
     );
 }

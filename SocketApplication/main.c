@@ -48,11 +48,8 @@ int main(int numberOfArguments, char* arguments[])
     unsigned short port = -1;
     char inputBuffer[1024];
 
-#ifdef OSWindows
-    printColors = 0;
-#elif defined(OSUnix)
     printColors = 1;
-#endif 
+ 
 
     //system("color 0B");
 
@@ -391,6 +388,15 @@ int main(int numberOfArguments, char* arguments[])
             {
                 char scanResult = scanf(ScanfInputTag, inputBuffer);
 
+                if(memcmp(inputBuffer, "HELP", 4 * sizeof(char)) == 0 ||
+                   memcmp(inputBuffer, "help", 4 * sizeof(char)) == 0 ||
+                   memcmp(inputBuffer, "Help", 4 * sizeof(char)) == 0)
+                {
+                    colorPrintf(HelpPage);
+                    break;
+                }
+
+            		
                 SocketError errorCode = SocketWrite(&_client.Socket, inputBuffer);
 
                 if (errorCode != SocketNoError)
@@ -618,7 +624,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
             
             AsyncLockLock(&_userInteractLock);
-            commandError = UserOpenProgram(socketID, commandToken.Value, filePathText);
+            commandError = UserOpenProgram(socketID, filePathText, commandToken.Value);
             AsyncLockRelease(&_userInteractLock);
 
             break;
@@ -693,7 +699,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             break;
 
         case CommandUnsupportedCommand:
-            messageToSend = "Invalid Command. Check your input.";
+            messageToSend = "Invalid Command. Check your input. [Maybe try: HELP]";
             break;
 
         case CommandNotSet:

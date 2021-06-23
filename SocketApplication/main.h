@@ -9,9 +9,9 @@ unsigned short DefaultPort = 5678u;
 const char TagNotSet[] = "NotSet";
 const char ConnectionSuccesful[] = "| &i[&li&i]&r Connection &ksuccessful&r!\n";
 
-const char InputSpecifyPort[] = "| &i[&1>&i]&r Specify Port : ";
+const char InputSpecifyPort[] = "| &i[&o>&i]&r Specify Port : ";
 
-const char InfoNoIPSelected[] = "| &i[&ii&i]&r No IP selected! Guessing localhost (127.0.0.1).\n";
+const char InfoNoIPSelected[] = "| &i[&oi&i]&r No IP selected! Guessing localhost (127.0.0.1).\n";
 
 const char ErrorInvalidModeInput[] = "| &i[&jx&i]&r Invalid Mode! Please select a valid option.\n";
 const char ErrorInvalidIPInput[] = "| &i[&jx&i]&r Invalid IP! Please check your input.\n";
@@ -53,33 +53,33 @@ const char MenuMode[] =
 "| &l0 &r: &lClient Mode&r                                         |\n"
 "| &l1 &r: &lServer Mode&r                                         |\n"
 "+---------------------------------------------------------+\n"
-"| &i[&1>&i]&r Operation mode : ";
+"| &i[&o>&i]&r Operation mode : ";
 
 const char ServerUnreachable[] =
-"| &i[&li&i]&r  It seems that the server is &junreachable&r\n"
+"| &i[&oi&i]&r  It seems that the server is &junreachable&r\n"
 "|         or even offline. Use another IP or try later.\n";
 
 const char BannerClientSelectIPHeader[] =
-"| &i[&1>&i]&r IP   : ";
+"| &i[&o>&i]&r IP   : ";
 
 const char InputUseDefaultPort[] =
-"| &i[&r?&r&i]&r Use default Port <&l%i&r>?\n";
+"| &i[&o?&r&i]&r Use default Port <&l%i&r>?\n";
 
 const char InputIPVersion[] =
-"| &i[&r?&i]&r Which IP Version shall be used?\n"
-"| &i[&1>&i]&r Select &l4 &ror &l6 &r: ";
+"| &i[&o?&i]&r Which IP Version shall be used?\n"
+"| &i[&o>&i]&r Select &l4 &ror &l6 &r: ";
 
 const char InputConnectionTryAgain[] =
-"| &i[&r?&i]&r Connection &jfailed.&r\n";
+"| &i[&o?&i]&r Connection &jfailed.&r\n";
 
 const char InputTryAgain[] =
 "|     Do you want to try again?\n";
 
 const char InputYesNo[] =
-"| &i[&1>&i] <&2y&i/&1n&i> : ";
+"| &i[&o>&i] <&2y&i/&1n&i> : ";
 
 const char InputServerStartTryAgain[] =
-"| &i[&r?&i]&r Server starting failed.\n";
+"| &i[&o?&i]&r Server starting failed.\n";
 
 const char ClientMessageRead[] = "| &i[&lServer&i]&r %s\n";
 const char ClientServerDisconnected[] = "| &i[&r!&i][&lServer&i]&r Server closed connection.\n";
@@ -87,6 +87,19 @@ const char ClientServerConnection[] = "| &i[&ri&i][&lServer&i]&r Connected succe
 
 const char ServerClientDisconnected[] = "| &i[&j-&i][&oClient:%i&i]&r Disconnected.\n";
 const char ServerClientConnection[] = "| &i[&k+&i][&oClient:%i&i]&r New client connected.\n";
+
+const char HelpPage[] =
+"++-- Help Page --------------------------------------------+\n"
+"| Commands:									\n"
+"|\t- GET;DirectoryName							\n"
+"|\t- PUT;DirectoryName;Content					\n"
+"|\t- DEL;DirectoryName							\n"
+"|\t- BEG;DirectoryName							\n"
+"|\t- SUB;DirectoryName							\n"
+"|\t- END;DirectoryName							\n"
+"|\t- OP;DirectoryName;SystemCall				\n"
+"|\t- QUIT										\n"
+"+---------------------------------------------------------+\n";
 
 #define ScanfInputTag " %50[^\n]"
 

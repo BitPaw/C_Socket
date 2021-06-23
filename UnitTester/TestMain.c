@@ -50,7 +50,7 @@ int main()
 
 	printColors = 1;
 
-	//printColorTable();
+	printColorTable();
 
     path_test(1);
 
