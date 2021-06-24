@@ -380,5 +380,4 @@ MigrationBackup/
 *.out
 *.app
 
-SocketApplication/Data/
-
+SocketApplication/Data/*
