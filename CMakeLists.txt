@@ -6,13 +6,41 @@ set(CMAKE_C_STANDARD 11)
 include_directories(SocketApplication)
 include_directories(SocketSystem)
 include_directories(SocketFileManager)
+include_directories(ColorPrinter)
+include_directories(List)
 
 add_executable(BS1_Praktikum
         SocketApplication/main.h
         SocketApplication/main.c
 
+        SocketApplication/ApplicationState.c
+        SocketApplication/ApplicationState.h
+        SocketApplication/Command.h
+        SocketApplication/CommandError.h
         SocketApplication/CommandToken.h
         SocketApplication/CommandToken.c
+        SocketApplication/CommunicationRole.h
+        SocketApplication/FileError.h
+        SocketApplication/resource.h
+
+        SocketApplication/UserSytem.h
+        SocketApplication/UserSytem.c
+
+        SocketApplication/Command.h
+
+        SocketApplication/SocketApplicationData.c
+        SocketApplication/SocketApplicationData.h
+
+        SocketFileManager/OSError.c
+        SocketFileManager/OSError.h
+        SocketFileManager/FileManager.h
+        SocketFileManager/FileManager.c
+        SocketFileManager/PathList.h
+        SocketFileManager/PathList.c
+        SocketFileManager/Path.h
+        SocketFileManager/Path.c
+
+
 
         SocketSystem/Client.h
         SocketSystem/Client.c
@@ -34,12 +62,7 @@ add_executable(BS1_Praktikum
 
         SocketApplication/UserSytem.h
         SocketApplication/UserSytem.c
-        SocketFileManager/FileManager.h
-        SocketFileManager/FileManager.c
-        SocketFileManager/PathList.h
-        SocketFileManager/PathList.c
-        SocketFileManager/Path.h
-        SocketFileManager/Path.c
+
 
         List/List.h
         List/List.c

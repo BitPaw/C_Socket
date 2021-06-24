@@ -1,4 +1,5 @@
 #include "SocketApplicationData.h"
+#include <string.h>
 
 void SocketApplicationDataInitialize(SocketApplicationData* socketApplicationData)
 {
