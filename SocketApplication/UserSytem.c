@@ -297,8 +297,14 @@ CommandError UserDeleteFile(int clientID, char* fileName)
 
     if (canModify)
     {
-        OSError fileError = OSFileDelete(fileName);
-
+	    OSError fileError = OSFileDelete(fileName);
+        if (fileError == OSError_DirectoryOrFileNotFound)
+        {
+            fileName[strlen(fileName)-4] = '\0';
+	        fileError = OSDirectoryForceDelete(fileName);
+        }
+            
+    	
         switch (fileError)
         {
             case OSError_NoError:
@@ -335,7 +341,7 @@ CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
     #ifdef OSWindows
     FILE* pipe = _popen(programWithErrorPipe, "r");
     #elif defined(OSUnix)
-    FILE* pipe = popen(programWithErrorPipe, "r");
+    FILE* pipe = popen(programmWithErrorPipe, "r");
     #endif
 
     free(programWithErrorPipe);
