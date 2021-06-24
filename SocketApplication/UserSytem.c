@@ -10,6 +10,11 @@
 
 char UserCanModifyFile(int clientID, char* fileName)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
     char lockFilePath[255];
     char canModify = 0;
     char doesFileExists = 0;
@@ -41,6 +46,11 @@ char UserCanModifyFile(int clientID, char* fileName)
 
 CommandError UserSubscribeToFile(int clientID, char* fileName)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
     ChangeFileExtension(fileName, FileExtensionSubscribed);
 
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
@@ -79,6 +89,11 @@ void UserUnlockAllFiles(int clientID)
 
 void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray, int* amountOfElements)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
     char* fileContent = 0;
     char seperator = '\n';
@@ -141,6 +156,11 @@ void ChangeFileExtension(char* fileName, char* fileExtension)
 
 CommandError UserUnlockFile(int clientID, char* fileName)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
     char canModify = UserCanModifyFile(clientID, fileName);
 
     ChangeFileExtension(fileName, FileExtensionLocked);
@@ -159,6 +179,11 @@ CommandError UserUnlockFile(int clientID, char* fileName)
 
 CommandError UserLockFile(int clientID, char* fileName)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
     char canModify = 0;
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
 
@@ -189,6 +214,11 @@ CommandError UserLockFile(int clientID, char* fileName)
 
 CommandError UserReadFromFile(int clientID, char* fileName, char** content)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
     char canModify = UserCanModifyFile(clientID, fileName);
 
     if (canModify)
@@ -215,6 +245,16 @@ CommandError UserReadFromFile(int clientID, char* fileName, char** content)
 
 CommandError UserWriteInFile(int clientID, char* fileName, char* content)
 {
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
+
+    if (content == 0)
+    {
+        return CommandNoFileData;
+    }
+
     char canModify = UserCanModifyFile(clientID, fileName);
 
     if (canModify)
@@ -306,7 +346,7 @@ CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
         int returnValue = pclose(pipe);
     #endif
 
-        if (returnValue != 0)
+        if (returnValue != 0 && returnValue != 1)
         {
             return CommandPipeClosingFailure;
         }      

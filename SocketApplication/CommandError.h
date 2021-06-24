@@ -16,6 +16,9 @@ typedef enum CommandError_
     CommandPipeCreationFailure,
     CommandFileWriteFailure,
 
+    CommandNoFileData,
+    CommandNoFilePath,
+
     CommandPipeClosingFailure,
     CommandPipeReadError,
 

@@ -46,7 +46,7 @@ int main(int numberOfArguments, char* arguments[])
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    printColors = 0;
+    printColors = 1;
 
     //system("color 0B");
 
@@ -494,6 +494,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
     CommandToken commandToken; 
     char messageBuffer[2048];
     char* messageToSend = 0;
+    char callSubscibers = 0;
 
     char filePathText[255];
     memset(filePathText, 0, 255);
@@ -531,26 +532,7 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             // Send change to all subscribers
             if(commandError == CommandSuccessful)
             {
-                int amoutntOfSubscribers = -1;
-                int* subscriberSocketIDs = 0;
-
-                UserGetAllSubscribers(socketID, filePathText, &subscriberSocketIDs, &amoutntOfSubscribers);
-
-                for (unsigned int i = 0; i < amoutntOfSubscribers; i++)
-                {
-                    int subscriberSocketID = subscriberSocketIDs[0];
-
-                    sprintf
-                    (
-                        messageBuffer,
-                        "[Client:%i] Changed file at %s.\nChange:%s\n",
-                        socketID,
-                        filePathText,
-                        commandToken.Value
-                    );
-
-                    ServerSendToClient(&_server, subscriberSocketID, messageBuffer);
-                }
+                callSubscibers = 1;               
             }       
 
             break;
@@ -622,6 +604,11 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
             commandError = UserOpenProgram(socketID, filePathText, commandToken.Value);
             AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
+            if (commandError == CommandSuccessful)
+            {
+                callSubscibers = 1;
+            }
+
             break;
         }
         case CommandQuit:
@@ -674,8 +661,50 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         }
     }
 
+    if(callSubscibers)
+    {
+        int amoutntOfSubscribers = -1;
+        int* subscriberSocketIDs = 0;
+
+        UserGetAllSubscribers(socketID, filePathText, &subscriberSocketIDs, &amoutntOfSubscribers);
+
+        for (unsigned int i = 0; i < amoutntOfSubscribers; i++)
+        {
+            int subscriberSocketID = subscriberSocketIDs[i];
+
+            sprintf
+            (
+                messageBuffer,
+                "[Client:%i] Changed file at %s.\nChange:%s\n",
+                socketID,
+                filePathText,
+                commandToken.Value
+            );
+
+            ServerSendToClient(&_server, subscriberSocketID, messageBuffer);
+        }
+    }
+
+
     switch (commandError)
     {
+        case CommandPipeClosingFailure:
+        case CommandPipeReadError:
+        {
+            messageToSend = "Error: Internal pipe failure.";
+            break;
+        }
+
+        case CommandNoFileData:
+        {
+            messageToSend = "Error: You haven't given any data to write.";
+            break;
+        }
+        case CommandNoFilePath:
+        {
+            messageToSend = "Error: You need to specify the file you want to write to.";
+            break;
+        }
         case CommandSuccessfulSilent:
         case CommandSuccessful:
             messageToSend = "OK: Command sucessful.";

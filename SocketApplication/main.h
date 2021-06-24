@@ -91,17 +91,21 @@ const char ServerClientDisconnected[] = "| &i[&j-&i][&oClient:%i&i]&r Disconnect
 const char ServerClientConnection[] = "| &i[&k+&i][&oClient:%i&i]&r New client connected.\n";
 
 const char HelpPage[] =
-"++-- Help Page --------------------------------------------+\n"
-"| Commands:									\n"
-"|\t- GET DirectoryName							\n"
-"|\t- PUT DirectoryName Content					\n"
-"|\t- DEL DirectoryName							\n"
-"|\t- BEG DirectoryName							\n"
-"|\t- SUB DirectoryName							\n"
-"|\t- END DirectoryName							\n"
-"|\t- OP DirectoryName SystemCall				\n"
-"|\t- QUIT										\n"
-"+---------------------------------------------------------+\n";
+"++----------------------------------------------------------+\n"
+"| Help Page - Commands                                     |\n"
+"+----------------------------------------------------------+\n"
+"| Note: 1) Commands tags have to be in caps.               |\n"
+"|       2) The filename is without extension.              |\n"
+"+--------------------------------+-------------------------+\n"
+"| - GET <FileName>               |                  (Read) |\n"
+"| - PUT <FileName> <FileContent> |                 (Write) |\n"
+"| - DEL <FileName>               |                (Delete) |\n"
+"| - BEG <FileName>               |  (Lock file for others) |\n"
+"| - SUB <FileName>               |      (Notify on change) |\n"
+"| - END <FileName>               |           (Unlock file) |\n"
+"| - OP  <FileName> <ProgrammName>|(Call external programm) |\n"
+"| - QUIT                         |      (Quit from server) |\n"
+"+----------------------------------------------------------+\n";
 
 #define ScanfInputTag " %50[^\n]"
 
