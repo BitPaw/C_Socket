@@ -381,3 +381,4 @@ MigrationBackup/
 *.app
 
 SocketApplication/Data/*
+cmake-build-debug/*
