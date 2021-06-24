@@ -689,9 +689,13 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
     switch (commandError)
     {
         case CommandPipeClosingFailure:
-        case CommandPipeReadError:
         {
-            messageToSend = "Error: Internal pipe failure.";
+            messageToSend = "Error: Pipe closing failed.";
+            break;
+        }
+        case CommandPipeProgramFailed:
+        {
+            messageToSend = "Error: Program failed.";
             break;
         }
 

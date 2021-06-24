@@ -310,50 +310,56 @@ CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
 {
     char psBuffer[256];
 
+   
+	
+    const unsigned int programNameLength = strlen(programName);
+    const unsigned int fileNameLength = strlen(fileName);
+    const unsigned int redirectLength = strlen(" >");
+    const unsigned int redirect2Length = strlen(" 2>&1");
+    char* programWithErrorPipe = calloc(programNameLength + fileNameLength + redirectLength + redirect2Length + 1, sizeof(char));
+    memcpy(programWithErrorPipe, programName, sizeof(char) * programNameLength);
+    memcpy(programWithErrorPipe + programNameLength, " > ", sizeof(char) * redirectLength);
+    memcpy(programWithErrorPipe + programNameLength + redirectLength , fileName, sizeof(char) * fileNameLength);
+    memcpy(programWithErrorPipe + programNameLength + redirectLength + fileNameLength, " 2>&1", sizeof(char) * redirect2Length);
+
+	
+	OSFileDelete(fileName);
+	
+	
     #ifdef OSWindows
-    FILE* pipe = _popen(programName, "rt");
+    FILE* pipe = _popen(programWithErrorPipe, "r");
     #elif defined(OSUnix)
-    FILE* pipe = popen(programName, "r");
+    FILE* pipe = popen(programmWithErrorPipe, "r");
     #endif
 
+    free(programWithErrorPipe);
+	
     if (!pipe)
     {
         return CommandPipeCreationFailure;
     }      
 
-    OSFileDelete(fileName);
+    
 
     if(!UserCanModifyFile(clientID, fileName))
         return CommandAccessLocked;
+
 	
-    /* Read pipe until end of file, or an error occurs. */
-    while (fgets(psBuffer, 256, pipe))
-    {
-
-        const OSError returnError = OSFileForceWrite(fileName, psBuffer, WriteMode_AddToEnd);
-
-		if(returnError != OSError_NoError)
-			return CommandFileWriteFailure;
-                 
-    }
-
     /* Close pipe and print return value of pPipe. */
-    if (feof(pipe))
-    { 
+
     #ifdef OSWindows
         int returnValue = _pclose(pipe);
     #elif defined(OSUnix)
         int returnValue = pclose(pipe);
     #endif
 
-        if (returnValue != 0 && returnValue != 1)
-        {
-            return CommandPipeClosingFailure;
-        }      
-    }
-    else
+    if (returnValue == -1)
     {
-        return CommandPipeReadError;
+        return CommandPipeClosingFailure;
+    }      
+    if (returnValue != 0)
+    {
+        return CommandPipeProgramFailed;
     }
 
     return CommandSuccessful;

@@ -20,7 +20,7 @@ typedef enum CommandError_
     CommandNoFilePath,
 
     CommandPipeClosingFailure,
-    CommandPipeReadError,
+    CommandPipeProgramFailed,
 
     CommandUnsupportedCommand
 }CommandError;
