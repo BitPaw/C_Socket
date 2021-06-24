@@ -8,4 +8,6 @@ void SocketApplicationDataInitialize(SocketApplicationData* socketApplicationDat
     socketApplicationData->Port = -1;
 
     socketApplicationData->State = StateNeutralIDLE;
+
+    memset(socketApplicationData->InputBuffer, 0, InputBufferSize);
 }

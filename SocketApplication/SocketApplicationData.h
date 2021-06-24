@@ -7,6 +7,8 @@
 #include "../SocketSystem/IPVersion.h"
 #include "../SocketSystem/AsyncLock.h"
 
+#define InputBufferSize 2048
+
 typedef struct SocketApplicationData_
 {
     CommunicationRole CommunicationMode;
@@ -15,7 +17,7 @@ typedef struct SocketApplicationData_
 
     char* IP;
     unsigned short Port;
-    char InputBuffer[1024];
+    char InputBuffer[InputBufferSize];
 
     AsyncLock UserInteractLock;
 

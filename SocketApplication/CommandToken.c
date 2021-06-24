@@ -52,17 +52,12 @@ unsigned char CommandTokenParse(CommandToken* commandToken, char* message)
 
     memcpy(dataString, message, stringLength * sizeof(char));
 
-    for (; dataString[length] != '\0' ; length++)
+    for (; dataString[length] != '\0' && seperatorCounter < 2; length++)
     {
         char isSeperator = dataString[length] == seperator;
 
         if (isSeperator)
         {
-            if (seperatorCounter == 2)
-            {
-                return 1;
-            }
-
             seperatorIndex[seperatorCounter++] = length;
             dataString[length] = '\0';
         }

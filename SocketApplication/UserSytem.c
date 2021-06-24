@@ -240,6 +240,7 @@ CommandError UserDeleteFile(int clientID, char* fileName)
     char lockFilePath[255];
     char canModify = 0;
 
+    memset(lockFilePath, 0, 255);
     memcpy(lockFilePath, fileName, strlen(fileName));
 
     ChangeFileExtension(lockFilePath, FileExtensionLocked);
