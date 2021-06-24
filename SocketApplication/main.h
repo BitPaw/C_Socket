@@ -93,13 +93,13 @@ const char ServerClientConnection[] = "| &i[&k+&i][&oClient:%i&i]&r New client c
 const char HelpPage[] =
 "++-- Help Page --------------------------------------------+\n"
 "| Commands:									\n"
-"|\t- GET;DirectoryName							\n"
-"|\t- PUT;DirectoryName;Content					\n"
-"|\t- DEL;DirectoryName							\n"
-"|\t- BEG;DirectoryName							\n"
-"|\t- SUB;DirectoryName							\n"
-"|\t- END;DirectoryName							\n"
-"|\t- OP;DirectoryName;SystemCall				\n"
+"|\t- GET DirectoryName							\n"
+"|\t- PUT DirectoryName Content					\n"
+"|\t- DEL DirectoryName							\n"
+"|\t- BEG DirectoryName							\n"
+"|\t- SUB DirectoryName							\n"
+"|\t- END DirectoryName							\n"
+"|\t- OP DirectoryName SystemCall				\n"
 "|\t- QUIT										\n"
 "+---------------------------------------------------------+\n";
 
