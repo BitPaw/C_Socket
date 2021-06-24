@@ -52,11 +52,8 @@ int main(int numberOfArguments, char* arguments[])
 
     colorPrintf(ASCIIArtLogo);     
 
-    /* 
-        Parse
-        
-    */
 
+    // Parse programm parameters
     switch (numberOfArguments)
     {
         case 1:
@@ -668,23 +665,31 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
         UserGetAllSubscribers(socketID, filePathText, &subscriberSocketIDs, &amoutntOfSubscribers);
 
-        for (unsigned int i = 0; i < amoutntOfSubscribers; i++)
+        if (amoutntOfSubscribers > 0)
         {
-            int subscriberSocketID = subscriberSocketIDs[i];
+            char* generatedFile = 0;
+            OSError fileError = OSFileRead(filePathText, &generatedFile);
 
-            sprintf
-            (
-                messageBuffer,
-                "[Client:%i] Changed file at %s.\nChange:%s\n",
-                socketID,
-                filePathText,
-                commandToken.Value
-            );
+            for (unsigned int i = 0; i < amoutntOfSubscribers; i++)
+            {
+                int subscriberSocketID = subscriberSocketIDs[i];
 
-            ServerSendToClient(&_server, subscriberSocketID, messageBuffer);
-        }
+                sprintf
+                (
+                    messageBuffer,
+                    "| [Client:%i] Changed file at <%s>.\n"
+                    "|             Changed content : %s\n",
+                    socketID,
+                    filePathText,
+                    generatedFile
+                );
+
+                ServerSendToClient(&_server, subscriberSocketID, generatedFile);
+            }
+
+            free(generatedFile);
+        }       
     }
-
 
     switch (commandError)
     {

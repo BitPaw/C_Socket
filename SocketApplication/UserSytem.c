@@ -93,7 +93,7 @@ void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray,
     {
         return CommandNoFilePath;
     }
-
+    char dataBuffer[255];
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
     char* fileContent = 0;
     char seperator = '\n';
@@ -103,11 +103,14 @@ void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray,
     (*amountOfElements) = 0;
     (*targetArray) = 0;
 
-    ChangeFileExtension(fileName, FileExtensionSubscribed);
+    memset(dataBuffer, 0, 255);
+    memcpy(dataBuffer, fileName, strlen(fileName) * sizeof(char));
+
+    ChangeFileExtension(dataBuffer, FileExtensionSubscribed);
 
     if (doesFileExist)
     {
-        OSError fileError = OSFileRead(fileName, &fileContent);
+        OSError fileError = OSFileRead(dataBuffer, &fileContent);
 
         if (fileError != OSError_NoError)
         {
@@ -161,9 +164,13 @@ CommandError UserUnlockFile(int clientID, char* fileName)
         return CommandNoFilePath;
     }
 
+    char dataBuffer[255];
     char canModify = UserCanModifyFile(clientID, fileName);
 
-    ChangeFileExtension(fileName, FileExtensionLocked);
+    memset(dataBuffer, 0, 255);
+    memcpy(dataBuffer, fileName, strlen(fileName) * sizeof(char));
+
+    ChangeFileExtension(dataBuffer, FileExtensionLocked);
 
     if (canModify)
     {
@@ -186,6 +193,7 @@ CommandError UserLockFile(int clientID, char* fileName)
 
     char canModify = 0;
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
+    char dataBuffer[255];
 
     if (!doesFileExist)
     {
@@ -194,15 +202,18 @@ CommandError UserLockFile(int clientID, char* fileName)
 
     canModify = UserCanModifyFile(clientID, fileName);
 
-    ChangeFileExtension(fileName, FileExtensionLocked);
+    memset(dataBuffer, 0, 255);
+    memcpy(dataBuffer, fileName, strlen(fileName) * sizeof(char));
+
+    ChangeFileExtension(dataBuffer, FileExtensionLocked);
 
     if (canModify)
     {
-        char dataBuffer[256];
+        char clientIDBuffer[256];
 
-        sprintf(dataBuffer, "%i", clientID);
+        sprintf(clientIDBuffer, "%i", clientID);
 
-        OSError fileError = OSFileForceWrite(fileName, dataBuffer, WriteMode_Overwrite);
+        OSError fileError = OSFileForceWrite(dataBuffer, clientIDBuffer, WriteMode_Overwrite);
 
         return CommandSuccessful;
     }
@@ -277,15 +288,12 @@ CommandError UserWriteInFile(int clientID, char* fileName, char* content)
 
 CommandError UserDeleteFile(int clientID, char* fileName)
 {
-    char lockFilePath[255];
-    char canModify = 0;
+    if (fileName == 0)
+    {
+        return CommandNoFilePath;
+    }
 
-    memset(lockFilePath, 0, 255);
-    memcpy(lockFilePath, fileName, strlen(fileName));
-
-    ChangeFileExtension(lockFilePath, FileExtensionLocked);
-
-    canModify = UserCanModifyFile(clientID, lockFilePath);
+    char canModify = UserCanModifyFile(clientID, fileName);
 
     if (canModify)
     {
@@ -308,9 +316,7 @@ CommandError UserDeleteFile(int clientID, char* fileName)
 
 CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
 {
-    char psBuffer[256];
-
-   
+    char psBuffer[256];   
 	
     const unsigned int programNameLength = strlen(programName);
     const unsigned int fileNameLength = strlen(fileName);
