@@ -14,7 +14,9 @@
 #include <netdb.h>
 #elif defined(OSWindows)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <WinSock2.h>
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <windows.h>
 #include <WS2tcpip.h>
 #endif
 

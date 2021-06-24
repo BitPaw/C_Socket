@@ -23,7 +23,7 @@ void CommandTokenClear(CommandToken* commandToken)
 unsigned char CommandTokenParse(CommandToken* commandToken, char* message)
 {
     int length = 0;
-    const char seperator = ';';
+    const char seperator = ' ';
     int seperatorCounter = 0;
     int seperatorIndex[2] = {-1, -1};
     int stringLength = strnlen(message, 1024);
@@ -110,25 +110,25 @@ Command ParseCommand(char* command)
     if (memcmp("GET /", command, 5) == 0)
         return CommandHTTPRequest;
 
-    if (memcmp("GET;", command, 4) == 0)
+    if (memcmp("GET ", command, 4) == 0)
         return CommandFileDataGet;
 
-    if (memcmp("PUT;", command, 4) == 0) 
+    if (memcmp("PUT ", command, 4) == 0) 
         return CommandFileDataPut;
 
-    if (memcmp("DEL;", command, 4) == 0)
+    if (memcmp("DEL ", command, 4) == 0)
         return CommandFileDelete;
 
-    if (memcmp("BEG;", command, 4) == 0)
+    if (memcmp("BEG ", command, 4) == 0)
         return CommandFileLock;
 
-    if (memcmp("END;", command, 4) == 0)
+    if (memcmp("END ", command, 4) == 0)
         return CommandFileUnlock;
 
-    if (memcmp("SUB;", command, 4) == 0)         
+    if (memcmp("SUB ", command, 4) == 0)         
         return CommandFileChangeSubscribe;
 
-    if (memcmp("OP;", command, 3) == 0)
+    if (memcmp("OP ", command, 3) == 0)
         return CommandOpenProgram;
 
     if (memcmp("QUIT", command, 4) == 0) 

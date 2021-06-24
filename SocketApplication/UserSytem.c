@@ -1,8 +1,11 @@
 #include "UserSytem.h"
-#include "../SocketFileManager/FileManager.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+
+#include "../SocketFileManager/FileManager.h"
 
 
 char UserCanModifyFile(int clientID, char* fileName)

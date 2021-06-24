@@ -147,8 +147,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ApplicationState.c" />
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="SocketApplicationData.c" />
     <ClCompile Include="UserSytem.c" />
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +162,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="CommandToken.h" />
+    <ClInclude Include="SocketApplicationData.h" />
     <ClInclude Include="UserSytem.h" />
   </ItemGroup>
   <ItemGroup>

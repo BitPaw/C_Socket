@@ -1,9 +1,11 @@
-#include "ApplicationState.h"
-#include "../SocketSystem/Server.h"
-#include "../SocketSystem/Client.h"
-#include "../ColorPrinter/ColorPrinter.h"
-#include "../SocketSystem/AsyncLock.h"
+#ifndef MainInclude
+#define MainInclude
+
 #include "FileError.h"
+#include "../SocketSystem/Client.h"
+#include "../SocketSystem/Server.h"
+#include "../SocketSystem/Thread.h"
+#include "SocketApplicationData.h"
 
 unsigned short DefaultPort = 5678u;
 const char TagNotSet[] = "NotSet";
@@ -105,12 +107,10 @@ const char HelpPage[] =
 
 // system("@cls||clear");
 
+SocketApplicationData _socketApplicationData;
 static Server _server;
 static Client _client;
-
-static ApplicationState _currentApplicationState;
-
-AsyncLock _userInteractLock;
+static Thread _clientThread;
 
 int main(int numberOfArguments, char* arguments[]);
 static void OnRemoteServerMessageRecieved(int socketID, char* message);
@@ -120,3 +120,6 @@ static void OnRemoteClientDisconnect(int socketID);
 static void OnRemoteServerConnect(int socketID);
 static void OnRemoteClientConnect(int socketID);
 static FileError FileLoadHTML(char* filePath, char** content);
+static void ServerPrintState(Server* server);
+
+#endif

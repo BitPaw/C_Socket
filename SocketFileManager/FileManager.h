@@ -7,15 +7,14 @@
 #define OSUnix
 #endif
 
+#ifndef FileManagerInclude
+#define FileManagerInclude
 
 #include <wchar.h>
 
 #include "OSError.h"
 #include "Path.h"
 #include "../List/List.h"
-
-#ifndef FileManagerInclude
-#define FileManagerInclude
 
 #define WriteMode_Overwrite 0
 #define WriteMode_AddToEnd 1

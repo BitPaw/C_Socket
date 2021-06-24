@@ -3,21 +3,19 @@
 #include <stdlib.h>
 
 #include "main.h"
-#include "FileError.h"
 #include "CommandToken.h"
-#include "CommunicationRole.h"
-#include "ApplicationState.h"
 #include "CommandError.h"
 #include "UserSytem.h"
+
 #include "../ColorPrinter/ColorPrinter.h"
 #include "../SocketSystem/OSDefine.h"
 #include "../SocketFileManager/FileManager.h"
 #include "../List/List.h"
-#include "../SocketSystem/AsyncLock.h"
+#include "../ColorPrinter/ColorPrinter.h"
 
 void StateChange(ApplicationState newState)
 {
-    ApplicationState oldState = _currentApplicationState;
+    ApplicationState oldState = _socketApplicationData.State;
     char hasChanged = newState != oldState;
 
     if (!hasChanged)
@@ -25,7 +23,7 @@ void StateChange(ApplicationState newState)
         return;
     }
 
-    _currentApplicationState = newState;
+    _socketApplicationData.State = newState;
 
     colorPrintf(BannerGeneral, ApplicationStateToString(newState));
 
@@ -41,26 +39,23 @@ void StateChange(ApplicationState newState)
 
 int main(int numberOfArguments, char* arguments[])
 {
-    CommunicationRole mode = ModeInvalid;
-    IPVersion ipVersion = -1;
-    Thread thread;
-    char* ip = 0;    
-    unsigned short port = -1;
-    char inputBuffer[1024];
+    SocketApplicationDataInitialize(&_socketApplicationData);  
 
-    printColors = 1;
- 
-
-    //system("color 0B");
-
-    _currentApplicationState = StateNeutralIDLE;
-
-    AsyncLockCreate(&_userInteractLock);
+    AsyncLockCreate(&_socketApplicationData.UserInteractLock);
 
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    colorPrintf(ASCIIArtLogo);  
+    printColors = 1;
+
+    //system("color 0B");
+
+    colorPrintf(ASCIIArtLogo);     
+
+    /* 
+        Parse
+        
+    */
 
     switch (numberOfArguments)
     {
@@ -69,14 +64,13 @@ int main(int numberOfArguments, char* arguments[])
             StateChange(StateSelectingDefaultPort);
             break;
         }
-
         case 4:
         {
             char* portText = arguments[3];
 
-            port = atoi(portText);
+            _socketApplicationData.Port = atoi(portText);
 
-            if (port == 0)
+            if (_socketApplicationData.Port == 0)
             {
                 colorPrintf("[Error] Invalid port");
                 return -1;
@@ -84,7 +78,6 @@ int main(int numberOfArguments, char* arguments[])
 
             // no break, fall thoutghhh
         }
-
         case 3:
         {
             char* operatingMode = arguments[1];
@@ -103,14 +96,15 @@ int main(int numberOfArguments, char* arguments[])
 
             switch (commandLetter)
             {
+                // Client
                 case 'C':
                 case 'c':
                 {
-                    ip = ipOption;
-                    ipVersion = AnalyseIPVersion(ipOption);
                     char isValidIP = IsValidIP(ipOption);
 
-                    mode = ModeClient;
+                    _socketApplicationData.CommunicationMode = ModeClient;
+                    _socketApplicationData.IP = ipOption;
+                    _socketApplicationData.IPMode = AnalyseIPVersion(ipOption); 
 
                     if (!isValidIP)
                     {
@@ -123,21 +117,22 @@ int main(int numberOfArguments, char* arguments[])
                     break;
                 }
 
+                // Server
                 case 'S':
                 case 's':
                 {
-                    mode = ModeServer;
+                    _socketApplicationData.CommunicationMode = ModeServer;
 
                     switch (ipModeChar)
                     {
-                        case '4':
+                        case '4': // IPv4
                         {
-                            ipVersion = IPVersion4;
+                            _socketApplicationData.IPMode = IPVersion4;
                             break;
                         }
-                        case '6':
+                        case '6': // IPv6
                         {
-                            ipVersion = IPVersion6;
+                            _socketApplicationData.IPMode = IPVersion6;
                             break;
                         }
                         default:
@@ -169,32 +164,32 @@ int main(int numberOfArguments, char* arguments[])
 
     while (1)
     {
-        switch (_currentApplicationState)
+        switch (_socketApplicationData.State)
         {
             case StateSelectMode:
             {
                 colorPrintf(MenuMode); 
 
-                int result = scanf(ScanfInputTag, inputBuffer);
-                char inputCharacter = inputBuffer[0];
+                int result = scanf(ScanfInputTag, _socketApplicationData.InputBuffer);
+                char inputCharacter = _socketApplicationData.InputBuffer[0];
 
                 switch (inputCharacter)
                 {
                     case '0':
                     {
-                        mode = ModeClient;
+                        _socketApplicationData.CommunicationMode = ModeClient;
                         StateChange(StateClientSelectingIP);
                         break;
                     }
                     case '1':
                     {
-                        mode = ModeServer;
+                        _socketApplicationData.CommunicationMode = ModeServer;
                         StateChange(StateServerSelectingIPVersion);
                         break;
                     }
                     default:
                     {
-                        mode = ModeInvalid;
+                        _socketApplicationData.CommunicationMode = ModeInvalid;
                         colorPrintf(ErrorInvalidModeInput);
                         break;
                     }
@@ -215,23 +210,23 @@ int main(int numberOfArguments, char* arguments[])
                 {
                     case '4':
                     {
-                        ipVersion = IPVersion4;
+                        _socketApplicationData.IPMode = IPVersion4;
                         break;
                     }
                     case '6':
                     {
-                        ipVersion = IPVersion6;
+                        _socketApplicationData.IPMode = IPVersion6;
                         break;
                     }
                     default:
                     {
-                        ipVersion = IPVersionInvalid;
+                        _socketApplicationData.IPMode = IPVersionInvalid;
                         colorPrintf(ErrorInvalidIPVersion);
                         break;
                     }
                 }
 
-                if (ipVersion != IPVersionInvalid)
+                if (_socketApplicationData.IPMode != IPVersionInvalid)
                 {
                     StateChange(StateServerStarting);
                 }
@@ -243,12 +238,12 @@ int main(int numberOfArguments, char* arguments[])
             {
                 colorPrintf(InputSpecifyPort);
 
-                int result = scanf(ScanfInputTag, inputBuffer);
-                int convertedNumber = atoi(inputBuffer);              
+                int result = scanf(ScanfInputTag, _socketApplicationData.InputBuffer);
+                int convertedNumber = atoi(_socketApplicationData.InputBuffer);
 
                 if (0 < convertedNumber && convertedNumber < 65535)
                 {
-                    port = convertedNumber;
+                    _socketApplicationData.Port = convertedNumber;
                     StateChange(StateSelectMode);                    
                 }  
                 else
@@ -266,15 +261,15 @@ int main(int numberOfArguments, char* arguments[])
                 colorPrintf(InputUseDefaultPort, DefaultPort);
                 colorPrintf(InputYesNo);
 
-                result = scanf(ScanfInputTag, inputBuffer);
-                useDefaultPort = inputBuffer[0];
+                result = scanf(ScanfInputTag, _socketApplicationData.InputBuffer);
+                useDefaultPort = _socketApplicationData.InputBuffer[0];
 
                 switch (useDefaultPort)
                 {
                     case 'Y':
                     case 'y':
                     {
-                        port = DefaultPort;
+                        _socketApplicationData.Port = DefaultPort;
                         StateChange(StateSelectMode);
                         break;
                     }
@@ -297,13 +292,13 @@ int main(int numberOfArguments, char* arguments[])
             {
                 colorPrintf(BannerClientSelectIPHeader);
 
-                int scanResult = scanf(ScanfInputTag, &inputBuffer);
+                int scanResult = scanf(ScanfInputTag, _socketApplicationData.InputBuffer);
 
-                char hasUserEnteredIP = memcmp(TagNotSet, &inputBuffer, 6) != 0;
+                char hasUserEnteredIP = memcmp(TagNotSet, _socketApplicationData.InputBuffer, 6) != 0;
 
                 if (hasUserEnteredIP)
                 {
-                    char result = IsValidIP(inputBuffer);
+                    char result = IsValidIP(_socketApplicationData.InputBuffer);
 
                     if (result)
                     {
@@ -317,7 +312,7 @@ int main(int numberOfArguments, char* arguments[])
                 else
                 {
                     colorPrintf(InfoNoIPSelected);
-                    memcpy(inputBuffer, "127.0.0.1", 10);
+                    memcpy(_socketApplicationData.InputBuffer, "127.0.0.1", 10);
                     StateChange(StateClientConnecting);
                 }                
 
@@ -325,7 +320,7 @@ int main(int numberOfArguments, char* arguments[])
             }
             case StateClientConnecting:
             {            
-                char connectionSuccesful = ClientConnect(&_client, &inputBuffer[0], port);
+                char connectionSuccesful = ClientConnect(&_client, _socketApplicationData.InputBuffer, _socketApplicationData.Port);
 
                 if (connectionSuccesful)
                 {
@@ -337,7 +332,7 @@ int main(int numberOfArguments, char* arguments[])
 
                     StateChange(StateClientConnected);
 
-                    ThreadCreate(&thread, SocketReadAsync, &_client.Socket);           
+                    ThreadCreate(&_clientThread, SocketReadAsync, &_client.Socket);
                 }
                 else
                 {
@@ -386,18 +381,18 @@ int main(int numberOfArguments, char* arguments[])
 
             case StateClientConnected:
             {
-                char scanResult = scanf(ScanfInputTag, inputBuffer);
+                char scanResult = scanf(ScanfInputTag, _socketApplicationData.InputBuffer);
 
-                if(memcmp(inputBuffer, "HELP", 4 * sizeof(char)) == 0 ||
-                   memcmp(inputBuffer, "help", 4 * sizeof(char)) == 0 ||
-                   memcmp(inputBuffer, "Help", 4 * sizeof(char)) == 0)
+                if(memcmp(_socketApplicationData.InputBuffer, "HELP", 4 * sizeof(char)) == 0 ||
+                   memcmp(_socketApplicationData.InputBuffer, "help", 4 * sizeof(char)) == 0 ||
+                   memcmp(_socketApplicationData.InputBuffer, "Help", 4 * sizeof(char)) == 0)
                 {
                     colorPrintf(HelpPage);
                     break;
                 }
 
             		
-                SocketError errorCode = SocketWrite(&_client.Socket, inputBuffer);
+                SocketError errorCode = SocketWrite(&_client.Socket, _socketApplicationData.InputBuffer);
 
                 if (errorCode != SocketNoError)
                 {
@@ -412,8 +407,8 @@ int main(int numberOfArguments, char* arguments[])
             {
                 colorPrintf(InputServerStartTryAgain);
 
-                char scanResult = scanf(ScanfInputTag, inputBuffer);
-                char answer = inputBuffer[0];
+                char scanResult = scanf(ScanfInputTag, _socketApplicationData.InputBuffer);
+                char answer = _socketApplicationData.InputBuffer[0];
 
                 switch (answer)
                 {
@@ -441,9 +436,9 @@ int main(int numberOfArguments, char* arguments[])
 
             case StateServerStarting:
             {
-                char serverStartSuccesful = ServerStart(&_server, ipVersion, port);
+                char serverStartSuccesful = ServerStart(&_server, _socketApplicationData.IPMode, _socketApplicationData.Port);
 
-                ServerPrint(&_server);
+                ServerPrintState(&_server);
 
                 if (serverStartSuccesful)
                 {
@@ -529,9 +524,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandPutMessage, socketID, commandToken.Key, commandToken.Value);                       
 
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserWriteInFile(socketID, filePathText, commandToken.Value);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             // Send change to all subscribers
             if(commandError == CommandSuccessful)
@@ -566,9 +561,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
 
             colorPrintf(IncommingCommandGetMessage, socketID, commandToken.Key, commandToken.Value);
 
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserReadFromFile(socketID, filePathText, &data);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             if (data != 0)
             {
@@ -583,9 +578,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandDeleteMessage, socketID, commandToken.Key);
 
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserDeleteFile(socketID, filePathText);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             break;
         }
@@ -593,9 +588,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandLockMessage, socketID, commandToken.Key, commandToken.Value);
 
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserLockFile(socketID, filePathText);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             break;
         }
@@ -603,9 +598,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandUnlockFileMessage, socketID, commandToken.Key, commandToken.Value);
 
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserUnlockFile(socketID, filePathText);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             break;
         }
@@ -613,9 +608,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandSubscribeMessage, socketID, commandToken.Key, commandToken.Value);
 
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserSubscribeToFile(socketID, filePathText);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             break;
         }
@@ -623,9 +618,9 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
         {
             colorPrintf(IncommingCommandOpenProgrammMessage, socketID, commandToken.Key, commandToken.Value);
             
-            AsyncLockLock(&_userInteractLock);
+            AsyncLockLock(&_socketApplicationData.UserInteractLock);
             commandError = UserOpenProgram(socketID, filePathText, commandToken.Value);
-            AsyncLockRelease(&_userInteractLock);
+            AsyncLockRelease(&_socketApplicationData.UserInteractLock);
 
             break;
         }
@@ -740,7 +735,7 @@ void OnRemoteServerConnect(int socketID)
 
 void OnRemoteClientConnect(int socketID)
 {
-    char sendWelcomeMessage = _server.Socket.Port != 80;
+    char sendWelcomeMessage = _socketApplicationData.Port != 80;
 
     colorPrintf(ServerClientConnection, socketID);
 
@@ -805,4 +800,32 @@ FileError FileLoadHTML(char* filePath, char** content)
     fclose(file);
 
     return FileNoError;
+}
+
+void ServerPrintState(Server* server)
+{
+
+    colorPrintf
+    (
+        "+--------------------+\n"
+        "| Socket (Server)    |\n"
+        "+--------------------+\n"
+        "| ID      : &o%8i &r|\n"
+        "| Mode    : &o%8s &r|\n"
+        "| Port    : &o%8i &r|\n",
+        server->Socket.ID,
+        server->Socket.IPMode == IPVersion4 ? "IPv4" : "IPv6",
+        server->Socket.Port);
+
+    if (SocketIsCurrentlyUsed(&server->Socket))
+        colorPrintf("| State   :   &kONLINE &r|\n");
+    else
+        colorPrintf("| State   :   &jOFFLINE &r|\n");
+
+    colorPrintf
+    (
+        "| Clients : &o%8i &r|\n"
+        "+--------------------+\n",
+        server->NumberOfConnectedClients
+    );
 }

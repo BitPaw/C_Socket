@@ -24,7 +24,7 @@ SocketError ServerSendToClient(Server* server, int clientID, char* message);
 SocketError ServerBroadcastToClients(Server* server, char* message);
 void ServerRegisterClient(Server* server, Client* client);
 void ServerUnRegisterClient(Server* server, Client* client);
-void ServerPrint(Server* server);
+
 //---[Private]-----------------------------------------------------------------
 static Client* GetNextClient(Server* server);
 //-----------------------------------------------------------------------------

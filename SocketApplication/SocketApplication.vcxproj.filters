@@ -4,6 +4,8 @@
     <ClCompile Include="CommandToken.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="UserSytem.c" />
+    <ClCompile Include="SocketApplicationData.c" />
+    <ClCompile Include="ApplicationState.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Command.h" />
@@ -15,6 +17,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="CommandError.h" />
     <ClInclude Include="UserSytem.h" />
+    <ClInclude Include="SocketApplicationData.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Triangle_Blue_Down.ico" />

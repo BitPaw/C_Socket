@@ -6,7 +6,7 @@
 #ifdef OSUnix
 #include <pthread.h>
 #elif defined(OSWindows)
-#include <Windows.h>
+#include <windows.h>
 #endif 
 
 typedef struct Thread_
