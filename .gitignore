@@ -379,3 +379,6 @@ MigrationBackup/
 *.exe
 *.out
 *.app
+
+SocketApplication/Data/
+
