@@ -341,7 +341,7 @@ CommandError UserOpenProgram(int clientID, char* fileName, char* programName)
     #ifdef OSWindows
     FILE* pipe = _popen(programWithErrorPipe, "r");
     #elif defined(OSUnix)
-    FILE* pipe = popen(programmWithErrorPipe, "r");
+    FILE* pipe = popen(programWithErrorPipe, "r");
     #endif
 
     free(programWithErrorPipe);
