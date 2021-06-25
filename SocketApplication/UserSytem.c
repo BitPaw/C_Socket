@@ -138,7 +138,7 @@ void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray,
                 char socketIDText[255];
 
                 memset(socketIDText, 0, 255);
-                memcpy(socketIDText, &fileContent[0] , i - ParseBeginIndex);
+                memcpy(socketIDText, &fileContent[0] + ParseBeginIndex, i - ParseBeginIndex);
 
                 int value = atoi(socketIDText);
 

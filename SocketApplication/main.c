@@ -46,7 +46,7 @@ int main(int numberOfArguments, char* arguments[])
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    printColors = 1;
+    printColors = 0;
 
     //system("color 0B");
 
@@ -677,14 +677,14 @@ void OnRemoteClientMessageRecieved(int socketID, char* message)
                 sprintf
                 (
                     messageBuffer,
-                    "| [Client:%i] Changed file at <%s>.\n"
-                    "|             Changed content : %s\n",
+                    "[Client:%i] Changed file at <%s>.\n"
+                    "                        Changed content : %s\n",
                     socketID,
-                    filePathText,
+                    commandToken.Key,
                     generatedFile
                 );
 
-                ServerSendToClient(&_server, subscriberSocketID, generatedFile);
+                ServerSendToClient(&_server, subscriberSocketID, messageBuffer);
             }
 
             free(generatedFile);
