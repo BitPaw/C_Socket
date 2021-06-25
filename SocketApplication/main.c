@@ -46,7 +46,7 @@ int main(int numberOfArguments, char* arguments[])
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    printColors = 0;
+    printColors = 1;
 
     //system("color 0B");
 
