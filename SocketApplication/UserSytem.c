@@ -4,9 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "../SocketFileManager/FileManager.h"
+#include "../SocketFileManager/Path.h"
 
+#ifdef OSUnix
+#define FolderStructure(Path) "../" Path
+#elif defined(OSWindows)
+#define FolderStructure(Path) Path
+#endif
 
 char UserCanModifyFile(int clientID, char* fileName)
 {
@@ -75,16 +80,65 @@ CommandError UserSubscribeToFile(int clientID, char* fileName)
 
 CommandError UserUnSubscribeToFile(int clientID, char* fileName)
 {
-    // unused, will/is not implemented
+    int clientIDAmount = 0;
+    int* clientIDList = 0;
+
+    UserGetAllSubscribers(clientID, fileName, &clientIDList, &clientIDAmount);
+
+    OSFileDelete(fileName);
+
+    for (unsigned int i = 0; i < clientIDAmount; i++)
+    {
+        int currentClientID = clientIDList[i];
+        char isClient = clientID == currentClientID;
+
+        if (!isClient)
+        {
+            char buffer[255];
+
+            sprintf(buffer, "%i\n", currentClientID);
+
+            OSFileForceWrite(fileName, buffer, WriteMode_AddToEnd);
+        }
+    }
 }
 
 void UserUnlockAllFiles(int clientID)
-{
-    // ToDo, implement
+{    
+    List allfiles = EMPTYLIST;
+    ListInitialize(&allfiles, 20, sizeof(char)); // 20 is needed, OSListAllFiles does not allocate correctly. 
 
-    // Delete all files that the user used. So that he can not block others forever.
-    
-    // Look into all .lck files, delete the files that contain the given 'clientID'.
+    OSListAllFiles(&allfiles, FolderStructure("Data"));
+
+    for (unsigned int i = 0; i < allfiles.size; i++)
+    {
+        void* adress = ListItemGet(&allfiles, i);
+
+        if (adress == 0)
+        {
+            break;
+        }
+
+        Path* path = (Path*)adress;
+        char* fileExtension = path->fileType;
+        char* filePath = path->fullPath;
+        char isLockFile = memcmp(fileExtension, FileExtensionLocked, 3) == 0;
+        char isSubFile = memcmp(fileExtension, FileExtensionSubscribed, 3) == 0;
+        
+        if (isLockFile)
+        {
+            char canModify = UserCanModifyFile(clientID, filePath);
+
+            if (canModify)
+            {
+                OSFileDelete(filePath);
+            }
+        }
+        if (isSubFile)
+        {
+            UserUnSubscribeToFile(clientID, filePath);
+        }
+    }    
 }
 
 void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray, int* amountOfElements)

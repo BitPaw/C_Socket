@@ -46,12 +46,17 @@ int main(int numberOfArguments, char* arguments[])
     ClientInitialize(&_client);
     ServerInitialize(&_server);
 
-    printColors = 1;
-
     //system("color 0B");
 
-    colorPrintf(ASCIIArtLogo);     
+#ifdef OSUnix
+    printColors = 1;
+#elif defined(OSWindows)
+    printColors = 1; 
+    // Color is not supported by default under Windows,
+    // it can be enabled in the Regestry.
+#endif   
 
+    colorPrintf(ASCIIArtLogo);     
 
     // Parse programm parameters
     switch (numberOfArguments)
