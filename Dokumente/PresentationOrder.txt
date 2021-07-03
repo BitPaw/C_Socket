@@ -1,0 +1,50 @@
+Voher Alle Programme starten und einstellen, noch nicht connecten.
+
+[Lukas] Start & Client Starten.
+
+-- Server --
+Port: 80
+Mode: Server
+IPVersion: 6
+
+-- Client --
+Port:xxx
+Mode:Client
+IP: xxx.xxx.xxx.xxxx
+
+
+
+Befehle Zeigen (zuerst help, dann PUT, GET, ...)
+(Keiner macht einen Befehl, nur die geskripteten)
+Während dessen können andere Connecten
+
+
+1. Help
+2. PUT Test Hello World
+3. GET Test
+
+(jeder kann mal GET eingeben[keine reihenfolge notwenig {Weil Semaphor}])  
+
+4. DEL Test
+5. GET Test
+
+
+Jemend Erstellt Datei "PUT MyWork xxxxxxx" und lockt Datei mit "BEG MyWork"
+
+6. PUT MyWork asdf
+
+(Enlockt derjendige die Datei, der sie gelockt hat "END MyWork" indem er disconnect)
+
+7. SUB MyWork
+
+Jemand ändert die Datei MyWork
+
+8. OP pingResult ping -n 5 192.168.0.1
+9. GET pingResult
+
+10. QUIT
+
+
+
+
+

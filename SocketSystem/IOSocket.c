@@ -50,10 +50,10 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
         {
 #ifdef OSUnix
             struct addrinfo adressIPv6Hint;
-            struct addrinfo* adressIPv6HintPointer;
+            struct addrinfo* adressIPv6HintPointer = &connectionSocket->AdressIPv6;
 #elif defined(OSWindows)
             ADDRINFO adressIPv6Hint;
-            ADDRINFO* adressIPv6HintPointer;
+            ADDRINFO** adressIPv6HintPointer = &connectionSocket->AdressIPv6;
 #endif
 
             char portString[10];
@@ -61,15 +61,13 @@ char SocketSetupAdress(IOSocket* connectionSocket, IPVersion ipVersion, char* ip
 
             sprintf(portString, "%i", port);
             memset(&adressIPv6Hint, 0, sizeof(adressIPv6Hint));
-
-            adressIPv6HintPointer = &adressIPv6Hint;
-
+  
             adressIPv6Hint.ai_family = adressFamily; //    AF_INET / AF_INET6:
             adressIPv6Hint.ai_socktype = SOCK_STREAM;
             adressIPv6Hint.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
             adressIPv6Hint.ai_protocol = IPPROTO_TCP;
 
-            result = getaddrinfo(ip, portString, &adressIPv6Hint, &adressIPv6HintPointer);
+            result = getaddrinfo(ip, portString, &adressIPv6Hint, adressIPv6HintPointer);
 
             switch (result)
             {
