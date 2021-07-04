@@ -39,7 +39,7 @@ Während dessen können andere Connecten
 
 [Jona] Jemand ändert die Datei MyWork "PUT MyWork"
 
-8. OP pingResult ping -n 5 192.168.0.1
+8. OP pingResult who
 9. GET pingResult
 
 10. QUIT
