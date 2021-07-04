@@ -7,12 +7,6 @@
 #include "../SocketFileManager/FileManager.h"
 #include "../SocketFileManager/Path.h"
 
-#ifdef OSUnix
-#define FolderStructure(Path) "../" Path
-#elif defined(OSWindows)
-#define FolderStructure(Path) Path
-#endif
-
 char UserCanModifyFile(int clientID, char* fileName)
 {
     if (fileName == 0)
@@ -108,7 +102,7 @@ void UserUnlockAllFiles(int clientID)
     List allfiles = EMPTYLIST;
     ListInitialize(&allfiles, 20, sizeof(char)); // 20 is needed, OSListAllFiles does not allocate correctly. 
 
-    OSListAllFiles(&allfiles, FolderStructure("Data"));
+    OSListAllFiles(&allfiles, "Data");
 
     for (unsigned int i = 0; i < allfiles.size; i++)
     {
@@ -145,7 +139,7 @@ void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray,
 {
     if (fileName == 0)
     {
-        return CommandNoFilePath;
+        return; //CommandNoFilePath;
     }
     char dataBuffer[255];
     char doesFileExist = OSFileExists(fileName) == OSError_NoError;
@@ -168,7 +162,7 @@ void UserGetAllSubscribers(int actorClientID, char* fileName, int** targetArray,
 
         if (fileError != OSError_NoError)
         {
-            return;
+            return ;
         }
 
         for (int i = 0; fileContent[i] != '\0';  i++)
