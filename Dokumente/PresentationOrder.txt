@@ -23,21 +23,21 @@ Während dessen können andere Connecten
 2. PUT Test Hello World
 3. GET Test
 
-(jeder kann mal GET eingeben[keine reihenfolge notwenig {Weil Semaphor}])  
+[Alle] (jeder kann mal GET eingeben[keine reihenfolge notwenig {Weil Semaphor}])  
 
 4. DEL Test
 5. GET Test
 
 
-Jemend Erstellt Datei "PUT MyWork xxxxxxx" und lockt Datei mit "BEG MyWork"
+[Dennis] Jemend Erstellt Datei "PUT MyWork xxxxxxx" und lockt Datei mit "BEG MyWork"
 
 6. PUT MyWork asdf
 
-(Enlockt derjendige die Datei, der sie gelockt hat "END MyWork" indem er disconnect)
+[Dennis] (Enlockt derjendige die Datei, der sie gelockt hat "END MyWork" indem er disconnect)
 
 7. SUB MyWork
 
-Jemand ändert die Datei MyWork
+[Jona] Jemand ändert die Datei MyWork "PUT MyWork"
 
 8. OP pingResult ping -n 5 192.168.0.1
 9. GET pingResult
